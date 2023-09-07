@@ -1,7 +1,13 @@
+# R files
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
-code.txt
 test.R
 multiOut_*
+
+# Other files
+code.txt
+
+# Folders
+data/

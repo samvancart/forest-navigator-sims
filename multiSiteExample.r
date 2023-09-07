@@ -38,9 +38,12 @@ soilDepth <- 1000
 # create siteInfo matrix
 siteID <- soilData[,1]
 climID <- soilData[,14]
-# siteType
-estimated <- c(3.5,4.5,6,7)
-soilData$siteType_N_user <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
+
+# SiteType estimated
+estimated <- estimatedList[[estimatedID]]
+soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
+
+
 swInit <- rep(c(160), times=nSites)
 zeros <- rep(c(0), times=nSites)
 sInit <- rep(c(20), times=nSites)
@@ -49,7 +52,12 @@ nSpeciesCol <- rep(c(nSpecies), times=nSites)
 soilDepthCol <- rep(c(soilDepth), times=nSites)
 
 # create siteInfo
-siteInfo <- cbind(siteID,climID,soilData$siteType_N_user,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
+
+### sitetype N_user
+# siteInfo <- cbind(siteID,climID,soilData$siteType_N_user,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
+
+### sitetype N_quantile
+siteInfo <- cbind(siteID,climID,soilData$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
 
 colnames(siteInfo) <- c("siteID", "climID", "siteType", "SWinit", "CWinit",
                         "SOGinit", "Sinit", "nLayers", "nSpecies", "soildepth",
@@ -68,6 +76,7 @@ multiInitVar[,2,] <- 100
 # multiInitVar
 
 # Initialise model
+###using siteType estimate based on N
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   siteInfo = siteInfo,
   multiInitVar = multiInitVar,
@@ -79,13 +88,45 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   defaultThin=0, 
   ClCut=0)
 
+
+
+# setting site type to 1
+siteInfo[,3]=1
+initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+  siteInfo = siteInfo,
+  multiInitVar = multiInitVar,
+  PAR = PARtran,
+  VPD = VPDtran,
+  CO2= CO2tran,
+  Precip=Preciptran,
+  TAir=TAirtran,
+  defaultThin=0, 
+  ClCut=0)
+
+# setting site type to 5
+siteInfo[,3]=5
+initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+  siteInfo = siteInfo,
+  multiInitVar = multiInitVar,
+  PAR = PARtran,
+  VPD = VPDtran,
+  CO2= CO2tran,
+  Precip=Preciptran,
+  TAir=TAirtran,
+  defaultThin=0,
+  ClCut=0)
+
 # run multisite model
 modOut <- multiPrebas(initPrebas)
+modOut_st1 <- multiPrebas(initPrebas_st1)
+modOut_st5 <- multiPrebas(initPrebas_st5)
 
 # get output
-multiOut <- modOut$multiOut
+multiOut<-modOut$multiOut
+multiOut_st1<-modOut_st1$multiOut
+multiOut_st5<-modOut_st5$multiOut
 
 fileName <- paste0("multiOut_spID",speciesID,".rdata")
 
-save(multiOut, file=fileName)
+save(multiOut,multiOut_st1,multiOut_st5, file=fileName)
 
