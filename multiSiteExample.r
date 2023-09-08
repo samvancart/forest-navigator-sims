@@ -52,11 +52,6 @@ nSpeciesCol <- rep(c(nSpecies), times=nSites)
 soilDepthCol <- rep(c(soilDepth), times=nSites)
 
 # create siteInfo
-
-### sitetype N_user
-# siteInfo <- cbind(siteID,climID,soilData$siteType_N_user,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
-
-### sitetype N_quantile
 siteInfo <- cbind(siteID,climID,soilData$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
 
 colnames(siteInfo) <- c("siteID", "climID", "siteType", "SWinit", "CWinit",

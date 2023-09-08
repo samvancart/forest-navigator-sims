@@ -2,6 +2,7 @@ library(data.table)
 library(Rprebasso)
 library(ggplot2)
 library(reshape2)
+library(gridExtra)
 
 speciesID <- 4
 defaultThin <- 0
@@ -9,6 +10,10 @@ ClCut <- 0
 # number of layers and species
 nLayers <- nSpecies <- 1
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
+
+
+# load soilData
+# soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
 
 # SiteType estimates either by user, or by quantile
 estimatedID <- 2

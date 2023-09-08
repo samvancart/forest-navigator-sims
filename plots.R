@@ -45,9 +45,14 @@ for(variableX in varNames[varXs]){
     stat_summary(data=tabX[variable==variableX & runID %in% c("st1","st5")],aes(x=year,y=value),geom = "ribbon", fun.min = min, fun.max = max, alpha = 0.3, colour=NA) +
     geom_line(data=tabX[variable==variableX & runID %in% "N_based"],  aes(x=year,y=value,group=site,col=SiteType)) +
     ggtitle(species, variableX) +
-    labs(caption = paste0(estimatedName," ", list(estimated)))
+    labs(caption = paste0(estimatedName," ", list(round(estimated,2))))
 }
 
+# display all plots in grid
+# grid.arrange(grobs = plotsVars)
+# dev.off
+
+# plots to pdf
 pdf_out <- paste0(species,"_plots_", estimatedName)
 pdf_out
 plot_path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/plots/", pdf_out, ".pdf")
@@ -56,6 +61,8 @@ for(variableX in varNames[varXs]){
   print(plotsVars[[variableX]])
 }
 dev.off()
+
+# print plots
 for(variableX in varNames[varXs]){
   print(plotsVars[[variableX]])
 }
