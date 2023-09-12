@@ -28,6 +28,10 @@ tabXestimated <- merge(tabXst,tabXvars)
 tabXestimated$runID <- "N_based"
 tabX <- rbind(tabX,tabXestimated)
 
+# Set varNames
+varNames <- as.vector(unlist(dimnames(multiOut)[3]))
+
+
 
 # write prebas output csv format: out_speciesID_defaultThin_ClCut
 write.csv(tabX, path, row.names = F)
