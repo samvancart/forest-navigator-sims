@@ -16,7 +16,7 @@ speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 # soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
 
 # SiteType estimates either by user, or by quantile
-estimatedID <- 2
+estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(estimated_user, estimated_quantile)

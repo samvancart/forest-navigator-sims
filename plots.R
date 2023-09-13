@@ -44,7 +44,6 @@ plotsVars <- list()
 
 # Plot with shadow
 for(variableX in varNames[varXs]){
-  # plotsVars[[variableX]] <- ggplot(data=tabX[variable==variableX],aes(x=year,y=value,col=SiteType,fill=SiteType)) +
   plotsVars[[variableX]] <- ggplot() +
     stat_summary(data=tabX[variable==variableX & runID %in% c("st1","st5")],aes(x=year,y=value),geom = "ribbon", fun.min = min, fun.max = max, alpha = 0.3, colour=NA) +
     geom_line(data=tabX[variable==variableX & runID %in% "N_based"],  aes(x=year,y=value,group=site,col=SiteType)) +
