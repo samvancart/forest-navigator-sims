@@ -3,6 +3,8 @@ library(Rprebasso)
 library(ggplot2)
 library(reshape2)
 library(gridExtra)
+library(dplyr)
+library(factoextra)
 
 speciesID <- 4
 defaultThin <- 0
