@@ -70,6 +70,31 @@ multiInitVar[,2,] <- 100
 # multiInitVar[,2,] <- matrix(Ainits,nSites,maxNlayers)
 # multiInitVar
 
+
+
+# # NFI DATA
+# 
+# siteInfo[,8] <- vector of nLayers based on NFI data at tree level
+# siteInfo[,9] <- vector of nSpecies based on NFI data
+# 
+# nLayers <- vector of nLayers that varies for each site
+# maxNlayers <- max(nLayers)
+# 
+# multiInitVar <- array(NA,dim=c(nSites,7,maxNlayers))
+# for(i in 1:nSites){
+#   multiInitVar[i,1,1:nLayers[i]] <- speciesID # vector of species ID taken from data
+#   multiInitVar[i,2,1:nLayers[i]] <- xx? #age by tree from NFI
+#     multiInitVar[i,3,1:nLayers[i]] <- xx? #height from NFI data 
+#     multiInitVar[i,4,1:nLayers[i]] <- xx? #dbh from NFI data 
+#     multiInitVar[i,5,1:nLayers[i]] <- xx? # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
+#     multiInitVar[i,6,1:nLayers[i]] <- NA
+#   
+# }
+
+
+
+
+
 # Initialise model
 ###using siteType estimate based on N
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
