@@ -5,6 +5,7 @@ library(reshape2)
 library(gridExtra)
 library(dplyr)
 library(factoextra)
+library(hash)
 
 speciesID <- 4
 defaultThin <- 0

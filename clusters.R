@@ -38,13 +38,38 @@ get_clusterIDs <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
 # Load Swedish tree data 
 nfi_swe <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/trad_2018_2022_inspire_tradid_corr.csv")
 
+# Load speciesId data
+species_swe <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/Tree_species_code.csv")
+
+# Create speciesIDs hashmap
+species_map <- hash()
+codes <- as.vector(species_swe$code)
+speciesIDs <- as.vector(species_swe$speciesID)
+
+for (i in 1:length(codes)) {
+  key <- codes[i]
+  val <- speciesIDs[i]
+  species_map[key] <- val
+  
+}
+
+
+# Assign speciesID column to df
+nfi_swe_speciesIDs <- nfi_swe
+nfi_swe_speciesIDs$speciesID <- lapply(nfi_swe_speciesIDs$Species_code_name, function(x) {values(species_map[as.character(x)])})
+
+
 # Assign groupIDs
-grouped_nfi_swe <- nfi_swe %>%
+grouped_nfi_swe <- nfi_swe_speciesIDs %>%
   group_by(ID_plot) %>%
   mutate(groupID = cur_group_id())
 
 # Sort
 grouped_nfi_swe_sorted <- arrange(grouped_nfi_swe, ID_plot)
+
+# SpeciesID to integer
+grouped_nfi_swe_sorted$speciesID <- as.integer(grouped_nfi_swe_sorted$speciesID)
+
 
 # Choose sites where n trees>20
 grouped_over_20 <- grouped_nfi_swe_sorted %>%
