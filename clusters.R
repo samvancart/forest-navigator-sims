@@ -5,8 +5,8 @@ source("settings.R")
 
 # Functions
 
-# Get all clusterIDs
-get_clusterIDs <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
+# Get all clusterIDs from groups
+get_clusterIDs_groups <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
   
   ## Initialise vector_list for clusterIDs
   vector_list <- c()
@@ -34,68 +34,130 @@ get_clusterIDs <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
   return(vector_list)
 }
 
-
-# Load Swedish tree data 
-nfi_swe <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/trad_2018_2022_inspire_tradid_corr.csv")
-
-# Load speciesId data
-species_swe <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/Tree_species_code.csv")
-
-# Create speciesIDs hashmap
-species_map <- hash()
-codes <- as.vector(species_swe$code)
-speciesIDs <- as.vector(species_swe$speciesID)
-
-for (i in 1:length(codes)) {
-  key <- codes[i]
-  val <- speciesIDs[i]
-  species_map[key] <- val
+# Get all clusterIDs from groups and species
+get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
   
+  ## Initialise vector_list for clusterIDs
+  vector_list <- c()
+  
+  for (i in groups_vector) {
+    # Choose 1 site
+    filtered_groups <- df %>% filter(groupID == i)
+    
+    # Species vector
+    species_vector <- unique(filtered_groups$speciesID)
+    
+    for (j in species_vector) {
+      # Choose species
+      filtered_species <- filtered_groups %>% filter(speciesID == j)
+      
+      # Df for clustering
+      layer <- filtered_species[, ..cluster_cols]
+      
+      # Get max number of clusters
+      if(nrow(unique(layer))>2) {
+        kmax <- nrow(unique(layer))-1
+      } else {
+        kmax <- 2
+      }
+      
+      
+      centers <- 1
+      
+      # Get optimal number of clusters
+      if (nrow(unique(layer))>2) {
+        optimal_num_clusters <- fviz_nbclust(layer, kmeans, method = "silhouette", k.max = kmax)
+        centers <- which.max(optimal_num_clusters$data$y)
+      }
+      
+      # K-means set up
+      set.seed(123)
+      model <- kmeans(layer, centers = centers, nstart = 25)
+      
+      ## Append clusterIDs to vector_list
+      clusterID <- model$cluster
+      vector_list <- append(vector_list, clusterID)
+    }
+    
+  }
+  return(vector_list)
 }
 
 
-# Assign speciesID column to df
-nfi_swe_speciesIDs <- nfi_swe
-nfi_swe_speciesIDs$speciesID <- lapply(nfi_swe_speciesIDs$Species_code_name, function(x) {values(species_map[as.character(x)])})
+# Load sorted data
+grouped_nfi_swe_sorted <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/grouped_nfi_swe_sorted.csv")
+df <- grouped_nfi_swe_sorted
+
+# pos <- which(df$groupID == 1000)
+# df <- head(grouped_nfi_swe_sorted,pos[1]-1)
+
+groups_vector <- unique(df$groupID)
+
+vector_list <- get_clusterIDs_groups_species(df, groups_vector)
+
+# # Add clusterIDs to df
+df$clusterID <- vector_list
+
+path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs.csv")
+write.csv(df, path, row.names = F)
+
+# TEST clusterfunc
+
+v_list <- c()
+filtered_groups <- df %>% filter(groupID == 3)
+
+# Species vector
+species_vector <- unique(filtered_groups$speciesID)
+
+# Choose species
+filtered_species <- filtered_groups %>% filter(speciesID == 1)
+
+layer <- filtered_species[,c(filtered_species$Dbh,filtered_species$Height)]
+cluster_cols = c("Dbh","Height")
+filtered_species[, c("Dbh", "Height")]
+
+# Df for clustering
+layer <- filtered_species[, ..cluster_cols]
+
+# Get max number of clusters
+kmax <- if(nrow(unique(layer))>2) {
+  kmax <- nrow(unique(layer))-1
+} else {
+  kmax <- 2
+}
 
 
-# Assign groupIDs
-grouped_nfi_swe <- nfi_swe_speciesIDs %>%
-  group_by(ID_plot) %>%
-  mutate(groupID = cur_group_id())
+centers <- 1
+nrow(layer)
+nrow(unique(layer))
 
-# Sort
-grouped_nfi_swe_sorted <- arrange(grouped_nfi_swe, ID_plot)
-
-# SpeciesID to integer
-grouped_nfi_swe_sorted$speciesID <- as.integer(grouped_nfi_swe_sorted$speciesID)
-
-
-# Choose sites where n trees>20
-grouped_over_20 <- grouped_nfi_swe_sorted %>%
-  group_by(groupID) %>%
-  filter(n() > 20)
-
-# Choose sites where n trees<21
-grouped_under_21 <- grouped_nfi_swe_sorted %>%
-  group_by(groupID) %>%
-  filter(n() < 21) %>%
-  mutate(clusterID = 1)
+# Get optimal number of clusters
+if (nrow(unique(layer))>2) {
+  optimal_num_clusters <- fviz_nbclust(layer, kmeans, method = "silhouette", k.max = kmax)
+  centers <- which.max(optimal_num_clusters$data$y)
+} 
 
 
-# Get unique groups as vector
-groups_vector <- unique(grouped_over_20$groupID)
 
-# Get all clusterIDs
-vector_list <- get_clusterIDs(df = grouped_over_20, groups_vector = c(3,4))
+# K-means set up
+set.seed(123)
+model <- kmeans(layer, centers = centers, nstart = 25)
 
+## Append clusterIDs to vector_list
+clusterID <- model$cluster
+v_list <- append(v_list, clusterID)
+
+# Plot clusters
+fviz_cluster(model, data = layer)
 
 
 # Test k-means
-filtered <- grouped_over_20 %>% filter(groupID == 8364)
+filtered <- df %>% filter(groupID == 1)
 layer <- filtered[, c("Dbh","Height")]
+optimal_num_clusters <- fviz_nbclust(layer, kmeans, method = "silhouette")
+centers <- which.max(optimal_num_clusters$data$y)
 set.seed(123)
-model <- kmeans(layer, centers = 2, nstart = 25)
+model <- kmeans(layer, centers = centers, nstart = 25)
 # Plot clusters
 fviz_cluster(model, data = layer)
 
@@ -135,3 +197,6 @@ gap_stat <- clusGap(layer, FUN = kmeans, nstart = 25,
                     K.max = 10, B = 50)
 fviz_gap_stat(gap_stat)
 gap_stat$Tab
+
+
+
