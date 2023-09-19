@@ -9,7 +9,7 @@ source('settings.R')
 # Precipdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/Precip_tran.csv",header = T)
 # TAirdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/TAir_tran.csv",header = T)
 
-# load soilData
+# load soilData (should load from settings.R)
 # soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
 
 # dataframe to matrix

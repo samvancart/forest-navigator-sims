@@ -76,5 +76,3 @@ df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
 # write.csv(df_sorted, path, row.names = F)
 
 
-
-
