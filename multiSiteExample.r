@@ -47,8 +47,10 @@ soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10))
 swInit <- rep(c(160), times=nSites)
 zeros <- rep(c(0), times=nSites)
 sInit <- rep(c(20), times=nSites)
-nLayersCol <- rep(c(nLayers), times=nSites)
-nSpeciesCol <- rep(c(nSpecies), times=nSites)
+# nLayersCol <- rep(c(nLayers), times=nSites)
+nLayersCol <- rep(c(1), times=nSites)
+# nSpeciesCol <- rep(c(nSpecies), times=nSites)
+nSpeciesCol <- rep(c(1), times=nSites)
 soilDepthCol <- rep(c(soilDepth), times=nSites)
 
 # create siteInfo
@@ -62,38 +64,57 @@ siteInfo[,1] <- 1:nSites
 siteInfo[,2] <- 1:nSites
 
 
-multiInitVar <- array(NA,dim=c(nSites,7,nLayers))
+
+# multiInitVar <- array(NA,dim=c(nSites,7,nLayers))
+multiInitVar <- array(NA,dim=c(nSites,7,49))
 multiInitVar[,1,] <- speciesID
 multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]
 multiInitVar[,5,] <- initSeedling.def[3]; multiInitVar[,6,] <- initSeedling.def[4]
 multiInitVar[,2,] <- 100
+
 # multiInitVar[,2,] <- matrix(Ainits,nSites,maxNlayers)
 # multiInitVar
 
 
 
 # # NFI DATA
-# 
-# siteInfo[,8] <- vector of nLayers based on NFI data at tree level
-# siteInfo[,9] <- vector of nSpecies based on NFI data
-# 
-# nLayers <- vector of nLayers that varies for each site
-# maxNlayers <- max(nLayers)
-# 
-# multiInitVar <- array(NA,dim=c(nSites,7,maxNlayers))
-# for(i in 1:nSites){
-#   multiInitVar[i,1,1:nLayers[i]] <- speciesID # vector of species ID taken from data
-#   multiInitVar[i,2,1:nLayers[i]] <- xx? #age by tree from NFI
-#     multiInitVar[i,3,1:nLayers[i]] <- xx? #height from NFI data 
-#     multiInitVar[i,4,1:nLayers[i]] <- xx? #dbh from NFI data 
-#     multiInitVar[i,5,1:nLayers[i]] <- xx? # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
-#     multiInitVar[i,6,1:nLayers[i]] <- NA
-#   
-# }
+path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
+df <- fread(path)
+
+
+# Choose sites
+df_nSites <- df %>%
+  group_by(groupID) %>%
+  filter(groupID<=nSites)
+
+
+nLayers <- (df_nSites %>% count(df_nSites$groupID))$n
+nSpecies <- (df_nSites %>% count(df_nSites$speciesID) %>% count(groupID))$n
+
+siteInfo[,8] <- nLayers
+siteInfo[,9] <- nSpecies
+
+maxNlayers <- max(nLayers)
 
 
 
+multiInitVar <- array(NA,dim=c(nSites,7,maxNlayers))
+for(i in 1:nSites){
+  filtered <- df_nSites %>% filter(groupID==i)
+  multiInitVar[i,1,1:nLayers[i]] <- filtered$speciesID # vector of species ID taken from data
+  multiInitVar[i,2,1:nLayers[i]] <- filtered$Age # age by tree from NFI
+  multiInitVar[i,3,1:nLayers[i]] <- filtered$Height # height from NFI data
+  multiInitVar[i,4,1:nLayers[i]] <- filtered$Dbh # dbh from NFI data
+  multiInitVar[i,5,1:nLayers[i]] <- filtered$basal_area # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
+  multiInitVar[i,6,1:nLayers[i]] <- NA
+}
 
+LcCheck <- multiInitVar[,3,] - multiInitVar[,6,]
+
+pCROB
+pPREL
+pCROB[, multiInitVar[, 1,1]]
+pHcM
 
 # Initialise model
 ###using siteType estimate based on N
@@ -110,31 +131,31 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
 
 
 
-# setting site type to 1
-siteInfo[,3]=1
-initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
-  siteInfo = siteInfo,
-  multiInitVar = multiInitVar,
-  PAR = PARtran,
-  VPD = VPDtran,
-  CO2= CO2tran,
-  Precip=Preciptran,
-  TAir=TAirtran,
-  defaultThin=0, 
-  ClCut=0)
-
-# setting site type to 5
-siteInfo[,3]=5
-initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
-  siteInfo = siteInfo,
-  multiInitVar = multiInitVar,
-  PAR = PARtran,
-  VPD = VPDtran,
-  CO2= CO2tran,
-  Precip=Preciptran,
-  TAir=TAirtran,
-  defaultThin=0,
-  ClCut=0)
+# # setting site type to 1
+# siteInfo[,3]=1
+# initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+#   siteInfo = siteInfo,
+#   multiInitVar = multiInitVar,
+#   PAR = PARtran,
+#   VPD = VPDtran,
+#   CO2= CO2tran,
+#   Precip=Preciptran,
+#   TAir=TAirtran,
+#   defaultThin=0, 
+#   ClCut=0)
+# 
+# # setting site type to 5
+# siteInfo[,3]=5
+# initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+#   siteInfo = siteInfo,
+#   multiInitVar = multiInitVar,
+#   PAR = PARtran,
+#   VPD = VPDtran,
+#   CO2= CO2tran,
+#   Precip=Preciptran,
+#   TAir=TAirtran,
+#   defaultThin=0,
+#   ClCut=0)
 
 # run multisite model
 modOut <- multiPrebas(initPrebas)
