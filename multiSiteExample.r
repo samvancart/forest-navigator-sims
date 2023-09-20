@@ -87,9 +87,18 @@ df_nSites <- df %>%
   group_by(groupID) %>%
   filter(groupID<=nSites)
 
+# Get means of variables according to clusterIDs
+df_means <- aggregate(formula=cbind(Dbh,Age,Height,basal_area)~groupID+speciesID+clusterID,FUN=mean,data=df_nSites)
 
-nLayers <- (df_nSites %>% count(df_nSites$groupID))$n
-nSpecies <- (df_nSites %>% count(df_nSites$speciesID) %>% count(groupID))$n
+# Sort df
+df_sorted <- df_means[with(df_means,order(groupID,speciesID,clusterID)),]
+
+# Rename
+df_nSites <- df_sorted
+
+nLayers <- (df_nSites %>% count(groupID))$n
+nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
+
 
 siteInfo[,8] <- nLayers
 siteInfo[,9] <- nSpecies
@@ -109,12 +118,26 @@ for(i in 1:nSites){
   multiInitVar[i,6,1:nLayers[i]] <- NA
 }
 
-LcCheck <- multiInitVar[,3,] - multiInitVar[,6,]
 
-pCROB
-pPREL
-pCROB[, multiInitVar[, 1,1]]
-pHcM
+# multiInitVar[,3,1] - multiInitVar[,6,1]
+# 
+# LcCheck <- multiInitVar[,3,] - multiInitVar[,6,]
+# negLayers <- which(LcCheck<0 | is.na(LcCheck),arr.ind = T)
+# siteXss <- unique(negLayers[,1])
+# print(multiInitVar[siteXss,6,][negLayers])
+# multiInitVar[siteXss,6,][negLayers]<- 0.1
+# 
+# heightCheck <- multiInitVar[,3,]
+# naHeights <- do.call(cbind, lapply(heightCheck, is.na))
+# multiInitVar[,3,][naHeights] <- 1
+# 
+# multiInitVar[,3,]
+# 
+# 
+# pCROB
+# pPREL
+# pCROB[, multiInitVar[, 1,1]]
+# pHcM
 
 # Initialise model
 ###using siteType estimate based on N

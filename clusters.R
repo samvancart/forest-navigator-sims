@@ -75,4 +75,3 @@ df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
 # path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/all_sorted_group_species_cIDs.csv")
 # write.csv(df_sorted, path, row.names = F)
 
-
