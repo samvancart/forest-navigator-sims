@@ -87,14 +87,14 @@ df_nSites <- df %>%
   group_by(groupID) %>%
   filter(groupID<=nSites)
 
-# Get means of variables according to clusterIDs
-df_means <- aggregate(formula=cbind(Dbh,Age,Height,basal_area)~groupID+speciesID+clusterID,FUN=mean,data=df_nSites)
-
-# Sort df
-df_sorted <- df_means[with(df_means,order(groupID,speciesID,clusterID)),]
-
-# Rename
-df_nSites <- df_sorted
+# # Get means of variables according to clusterIDs
+# df_means <- aggregate(formula=cbind(Dbh,Age,Height,basal_area)~groupID+speciesID+clusterID,FUN=mean,data=df_nSites)
+# 
+# # Sort df
+# df_sorted <- df_means[with(df_means,order(groupID,speciesID,clusterID)),]
+# 
+# # Rename
+# df_nSites <- df_sorted
 
 nLayers <- (df_nSites %>% count(groupID))$n
 nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
@@ -107,7 +107,8 @@ maxNlayers <- max(nLayers)
 
 
 
-multiInitVar <- array(NA,dim=c(nSites,7,maxNlayers))
+multiInitVar <- array(0,dim=c(nSites,7,maxNlayers))
+multiInitVar[,6:7,NA]
 for(i in 1:nSites){
   filtered <- df_nSites %>% filter(groupID==i)
   multiInitVar[i,1,1:nLayers[i]] <- filtered$speciesID # vector of species ID taken from data
@@ -152,7 +153,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   defaultThin=0, 
   ClCut=0)
 
-
+initPrebas$nLayers
+siteInfo
 
 # # setting site type to 1
 # siteInfo[,3]=1
@@ -182,15 +184,18 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
 
 # run multisite model
 modOut <- multiPrebas(initPrebas)
-modOut_st1 <- multiPrebas(initPrebas_st1)
-modOut_st5 <- multiPrebas(initPrebas_st5)
+# modOut_st1 <- multiPrebas(initPrebas_st1)
+# modOut_st5 <- multiPrebas(initPrebas_st5)
+
+modOut$multiOut[4,,11,,1]
+dim(modOut$multiOut)
 
 # get output
 multiOut<-modOut$multiOut
-multiOut_st1<-modOut_st1$multiOut
-multiOut_st5<-modOut_st5$multiOut
+# multiOut_st1<-modOut_st1$multiOut
+# multiOut_st5<-modOut_st5$multiOut
 
 fileName <- paste0("multiOut_spID",speciesID,".rdata")
 
-save(multiOut,multiOut_st1,multiOut_st5, file=fileName)
+save(multiOut, file=fileName)
 
