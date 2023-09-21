@@ -66,11 +66,11 @@ siteInfo[,2] <- 1:nSites
 
 
 # multiInitVar <- array(NA,dim=c(nSites,7,nLayers))
-multiInitVar <- array(NA,dim=c(nSites,7,49))
-multiInitVar[,1,] <- speciesID
-multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]
-multiInitVar[,5,] <- initSeedling.def[3]; multiInitVar[,6,] <- initSeedling.def[4]
-multiInitVar[,2,] <- 100
+# multiInitVar <- array(NA,dim=c(nSites,7,49))
+# multiInitVar[,1,] <- speciesID
+# multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]
+# multiInitVar[,5,] <- initSeedling.def[3]; multiInitVar[,6,] <- initSeedling.def[4]
+# multiInitVar[,2,] <- 100
 
 # multiInitVar[,2,] <- matrix(Ainits,nSites,maxNlayers)
 # multiInitVar
@@ -86,6 +86,7 @@ df <- fread(path)
 df_nSites <- df %>%
   group_by(groupID) %>%
   filter(groupID<=nSites)
+
 
 # # Get means of variables according to clusterIDs
 # df_means <- aggregate(formula=cbind(Dbh,Age,Height,basal_area)~groupID+speciesID+clusterID,FUN=mean,data=df_nSites)

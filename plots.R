@@ -62,7 +62,7 @@ plotsVars <- list(list())
 # Choose 1 site
 for(variableX in varNames[varXs]){
   plotsVars[[variableX]] <- ggplot() +
-    geom_line(data=tabX[variable==variableX & site==3],  aes(x=year,y=value,col=species, group=layer)) +
+    geom_line(data=tabX[variable==variableX & site==4],  aes(x=year,y=value,col=species, group=layer)) +
     ggtitle(variableX)
 }
 
