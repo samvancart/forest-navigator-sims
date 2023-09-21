@@ -86,8 +86,8 @@ df_weighted <- df_weighted %>% rename("basal_area" = "basal_area_layer")
 df_weighted_sorted <- df_weighted[with(df_weighted,order(groupID,speciesID,clusterID)),]
 df <- df_weighted_sorted
 
-# Write csv
-path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/cluster_weighted_means.csv")
-write.csv(df, path, row.names = F)
+# # Write csv
+# path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/cluster_weighted_means.csv")
+# write.csv(df, path, row.names = F)
 
 

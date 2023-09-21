@@ -78,24 +78,17 @@ siteInfo[,2] <- 1:nSites
 
 
 # # NFI DATA
-path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
-df <- fread(path)
+path_trees_as_layers <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
+path_clusters_as_layers <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/cluster_weighted_means.csv")
 
+df <- fread(path_trees_as_layers)
+df_clusters <- fread(path_clusters_as_layers)
 
 # Choose sites
 df_nSites <- df %>%
   group_by(groupID) %>%
   filter(groupID<=nSites)
 
-
-# # Get means of variables according to clusterIDs
-# df_means <- aggregate(formula=cbind(Dbh,Age,Height,basal_area)~groupID+speciesID+clusterID,FUN=mean,data=df_nSites)
-# 
-# # Sort df
-# df_sorted <- df_means[with(df_means,order(groupID,speciesID,clusterID)),]
-# 
-# # Rename
-# df_nSites <- df_sorted
 
 nLayers <- (df_nSites %>% count(groupID))$n
 nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
