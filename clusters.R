@@ -5,12 +5,36 @@ source("settings.R")
 
 # Functions
 
+# Optimal number of cluster centers
+get_centers <- function(df, kmax) {
+  
+  centers <- 1
+  
+  if (nrow(unique(df))>2) {
+    optimal_num_clusters <- fviz_nbclust(df, kmeans, method = "silhouette", k.max = kmax)
+    centers <- which.max(optimal_num_clusters$data$y)
+  }
+  return(centers)
+}
+
+
+# Kmax for optimising number of clusters
+get_kmax <- function(df) {
+  if(nrow(unique(df))>2) {
+    kmax <- nrow(unique(df))-1
+  } else {
+    kmax <- 2
+  }
+  return(kmax)
+}
+
 
 # Get all clusterIDs from groups and species
+# Parameter df must be a tibble (library dplyr)
 get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
   
   ## Initialise vector_list for clusterIDs
-  vector_list <- c()
+  clusterIDs_list <- c()
   
   for (i in groups_vector) {
     # Choose 1 site
@@ -24,35 +48,25 @@ get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh
       filtered_species <- filtered_groups %>% filter(speciesID == j)
       
       # Df for clustering
-      layer <- filtered_species[, ..cluster_cols]
+      df_cluster_cols <- filtered_species[, cluster_cols]
       
       # Get max number of clusters
-      if(nrow(unique(layer))>2) {
-        kmax <- nrow(unique(layer))-1
-      } else {
-        kmax <- 2
-      }
-      
-      
-      centers <- 1
+      kmax <- get_kmax(df_cluster_cols)
       
       # Get optimal number of clusters
-      if (nrow(unique(layer))>2) {
-        optimal_num_clusters <- fviz_nbclust(layer, kmeans, method = "silhouette", k.max = kmax)
-        centers <- which.max(optimal_num_clusters$data$y)
-      }
+      centers <- get_centers(df_cluster_cols, kmax)
       
       # K-means set up
       set.seed(123)
-      model <- kmeans(layer, centers = centers, nstart = 25)
+      model <- kmeans(df_cluster_cols, centers = centers, nstart = 25)
       
-      ## Append clusterIDs to vector_list
-      clusterID <- model$cluster
-      vector_list <- append(vector_list, clusterID)
+      ## Append clusterIDs to list
+      clusterIDs <- model$cluster
+      clusterIDs_list <- append(clusterIDs_list, clusterIDs)
     }
     
   }
-  return(vector_list)
+  return(clusterIDs_list)
 }
 
 
@@ -60,14 +74,17 @@ get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh
 grouped_nfi_swe_sorted <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/grouped_nfi_swe_sorted.csv")
 df <- grouped_nfi_swe_sorted
 
+# Convert to tibble
+df <- as_tibble(df)
+
 # Vector with all groups
 groups_vector <- unique(df$groupID)
 
 # Get clusterIDs vector
-vector_list <- get_clusterIDs_groups_species(df, groups_vector)
+clusterIDs_list <- get_clusterIDs_groups_species(df, groups_vector)
 
 # Add clusterIDs to df
-df$clusterID <- vector_list
+df$clusterID <- clusterIDs_list
 
 # Sort by group then species then cluster
 df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]

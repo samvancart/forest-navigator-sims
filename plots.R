@@ -38,11 +38,10 @@ layer_types <- c("trees", "clusters")
 layerID <- 1
 
 # Choose 1 site
-for (siteX in 1:1) {
+for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
     plotsVars[[variableX]] <- ggplot(data=tabX[variable==variableX & site==siteX],  aes(x=year,y=value,col=species, group=layer)) +
       geom_line() +
-      geom_text(aes(label=layer)) +
       ggtitle(paste0("Site ",siteX," ",layer_types[layerID]),variableX)
     
   }
