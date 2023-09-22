@@ -85,7 +85,7 @@ df <- fread(path_trees_as_layers)
 df_clusters <- fread(path_clusters_as_layers)
 
 # Choose sites
-df_nSites <- df %>%
+df_nSites <- df_clusters %>%
   group_by(groupID) %>%
   filter(groupID<=nSites)
 

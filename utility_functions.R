@@ -15,13 +15,16 @@ get_basal_area_nfi_sweden <- function(x) {
 # # Basal area for NFI Sweden
 # path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/all_sorted_group_species_cIDs.csv")
 # df <- fread(path)
+# df$Dbh <- df$Dbh/10
 # 
+#  
 # # Apply to each df row to get basal_area vector
 # basal_area <- apply(df, 1, get_basal_area_nfi_sweden)
 # 
+# 
 # # Add vector as column to df
 # df$basal_area <- basal_area
-
+# 
 # path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
 # write.csv(df, path, row.names = F)
 
@@ -36,12 +39,13 @@ get_variable_sums <- function(df, var) {
 
 # Weighted aggregate means of a variable by groupID, speciesID, clusterID
 get_weighted_variable <- function(df,var,weighted_by="basal_area") {
+  
   df[,var] <- df[, var]*df[,weighted_by]
   weighted_layer <- paste0(weighted_by,"_layer")
   df[,var] <- df[,var]/df[,weighted_layer]
   formula <- as.formula(paste0(var,"~groupID + speciesID + clusterID"))
   df <- aggregate(formula,FUN=sum,data=df)
-  # df <- rename_col(df, var, "_weighted")
+  
   return(df)
 }
 
