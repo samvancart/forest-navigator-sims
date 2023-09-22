@@ -20,6 +20,7 @@ get_centers <- function(df, kmax) {
 
 # Kmax for optimising number of clusters
 get_kmax <- function(df) {
+  
   if(nrow(unique(df))>2) {
     kmax <- nrow(unique(df))-1
   } else {
@@ -30,10 +31,12 @@ get_kmax <- function(df) {
 
 
 # Get all clusterIDs from groups and species
-# Parameter df must be a tibble (library dplyr)
 get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
   
-  ## Initialise vector_list for clusterIDs
+  # Convert df to tibble
+  df <- as_tibble(df)
+  
+  # Initialise list for clusterIDs
   clusterIDs_list <- c()
   
   for (i in groups_vector) {
@@ -73,9 +76,6 @@ get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh
 # Load sorted data
 grouped_nfi_swe_sorted <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/grouped_nfi_swe_sorted.csv")
 df <- grouped_nfi_swe_sorted
-
-# Convert to tibble
-df <- as_tibble(df)
 
 # Vector with all groups
 groups_vector <- unique(df$groupID)
