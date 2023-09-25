@@ -4,7 +4,7 @@
 .RData
 .Ruserdata
 test.R
-multiOut_*
+*.rdata
 
 # Other files
 code_r.txt

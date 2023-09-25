@@ -58,14 +58,14 @@ run_species_and_estimate <- function(estimated_vector,species_vector,sources) {
 }
 
 # Run for species
-run_species <- function(species_vector,sources) {
-  for (i in species_vector) {
-    sID <- i
-    new_sID <- paste0("speciesID <- ", as.character(sID))
+run_ID <- function(id_vector,id_name, old_id, sources) {
+  for (i in id_vector) {
+    id <- i
+    new_id <- paste0(id_name, " <- ", as.character(id))
     lines <- get_file_lines("settings.R")
-    new_lines <- replace_patterns(c(old_sID),c(new_sID),lines)
+    new_lines <- replace_patterns(c(old_id),c(new_id),lines)
     writeLines(new_lines,"settings.R")
-    old_sID <- new_sID
+    old_id <- new_id
     sapply(sources, source)
   }
 }
@@ -75,12 +75,15 @@ run_species <- function(species_vector,sources) {
 # Initialise variables
 
 # R files to run (vector in order)
+multi <- c("multiSiteExample.R")
 multi_and_plots <- c("multiSiteExample.R", "plots.R")
 multi_and_outputs <- c("multiSiteExample.R", "output_tables.R")
+plot_tables <- c("plot_tables.R")
 
 # Vector values for loop. Values correspond to ids
 species_vector <- c(1:4)
 estimated_vector <- c(1:2)
+layer_vector <- c(1:2)
 
 # 1. Get file lines
 lines <- get_file_lines("settings.R")
@@ -88,11 +91,12 @@ lines <- get_file_lines("settings.R")
 # 2. Get lines to modify
 old_sID <- get_line(lines, "speciesID")
 old_eID <- get_line(lines, "estimatedID")
+old_lID <- get_line(lines, "layerID")
 
-
-run_species(species_vector, multi_and_outputs)
+# run_ID(layer_vector, "layerID", old_lID, multi)
+# run_ID(species_vector, "speciesID", old_sID, multi_and_outputs)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots)
-
+run_ID(layer_vector, "layerID", old_lID, plot_tables)
 
 
 
