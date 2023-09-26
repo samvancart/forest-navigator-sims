@@ -44,7 +44,7 @@ nLayers <- (df_nSites %>% count(groupID))$n
 
 
 
-fileName <- (paste0("multiOut_",layerNames[layerID],".rdata"))
+fileName <- (paste0(rdata_path, "multiOut_",layerNames[layerID],".rdata"))
 load(fileName)
 
 print(fileName)
@@ -99,6 +99,6 @@ print(unique(species21$species))
 
 
 # Write rdata
-fileName <- paste0("tabX_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "tabX_", layerNames[layerID],".rdata")
 save(tabX, file=fileName)
 

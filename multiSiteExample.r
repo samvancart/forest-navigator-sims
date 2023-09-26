@@ -41,6 +41,8 @@ build_siteInfo <- function(param_table) {
 # Preciptran <- data.matrix(Precipdf)
 # TAirtran <- data.matrix(TAirdf)
 
+# VPD from hPa to kPa
+# VPDtran <- VPDtran*0.1
 
 #number of sites in this case matches the number of climIDs
 nSites <- nrow(PARtran)
@@ -59,7 +61,7 @@ soilDepth <- 1000
 # create siteInfo matrix
 siteID <- soilData[,1]
 climID <- soilData[,14]
-
+# 
 # SiteType estimated
 estimated <- estimatedList[[estimatedID]]
 soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
@@ -122,25 +124,35 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   CO2= CO2tran,
   Precip=Preciptran,
   TAir=TAirtran,
-  defaultThin=0, 
+  defaultThin=0,
   ClCut=0)
 
 initPrebas$nLayers
 siteInfo
 
 
-# run multisite model
+# Run multisite model
 modOut <- multiPrebas(initPrebas)
 
+# Save as rdata
+fileName <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
+save(modOut, file=fileName)
 
-modOut$multiOut[4,,11,,1]
-dim(modOut$multiOut)
 
-# get output
+# Get multiOut output
 multiOut<-modOut$multiOut
 
-
-fileName <- paste0("multiOut_", layerNames[layerID],".rdata")
-
+# Save as rdata
+fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
 save(multiOut, file=fileName)
+
+
+
+
+
+
+
+
+
+
 

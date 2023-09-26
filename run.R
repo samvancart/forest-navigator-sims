@@ -79,6 +79,8 @@ multi <- c("multiSiteExample.R")
 multi_and_plots <- c("multiSiteExample.R", "plots.R")
 multi_and_outputs <- c("multiSiteExample.R", "output_tables.R")
 plot_tables <- c("plot_tables.R")
+util_f <- c("utility_functions.R")
+sums_means <- c("modout_sums_and_means.R")
 
 # Vector values for loop. Values correspond to ids
 species_vector <- c(1:4)
@@ -94,9 +96,11 @@ old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
 
 # run_ID(layer_vector, "layerID", old_lID, multi)
-# run_ID(species_vector, "speciesID", old_sID, multi_and_outputs)
+run_ID(species_vector, "speciesID", old_sID, multi_and_outputs)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots)
-run_ID(layer_vector, "layerID", old_lID, plot_tables)
+# run_ID(layer_vector, "layerID", old_lID, plot_tables)
+# run_ID(layer_vector, "layerID", old_lID, util_f)
+# run_ID(layer_vector, "layerID", old_lID, sums_means)
 
 
 

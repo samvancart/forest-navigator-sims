@@ -6,19 +6,19 @@ get_plotsVars <- function(plotsVars,variableX,siteX,tabX,layerNumber) {
   plotsVars[[variableX]] <- ggplot(data=tabX[variable==variableX & site==siteX],  aes(x=year,y=value,col=species, group=layer)) +
     geom_line() +
     ggtitle(paste0("Site ",siteX," ",layerNames[layerNumber]),variableX)
-  
+
   return(plotsVars)
 }
 
 
 
 # Load tabX trees
-fileName <- (paste0("tabX_",layerNames[1],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_",layerNames[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0("tabX_",layerNames[2],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_",layerNames[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -26,8 +26,8 @@ tabX_clusters <- tabX
 nSites <- max(as.integer(levels(tabX_clusters$site)))
 
 # Load multiOut for varNames
-fileName <- (paste0("multiOut_",layerNames[1],".rdata"))
-load(fileName)
+fileName <- (paste0(rdata_path, "multiOut_",layerNames[1],".rdata"))
+# load(fileName)http://127.0.0.1:23265/graphics/plot_zoom_png?width=1707&height=1004
 # Set varNames
 varNames <- as.vector(unlist(dimnames(multiOut)[3]))
 
@@ -48,7 +48,7 @@ for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
     plotsVars_trees <- get_plotsVars(plotsVars_trees,variableX,siteX,tabX_trees,1)
     plotsVars_clusters <- get_plotsVars(plotsVars_clusters,variableX,siteX,tabX_clusters,2)
-    
+
   }
   pdf_out <- paste0(layerNames[2],"_as_layers/site_",siteX)
   side_by_side <- paste0("side_by_side/site_", siteX)
@@ -82,4 +82,14 @@ for (siteX in 1:nSites) {
 # for(variableX in varNames[varXs]){
 #   print(grid.arrange(plotsVars_trees[[variableX]],plotsVars_clusters[[variableX]],ncol=2))
 # }
+
+
+
+
+
+
+
+
+
+
 
