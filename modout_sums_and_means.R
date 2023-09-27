@@ -7,6 +7,10 @@ source("settings.R")
 fileName <- (paste0(rdata_path, "modOut_",layerNames[layerID],".rdata"))
 load(fileName)
 
+
+# Set varNames
+varNames <- as.vector(unlist(dimnames(modOut$multiOut)[3]))
+
 # NFI DATA
 nfi_path <- nfi_sweden_paths[layerID]
 df <- fread(nfi_path)
@@ -33,7 +37,7 @@ names_li <- list()
 for(i in 1:length(varXs_sums)){
   sum <- apply(modOut$multiOut[,,varXs_sums[i],,1],1:2,sum)
   li[[i]] <- sum
-  names_li[i] <- varNames[varXs_sums[i]]
+  names_li <- append(names_li, varNames[varXs_sums[i]])
 }
 
 # Add Lc
@@ -64,6 +68,8 @@ tabX <- data.table()
 for (i in 1:length(li)) {
   tabXx <- data.table(melt(li[[i]]))
   tabXx$variable <- names_li[i]
+  tabXx$LayerType <- layerID
+  tabXx$LayerName <- layerNames[layerID]
   tabX <- rbind(tabXx,tabX)
 }
 

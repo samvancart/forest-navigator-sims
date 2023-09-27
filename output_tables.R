@@ -5,6 +5,7 @@ source("settings.R")
 # Functions
 
 write_output_table <- function(tabX,clim_sites,var,varName,species){
+  
   # Array to matrix and transpose
   table <- t(as.matrix(tabX[,,var]))
   
@@ -32,21 +33,27 @@ load(fileName)
 species <- speciesNames[speciesID]
 varXs <- c(11:14,17,18,30,43)
 
+# Get crown length: H-hc_base
 lc <- multiOut[,,11,1,1] - multiOut[,,14,1,1]
+
+# Get other vars
 tabXst <- multiOut[,,varXs,1,1]
 
-# Set Lc dimensions
-dim(lc) <- c(21,121,1)
-
 # Set varNames
-varNames <- as.vector(unlist(dimnames(tabXst)[3]))
+namesVars <- as.vector(unlist(dimnames(tabXst)[3]))
 
+# Get original siteIDs from climate data
 climateData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_only_prebas_picus_sites.csv")
 clim_sites <- unique(climateData$siteID)
 
+nSites <- length(clim_sites)
+nYears <- length(unique(year(climateData$time)))
 
-for (i in 1:length(varNames)) {
-  write_output_table(tabXst,clim_sites,i,varNames[i],species)
+# Set Lc dimensions
+dim(lc) <- c(nSites, nYears, 1)
+
+for (i in 1:length(namesVars)) {
+  write_output_table(tabXst,clim_sites,i,namesVars[i],species)
 }
 
 write_output_table(lc,clim_sites,1,"Lc",species)
