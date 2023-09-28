@@ -6,6 +6,10 @@ library(gridExtra)
 library(dplyr)
 library(factoextra)
 library(hash)
+library(lubridate)
+library(ncdf4)
+library(geosphere)
+
 
 layerID <- 2
 speciesID <- 4
