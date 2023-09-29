@@ -44,6 +44,9 @@ build_siteInfo <- function(param_table) {
 ## VPD from hPa to kPa
 # VPDtran_kpa <- VPDtran*0.1
 
+# fileName <- paste0(rdata_path, "weather_inputs",".rdata")
+# save(PARtran,VPDtran_kpa,CO2tran,Preciptran,TAirtran, file=fileName)
+
 #number of sites in this case matches the number of climIDs
 nSites <- nrow(PARtran)
 

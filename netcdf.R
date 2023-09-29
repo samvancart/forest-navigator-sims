@@ -69,8 +69,10 @@ system.time(
         start = c(.$lon_idxs, .$lat_idxs, 1),
         count = c(1, 1, -1)
       )
-      data.frame(siteID = siteIDs,lon = dim_lon[.$lon_idxs], lat = dim_lat[.$lat_idxs], time = as.character(dim_time),
-                 req_var = tmp)
+      # data.frame(lon = dim_lon[.$lon_idxs], lat = dim_lat[.$lat_idxs], time = as.character(dim_time),
+      #            req_var = tmp)
+      data.frame(location = as.character(.$row), date = 1:length(tmp),
+                 req.var = tmp)
 
     })
 )
@@ -78,6 +80,8 @@ system.time(
 
 df <- dat.out
 unique(df[,2])
+unique(df[,3])
+
 
 # df$time <- sapply(df$date, function(x) as.character(dim_time[x]))
 
