@@ -1,6 +1,6 @@
 # Helper functions
 
-source("settings.R")
+source('scripts/settings.R')
 
 # Calculate basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
 get_basal_area_nfi_sweden <- function(x) {

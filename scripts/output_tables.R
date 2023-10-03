@@ -1,6 +1,6 @@
 # Output variables to csv: Years as rows and sites as columns.
 
-source("settings.R")
+source('scripts/settings.R')
 
 # Functions
 

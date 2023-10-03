@@ -1,4 +1,4 @@
-
+source('scripts/settings.R')
 # Run scripts with different settings
 
 

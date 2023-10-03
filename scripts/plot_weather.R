@@ -1,4 +1,4 @@
-source('settings.R')
+source('scripts/settings.R')
 
 get_plotsVars <- function(plotsVars,variableX,siteX,tabX) {
   plotsVars[[variableX]] <- ggplot(data=tabX[variable==variableX & site==siteX],aes(x=day,y=value,group=variable)) +

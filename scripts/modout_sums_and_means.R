@@ -1,7 +1,7 @@
 
 # Sums and averages for modOut vars
 
-source("settings.R")
+source('scripts/settings.R')
 
 
 fileName <- (paste0(rdata_path, "modOut_",layerNames[layerID],".rdata"))

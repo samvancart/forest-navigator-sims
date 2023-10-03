@@ -1,6 +1,5 @@
 
-
-source("settings.R")
+source('scripts/settings.R')
 
 
 # Functions
