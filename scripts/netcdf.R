@@ -129,23 +129,28 @@ get_netcdf <- function(netCdf_path,sites_path, req_var,
 
 
 chelsa_df <- get_netcdf(chelsa_path,
-                        sites_path, 
+                        sites_path,
                         req_var = c("pr","rsds","tas","tasmax","tasmin"),
+                        # req_var = c("pr","tasmin"),
                         lon_var = "lon",
                         lat_var = "lat",
                         time_var = "time",
                         coords = NULL)
 
 eobs_df <- get_netcdf(eobs_path,
-                        sites_path, 
-                        req_var = c("tg"),
+                        sites_path,
+                        req_var = c("hu","qq","rr","tg","tn", "tx"),
+                        lon_var = "lon",
+                        lat_var = "lat",
                         time_var = "time",
                         coords = NULL)
 
 print(chelsa_df)
+print(sapply(chelsa_df,anyNA))
 print(eobs_df)
-
-
+print(sapply(eobs_df,anyNA))
+nrows_na <- nrow(eobs_df[is.na(eobs_df$hu),])
+print(eobs_df[is.na(eobs_df$hu),],n=nrows_na)
 
 
 

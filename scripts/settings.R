@@ -37,11 +37,11 @@ nfi_sweden_paths <- c(paste0(nfi_sweden_path,"sorted_group_species_cIDs_basal_ar
 rdata_path <- "data/rdata/"
 
 # netcdf
-chelsa_file <- "all_vars"
-chelsa_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/netcdf/CHELSA_EU/combined/",chelsa_file,".nc")
+chelsa_file <- "chelsa_1979_2016_all_vars"
+chelsa_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/netcdf/CHELSA_EU/combined/all/",chelsa_file,".nc")
 
-eobs_file <- "tg_ens_mean_0.1deg_reg_1995-2010_v27.0e"
-eobs_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/data/netcdf/vars/tg/",eobs_file,".nc")
+eobs_file <- "eobs_1979_2022_all_vars"
+eobs_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/data/netcdf/combined/all/",eobs_file,".nc")
 
 # sites
 sites_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/prebas_sites_coords.csv")
