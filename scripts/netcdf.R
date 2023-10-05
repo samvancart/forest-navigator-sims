@@ -12,7 +12,15 @@ source('scripts/settings.R')
 # lon_var (character) = Name of longitude dimension in netcdf file. DEFAULT = longitude. 
 # lat_var (character) = Name of latitude dimension in netcdf file. DEFAULT = latitude.
 # round_dec (integer) = Number of decimals to round coordinates by. DEFAULT = 3.
-# req_nc_coords (matrix array) OPTIONAL = table of lon and lat coordinate pairs to get from netcdf. DEFAULT = NULL.
+# req_nc_coords (matrix array) OPTIONAL = Table of lon and lat coordinate pairs to get from netcdf. DEFAULT = NULL.
+# Returns:
+# tibble::as_tibble(data.table): Table with the requested data. 
+# Columns: 
+# siteID = Id for each requested coordinate pair.
+# time = Time in yyyy-mm-dd format.     
+# lon = Longitude.
+# lat = Latitude.
+# var = Columns with requested variable(s).
 
 
 get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteIDs = NULL ,time_var = "time", 
@@ -76,7 +84,7 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
           )
 
           data.frame(siteID = siteIDs[.$row], time = dim_time, lon = req_nc_coords[.$row,1], 
-                     lat = req_nc_coords[.$row,2], var = tmp,row.names = NULL)
+                     lat = req_nc_coords[.$row,2], var = tmp, row.names = NULL)
           
         })
     )
