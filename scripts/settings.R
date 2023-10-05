@@ -30,6 +30,10 @@ layerNames <- c("Trees","Clusters")
 # estimatedList <- list(estimated_user, estimated_quantile)
 # estimatedNames <- c("User", "Quantile")
 
+# climate
+historical_climate_data_gitlab_path = paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_climate_data.csv")
+
+
 # nfi
 nfi_sweden_path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/")
 nfi_sweden_paths <- c(paste0(nfi_sweden_path,"sorted_group_species_cIDs_basal_area.csv"), paste0(nfi_sweden_path,"cluster_weighted_means.csv"))
@@ -42,6 +46,8 @@ chelsa_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigat
 
 eobs_file <- "eobs_1979_2022_all_vars"
 eobs_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/data/netcdf/combined/all/",eobs_file,".nc")
+eobs_var <- "hu"
+eobs_folder <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/data/netcdf/vars/",eobs_var,"/")
 
 # sites
 sites_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/prebas_sites_coords.csv")
