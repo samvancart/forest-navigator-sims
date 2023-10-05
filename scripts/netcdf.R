@@ -5,21 +5,21 @@ source('scripts/settings.R')
 # Get variable values from netcdf by nearest neighbour coordinates.
 # Variables:
 # netCdf_path (character) = Path to netcdf file.
-# req_coords (data.table) = Requested coordinates in a table with columns lon and lat.
+# req_coords (matrix array) = Requested coordinates in a table with columns lon and lat.
 # req_var (character vector) = Requested variable name(s) in netcdf file.
-# siteIDs (integer vector) OPTIONAL = Ids associated with requested coordinate pairs. Should match number of coordinate pairs. DEFAULT = NULL
+# siteIDs (integer vector) OPTIONAL = Ids associated with requested coordinate pairs. Should match number of coordinate pairs. DEFAULT = NULL.
 # time_var (character) = Name of time dimension in netcdf file. DEFAULT = time.
 # lon_var (character) = Name of longitude dimension in netcdf file. DEFAULT = longitude. 
 # lat_var (character) = Name of latitude dimension in netcdf file. DEFAULT = latitude.
 # round_dec (integer) = Number of decimals to round coordinates by. DEFAULT = 3.
-# req_nc_coords (integer vector) OPTIONAL = Indexes of coordinates to get in netcdf. DEFAULT = NULL
+# req_nc_coords (matrix array) OPTIONAL = table of lon and lat coordinate pairs to get from netcdf. DEFAULT = NULL.
 
 
 get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteIDs = NULL ,time_var = "time", 
                                          lon_var = "longitude", lat_var = "latitude", round_dec = 3, req_nc_coords = NULL) {
   # Open file
   nc <- nc_open(netCdf_path)
-
+    
   # Produce siteIDs if none are provided
   ifelse(is.null(siteIDs), siteIDs <- 1:nrow(req_coords), siteIDs<-siteIDs)
   
@@ -50,7 +50,6 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
     req_nc_coords <- round(nc_coords[ind,],round_dec)
 
   }
-  
   
   # Get lon and lat indexes in netcdf
   lon_idxs <- sapply(req_nc_coords[,1], function(x) which(unique(dim_lon) == x))
