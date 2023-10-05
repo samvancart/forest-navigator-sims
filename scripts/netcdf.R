@@ -7,11 +7,11 @@ source('scripts/settings.R')
 # netCdf_path (character) = Path to netcdf file.
 # req_coords (data.table) = Requested coordinates in a table with columns lon and lat.
 # req_var (character vector) = Requested variable name(s) in netcdf file.
-# siteIDs (integer vector) OPTIONAL = Ids for requested coordinate pairs. Should match number of coordinate pairs. DEFAULT = NULL
+# siteIDs (integer vector) OPTIONAL = Ids associated with requested coordinate pairs. Should match number of coordinate pairs. DEFAULT = NULL
 # time_var (character) = Name of time dimension in netcdf file. DEFAULT = time.
 # lon_var (character) = Name of longitude dimension in netcdf file. DEFAULT = longitude. 
 # lat_var (character) = Name of latitude dimension in netcdf file. DEFAULT = latitude.
-# round_dec (integer) = Decimals to round coordinates by. DEFAULT = 3.
+# round_dec (integer) = Number of decimals to round coordinates by. DEFAULT = 3.
 # req_nc_coords (integer vector) OPTIONAL = Indexes of coordinates to get in netcdf. DEFAULT = NULL
 
 
@@ -20,7 +20,8 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
   # Open file
   nc <- nc_open(netCdf_path)
 
-  ifelse(is.null(siteIDs),siteIDs <- 1:nrow(req_coords),siteIDs<-siteIDs)
+  # Produce siteIDs if none are provided
+  ifelse(is.null(siteIDs), siteIDs <- 1:nrow(req_coords), siteIDs<-siteIDs)
   
   # Get lon,lat and time. Round lon and lat and format lon
   dim_lon <- round(ncvar_get(nc, varid = lon_var),round_dec)
@@ -35,12 +36,12 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
   date <- ymd(t_dstr)
   dim_time <- date + dim_time
   
-  
+  # Get coordinates by index in netcdf. Skip if provided.
   if (is.null(req_nc_coords)) {
     # Coordinates matrix
     nc_coords <- as.matrix(expand.grid(dim_lon, dim_lat))
     
-    # Get nearest coordinates indexes from nc_coords
+    # Get indexes in netcdf for nearest neighbour coordinates
     ind <- sapply(1:nrow(req_coords), function(x) {
       which.min(geosphere::distHaversine(req_coords[x, ], nc_coords))
     })
@@ -58,7 +59,6 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
   # Matrix of indexes of coordinates in netcdf
   coord_idxs <- cbind(lon_idxs,lat_idxs)
   
-  
   df_all <- data.table()
   
   # Get requested variables tibble
@@ -75,8 +75,7 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
             start = c(.$lon_idxs, .$lat_idxs, 1),
             count = c(1, 1, -1)
           )
-          # data.frame(siteID = siteIDs[.$row], time = dim_time, lon = dim_lon[lon_idxs[.$row]], lat = dim_lat[lat_idxs[.$row]],
-          #            var = tmp)
+
           data.frame(siteID = siteIDs[.$row], time = dim_time, lon = req_nc_coords[.$row,1], 
                      lat = req_nc_coords[.$row,2], var = tmp,row.names = NULL)
           
@@ -85,7 +84,8 @@ get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteI
     # Change req_var column name to actual variable name
     colnames(df)[which(names(df) == "var")] <- req_var[i]
     
-    ifelse(i==1,df_all<-df,df_all<-as_tibble(cbind(df_all,df[ncol(df)])))
+    # Build tibble with all requsted variables
+    ifelse(i==1, df_all<-df, df_all<-as_tibble(cbind(df_all,df[ncol(df)])))
   }
   
   nc_close(nc)
