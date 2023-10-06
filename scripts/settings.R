@@ -50,4 +50,4 @@ eobs_var <- "hu"
 eobs_folder <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/data/netcdf/vars/",eobs_var,"/")
 
 # sites
-sites_path <- paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/prebas_sites_coords.csv")
+sites_path <- paste0("data/climate/provided/prebas_sites_coords.csv")
