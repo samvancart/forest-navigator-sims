@@ -1,4 +1,3 @@
-source('scripts/settings.R')
 
 # Functions
 
@@ -149,40 +148,4 @@ get_netcdf <- function(netCdf_path,sites_path, req_var,
 }
 
 
-eobs_df <- get_netcdf(
-                      eobs_path,
-                      sites_path,
-                      req_var = c("hu","qq","rr","tg","tn", "tx"),
-                      lon_var = "lon",
-                      lat_var = "lat",
-                      time_var = "time",
-                      coords = NULL)
-
-# print(eobs_df)
-
-# Get co2
-co2_df <- read.csv("data/climate/provided/co2_annual_1850_2021.csv", header = T)
-co2_df$CO2[co2_df$year>=2017] <- co2_df$CO2[co2_df$year==2017]
-co2_df[nrow(co2_df)+1,] <- c(2022,405.22)
-years <- as.numeric(format(eobs_df$time,'%Y'))
-co2_vals <- sapply(years, function(x) co2_df$CO2[which(co2_df$year==x)])
-eobs_df$co2 <- co2_vals
-
-
-# Fill missing values
-na_cols <- which(sapply(eobs_df,anyNA)==T)
-eobs_df[na_cols] <- na.approx(eobs_df[na_cols])
-
-# Par and vpd
-eobs_df["rss"] <- eobs_df["qq"]*0.0864
-eobs_df["par"] <- eobs_df["rss"]*0.44*4.56
-tair <- eobs_df$tn
-svp <- 610.7 * 10**(7.5*tair/(237.3+tair))
-eobs_df$vpd <- svp * (1-(eobs_df$hu/100)) / 1000
-
-eobs_df
-tail(eobs_df)
-
-print(eobs_df)
-print(sapply(eobs_df,anyNA))
 

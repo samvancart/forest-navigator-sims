@@ -9,6 +9,7 @@ library(hash)
 library(lubridate)
 library(ncdf4)
 library(geosphere)
+library(zoo)
 
 
 layerID <- 2
