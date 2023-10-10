@@ -1,4 +1,3 @@
-
 source('scripts/settings.R')
 
 # Functions

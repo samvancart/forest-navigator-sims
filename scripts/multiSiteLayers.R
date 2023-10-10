@@ -1,45 +1,24 @@
-
 source('scripts/settings.R')
+source('./r/multiSite.R')
 
 
-# Functions
+# Get tran files
 
-build_siteInfo <- function(param_table) {
-  siteInfo <- param_table
+## Reading tran csv files is very slow so instead read df and create tran tables.
 
-  colnames(siteInfo) <- c("siteID", "climID", "siteType", "SWinit", "CWinit",
-                          "SOGinit", "Sinit", "nLayers", "nSpecies", "soildepth",
-                          "effective field capacity", "permanent wilting point")
+# Get eobs df
+df <- as_tibble(read.csv(prebas_eobs_path, header=T))
 
-  siteInfo[,1] <- 1:nSites
-  siteInfo[,2] <- 1:nSites
+# # Get gitlab df
+# df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
 
-  return(siteInfo)
-}
+PARtran <- data.matrix(get_prebas_tran(df, "par"))
+VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
+CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
+Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
+TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
 
-
-
-
-
-
-# load csv as dataframe
-
-# PARdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/PAR_tran.csv",header = T)
-# VPDdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/VPD_tran.csv",header = T)
-# CO2df <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/CO2_tran.csv",header = T)
-# Precipdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/Precip_tran.csv",header = T)
-# TAirdf <- read.csv("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/tran/TAir_tran.csv",header = T)
-
-# # Load soilData: Load from settings.R
-# soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
-
-# dataframe to matrix
-
-# PARtran <- data.matrix(PARdf)
-# VPDtran <- data.matrix(VPDdf)
-# CO2tran <- data.matrix(CO2df)
-# Preciptran <- data.matrix(Precipdf)
-# TAirtran <- data.matrix(TAirdf)
+# soilData loaded from settings.R
 
 ## VPD from hPa to kPa
 # VPDtran_kpa <- VPDtran*0.1
@@ -53,13 +32,12 @@ nSites <- nrow(PARtran)
 #number of simulation years
 nYears <- floor(ncol(PARtran)/365)
 
-# soil parameters
-
+# Soil parameters
 WP <- soilData[,13]/1000
 FC <- soilData[,12]/1000
 soilDepth <- 1000
 
-# create siteInfo matrix
+# Create siteInfo matrix
 siteID <- soilData[,1]
 climID <- soilData[,14]
 #
@@ -71,9 +49,7 @@ soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10))
 swInit <- rep(c(160), times=nSites)
 zeros <- rep(c(0), times=nSites)
 sInit <- rep(c(20), times=nSites)
-# nLayersCol <- rep(c(nLayers), times=nSites)
 nLayersCol <- rep(c(1), times=nSites)
-# nSpeciesCol <- rep(c(nSpecies), times=nSites)
 nSpeciesCol <- rep(c(1), times=nSites)
 soilDepthCol <- rep(c(soilDepth), times=nSites)
 
@@ -146,23 +122,6 @@ multiOut<-modOut$multiOut
 # Save as rdata
 fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
 save(multiOut, file=fileName)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

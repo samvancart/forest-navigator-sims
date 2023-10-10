@@ -22,23 +22,26 @@ speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 layerNames <- c("Trees","Clusters")
 
 # Load soilData
-# soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
+soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
 
 # SiteType estimates either by user, or by quantile
-# estimatedID <- 2
-# estimated_user <- c(3.5,4.5,6,7)
-# estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
-# estimatedList <- list(estimated_user, estimated_quantile)
-# estimatedNames <- c("User", "Quantile")
+estimatedID <- 2
+estimated_user <- c(3.5,4.5,6,7)
+estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
+estimatedList <- list(estimated_user, estimated_quantile)
+estimatedNames <- c("User", "Quantile")
 
 # climate
 historical_climate_data_gitlab_path = paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_climate_data.csv")
+prebas_gitlab_path <- paste0("data/climate/provided/historical_only_prebas_picus_sites.csv")
+prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
 
 
 # nfi
 nfi_sweden_path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/")
 nfi_sweden_paths <- c(paste0(nfi_sweden_path,"sorted_group_species_cIDs_basal_area.csv"), paste0(nfi_sweden_path,"cluster_weighted_means.csv"))
 
+# rdata
 rdata_path <- "data/rdata/"
 
 # netcdf

@@ -1,24 +1,5 @@
 source('scripts/settings.R')
-
-# Functions
-
-get_plotsVars <- function(plotsVars,variableX,siteX,tabX,layerNumber) {
-  plotsVars[[variableX]] <- ggplot(data=tabX[variable==variableX & site==siteX],  aes(x=year,y=value,col=species, group=layer)) +
-    geom_line() +
-    ggtitle(paste0("Site ",siteX," ",layerNames[layerNumber]),variableX)
-
-  return(plotsVars)
-}
-
-get_sums_means_plotsVars <- function(plotsVars,variableX,siteX,tabX) {
-  plotsVars[[variableX]] <- ggplot() +
-    geom_line(data=tabX[variable==variableX & site==siteX],  aes(x=year,y=value,group=LayerType,col=LayerName)) +
-    labs(col = "Layer Name") +
-    ggtitle(paste0("Site ",siteX," "),variableX)
-
-  return(plotsVars)
-}
-
+source('./r/plots.R')
 
 
 # Load tabX trees
