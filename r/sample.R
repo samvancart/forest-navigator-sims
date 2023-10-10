@@ -5,14 +5,15 @@
 # Params:
 # original (integer vector): original data
 # new (integer vector): data to generate
-# Returns: data.table: A table with columns k and v 
-# k: All the data (original + generated) representing keys
-# v: Sampled data representing values
+# Returns:
+# data.table: A table with columns k and v 
+# k: All the data (original + new) representing keys
+# v: Generated data representing values
 
 get_samples_df <- function(original, new, seed=1234, replace=T) {
   # Define variables
   all <- c(original, new)
-  nSample <- length(new) ## Number of years that need to be sampled
+  nSample <- length(new) ## Number of values that need to be sampled
   
   # Create table of keys and values
   df <- data.table(k = all, v = all)
@@ -20,7 +21,7 @@ get_samples_df <- function(original, new, seed=1234, replace=T) {
   
   set.seed(seed)
   
-  # Create sample years and fill df
+  # Create sample data and fill df
   sampleX <- sample(x=original, size=nSample, replace = replace)
   df <- df[k %in% new, v:=sampleX] ## Fill the table
   
