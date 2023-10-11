@@ -1,21 +1,7 @@
 source('scripts/settings.R')
 source('./r/plots.R')
 
-fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
-load(fileName)
-
-species <- speciesNames[speciesID]
-
-estimatedName <- estimatedNames[estimatedID]
-estimated <- estimatedList[[estimatedID]]
-
-# define variables
-varXs <- c(11:14,17,18,30,43)
-
-# Length of crown: H-Hc
-lc_stN <- multiOut[,,11,,1] - multiOut[,,14,,1]
-lc_st1 <- multiOut_st1[,,11,,1] - multiOut_st1[,,14,,1]
-lc_st5 <- multiOut_st5[,,11,,1] - multiOut_st5[,,14,,1]
+# Functions
 
 # Melt Lc
 melt_lc <- function(lc,runID,siteType){
@@ -25,6 +11,30 @@ melt_lc <- function(lc,runID,siteType){
   melt_lc$runID <- runID
   return(melt_lc)
 }
+
+
+
+
+fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
+load(fileName)
+
+species <- speciesNames[speciesID]
+
+estimatedName <- estimatedNames[estimatedID]
+estimated <- estimatedList[[estimatedID]]
+
+# Define variables
+varXs <- c(11:14,17,18,30,43)
+
+# Set varNames
+varNames <- as.vector(unlist(dimnames(multiOut)[3]))
+
+# Length of crown: H-Hc
+lc_stN <- multiOut[,,11,,1] - multiOut[,,14,,1]
+lc_st1 <- multiOut_st1[,,11,,1] - multiOut_st1[,,14,,1]
+lc_st5 <- multiOut_st5[,,11,,1] - multiOut_st5[,,14,,1]
+
+
 
 # Build long format table
 tabX <- data.table(melt(multiOut_st1[,,varXs,1,1]),SiteType=1); tabX$runID ="st1"
@@ -58,22 +68,14 @@ tabX$runID <- as.factor(tabX$runID)
 plotsVars <- list()
 
 
-# Plot with shadow
+# Plot with shadow. CHECK DATA FROM IN SETTINGS
 for(variableX in varNames[varXs]){
-  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX)
+  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,data_from)
 }
 
-# display all plots in grid
-# grid.arrange(grobs = plotsVars)
-# dev.off
 
 # plots to pdf
-pdf_out_eobs <- paste0("eobs/", species, "_plots_", estimatedName)
-pdf_out_gitlab <- paste0("gitlab/", species, "_plots_", estimatedName)
-
-
-plot_path <- paste0("data/plots/by_species/", pdf_out_eobs, ".pdf")
-# plot_path <- paste0("data/plots/by_species/", pdf_out_gitlab, ".pdf")
+plot_path <- get_by_species_plot_path(species, estimatedName, data_from)
 
 pdf(plot_path)
 for(variableX in varNames[varXs]){
@@ -85,3 +87,10 @@ dev.off()
 for(variableX in varNames[varXs]){
   print(plotsVars[[variableX]])
 }
+
+
+
+
+# display all plots in grid
+# grid.arrange(grobs = plotsVars)
+# dev.off

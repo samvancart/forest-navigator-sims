@@ -2,26 +2,33 @@ source('scripts/settings.R')
 source('./r/multiSite.R')
 
 
+# Run multisite prebas for different layers (trees or clusters) based on NFI data. Ids in settings.R.
+# Produces modOut_<layer name> and and multiOut_<layer name> rdata files.
+# Run for both layers from run.R.
+
+
 # Get tran files
 
 ## Reading tran csv files is very slow so instead read df and create tran tables.
 
-# Get eobs df
-df <- as_tibble(read.csv(prebas_eobs_path, header=T))
+# # Get eobs df
+# df <- as_tibble(read.csv(prebas_eobs_path, header=T))
 
 # # Get gitlab df
 # df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
 
-PARtran <- data.matrix(get_prebas_tran(df, "par"))
-VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
-CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
-Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
-TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
+# PARtran <- data.matrix(get_prebas_tran(df, "par"))
+# VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
+# CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
+# Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
+# TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
 
 # soilData loaded from settings.R
 
 ## VPD from hPa to kPa
 # VPDtran_kpa <- VPDtran*0.1
+## Run only once!!!
+# VPDtran <- VPDtran*0.1
 
 # fileName <- paste0(rdata_path, "weather_inputs",".rdata")
 # save(PARtran,VPDtran_kpa,CO2tran,Preciptran,TAirtran, file=fileName)
@@ -97,7 +104,7 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   siteInfo = siteInfo,
   multiInitVar = multiInitVar,
   PAR = PARtran,
-  VPD = VPDtran_kpa,
+  VPD = VPDtran, # Check VPD or VPDtran_kpa
   CO2= CO2tran,
   Precip=Preciptran,
   TAir=TAirtran,

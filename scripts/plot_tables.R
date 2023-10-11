@@ -1,5 +1,10 @@
 source('scripts/settings.R')
 
+# multiOut vars to tabX_layer
+
+# Run multiSiteLayers.R first to get multiOut!!!
+
+
 # Functions
 
 
@@ -90,7 +95,6 @@ varXs <- append(varXs,55)
 tabX <- format_table(tabX)
 
 # Remove non existent layers
-
 tabX <- filter(tabX,layer<=nLayers[site])
 
 species21 <- filter(tabX,site==21)

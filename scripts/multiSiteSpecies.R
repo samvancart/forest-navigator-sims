@@ -1,24 +1,28 @@
 source('scripts/settings.R')
 source('./r/multiSite.R')
 
+# Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in settings.R.
+# Produces multiOut_spID<speciesID> rdata file.
+# Run for all species and both estimated N values from run.R.
+
 
 
 # Get tran files
 
 ## Reading tran csv files is very slow so instead read df and create tran tables.
 
-# Get eobs df
-df <- as_tibble(read.csv(prebas_eobs_path, header=T))
+# # Get eobs df
+# df <- as_tibble(read.csv(prebas_eobs_path, header=T))
 
 # # Get gitlab df
 # df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
 
 
-PARtran <- data.matrix(get_prebas_tran(df, "par"))
-VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
-CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
-Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
-TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
+# PARtran <- data.matrix(get_prebas_tran(df, "par"))
+# VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
+# CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
+# Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
+# TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
 
 
 
@@ -26,7 +30,6 @@ TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
 
 ## VPD from hPa to kPa
 # VPDtran_kpa <- VPDtran*0.1
-
 
 # Number of sites in this case matches the number of climIDs
 nSites <- nrow(PARtran)
@@ -64,7 +67,7 @@ siteInfo <- build_siteInfo(param_table)
 
 
 
-# Create mulitInitVar
+# Create multiInitVar
 multiInitVar <- array(NA,dim=c(nSites,7,nLayers))
 multiInitVar[,1,] <- speciesID
 multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]

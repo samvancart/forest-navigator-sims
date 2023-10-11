@@ -1,5 +1,7 @@
 
-# Sums and averages for modOut vars
+# Sums and averages of modOut vars to tabX_sums_means 
+
+# Run multiSiteLayers.R first to get modOut!!!
 
 source('scripts/settings.R')
 

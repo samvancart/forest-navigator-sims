@@ -13,7 +13,7 @@ library(zoo)
 
 
 layerID <- 2
-speciesID <- 4
+speciesID <- 1
 defaultThin <- 0
 ClCut <- 0
 # number of layers and species
@@ -25,7 +25,7 @@ layerNames <- c("Trees","Clusters")
 soilData <- fread("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/soil/soil_data_wp_fc_gitlab_picus_prebas.csv")
 
 # SiteType estimates either by user, or by quantile
-estimatedID <- 2
+estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(estimated_user, estimated_quantile)
@@ -55,3 +55,13 @@ eobs_folder <- paste0("C:/Users/samu/Documents/yucatrote/projects/sweden-may23/d
 
 # sites
 sites_path <- paste0("data/climate/provided/prebas_sites_coords.csv")
+
+
+# Data from for plots. Default = "".
+data_from <- "gitlab"
+
+
+
+
+
+
