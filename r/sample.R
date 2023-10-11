@@ -53,7 +53,7 @@ get_new_dates <- function(time, year) {
 
 # Df for one specific year in original data
 get_one_year_data <- function(x, df) {
-  one_year<-filter(eobs_df, year(time) == x[2])
+  one_year<-filter(df, year(time) == x[2])
   one_year$time <- get_new_dates(one_year$time, x[1])
   
   return(one_year)
@@ -62,8 +62,8 @@ get_one_year_data <- function(x, df) {
 
 # Check that old and new dataframes have matching data
 check_equal <- function(x,df_all,df,cols) {
-  new <- filter(eobs_df_all,year(time)==x[1])[, cols]
-  old <- filter(eobs_df,year(time)==x[2])[, cols]
+  new <- filter(df_all,year(time)==x[1])[, cols]
+  old <- filter(df,year(time)==x[2])[, cols]
   check <- setequal(new,old)
   return(check)
 }

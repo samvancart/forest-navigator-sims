@@ -4,6 +4,7 @@ source('./r/netcdf.R')
 source('./r/multiSite.R')
 
 
+
 # Get eobs df
 path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs.csv")
 df <- as_tibble(read.csv(path, header=T))
