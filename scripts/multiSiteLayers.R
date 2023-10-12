@@ -1,5 +1,5 @@
 source('scripts/settings.R')
-source('./r/multiSite.R')
+source('scripts/loadData.R')
 
 
 # Run multisite prebas for different layers (trees or clusters) based on NFI data. LayerIds in settings.R.
@@ -7,9 +7,9 @@ source('./r/multiSite.R')
 # Run for both layers from run.R.
 
 
-### Climate data loaded from settings.R ###
-### Soil data loaded from settings.R ###
-### SiteInfo created in settings.R ###
+### Climate data loaded from loadData.R ###
+### Soil data loaded from loadData.R ###
+### SiteInfo created in loadData.R ###
 
 print(paste0("Running multiSiteLayers.R for layer ", layerNames[layerID]))
 
@@ -68,7 +68,7 @@ modOut <- multiPrebas(initPrebas)
 # Save as rdata
 fileName <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
 save(modOut, file=fileName)
-print(paste0("modOut saved to ",rdata_path, "modOut_", layerNames[layerID],".rdata"))
+print(paste0("modOut saved to ",fileName))
 
 # Get multiOut output
 multiOut<-modOut$multiOut
@@ -76,7 +76,7 @@ multiOut<-modOut$multiOut
 # Save as rdata
 fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
 save(multiOut, file=fileName)
-print(paste0("multiOut saved to ",rdata_path, "multiOut_", layerNames[layerID],".rdata"))
+print(paste0("multiOut saved to ", fileName))
 
 
 

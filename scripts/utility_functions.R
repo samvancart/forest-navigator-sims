@@ -58,39 +58,51 @@ rename_col <- function(df,var,suffix){
 
 
 # # # NFI DATA
-# path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
-# df <- fread(path)
-# 
-# 
-# # data.table becomes tbl_df
-# df <- df %>%
-#   group_by(groupID)
-# 
-# # 1. Get aggregate sums for basal_areas
-# df_baLayers <- get_variable_sums(df, "basal_area")
-# 
-# # Sort
-# df_baLayers_sorted <- df_baLayers[with(df_baLayers,order(groupID,speciesID,clusterID)),]
-# 
-# # 2. Merge basal_area aggregate sums with original df
-# df_merged <- df %>% left_join(df_baLayers_sorted, by=c("groupID","speciesID","clusterID"))
-# 
-# # 3. Get weighted means for variables
-# dbh <- get_weighted_variable(df_merged,"Dbh")
-# h <- get_weighted_variable(df_merged,"Height")
-# age <- get_weighted_variable(df_merged,"Age")
-# 
-# # 4. Merge dfs
-# df_weighted <- merge(merge(merge(dbh,h),age),df_baLayers_sorted)
-# 
-# # Rename col
-# df_weighted <- df_weighted %>% rename("basal_area" = "basal_area_layer")
-# 
-# # Sort
-# df_weighted_sorted <- df_weighted[with(df_weighted,order(groupID,speciesID,clusterID)),]
-# df <- df_weighted_sorted
+path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/sorted_group_species_cIDs_basal_area.csv")
+df <- fread(path)
 
-# # Write csv
+# data.table becomes tbl_df
+df <- df %>%
+  group_by(groupID)
+
+
+# 1. Get aggregate sums for basal_areas and Multiplier_tree_Number_Ha
+df_baLayers <- get_variable_sums(df, "basal_area")
+df_tree_density <- get_variable_sums(df, "Multiplier_tree_Number_Ha")
+
+# Sort
+df_baLayers_sorted <- df_baLayers[with(df_baLayers,order(groupID,speciesID,clusterID)),]
+df_tree_density_sorted <- df_tree_density[with(df_tree_density,order(groupID,speciesID,clusterID)),]
+
+# 2. Merge basal_area aggregate sums with original df
+df_merged <- df %>% 
+  left_join(df_baLayers_sorted, by=c("groupID","speciesID","clusterID")) %>%
+  left_join(df_tree_density_sorted, by=c("groupID","speciesID","clusterID"))
+
+
+# 3. Get weighted means for variables
+dbh <- get_weighted_variable(df_merged,"Dbh")
+h <- get_weighted_variable(df_merged,"Height")
+age <- get_weighted_variable(df_merged,"Age")
+
+# 4. Calculate quadratic mean diameter for all layers and get df
+df_merged$dbh_qm_layer <- sqrt((df_merged$basal_area_layer/df_merged$Multiplier_tree_Number_Ha_layer)/pi)*200
+dbh_qm <- unique(df_merged[c("groupID","speciesID","clusterID","dbh_qm_layer")])
+
+# 4. Merge dfs
+df_weighted <- merge(merge(merge(merge(dbh,h),age),df_baLayers_sorted),dbh_qm)
+
+# Plot
+plot(df_merged$Dbh,df_merged$dbh_qm_layer)
+
+# Rename col
+df_weighted <- df_weighted %>% rename("basal_area" = "basal_area_layer")
+
+# Sort
+df_weighted_sorted <- df_weighted[with(df_weighted,order(groupID,speciesID,clusterID)),]
+df <- df_weighted_sorted
+
+# Write csv
 # path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/cluster_weighted_means.csv")
 # write.csv(df, path, row.names = F)
 

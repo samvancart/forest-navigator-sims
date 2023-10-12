@@ -27,8 +27,8 @@ nLayers <- (df_nSites %>% count(groupID))$n
 maxNlayers <- max(nLayers)
 
 # Define variables
-varXs_means <- c(11,12)
-varXs_sums <- c(13,14,17,18,30,43)
+varXs_means <- c(11,12,14)
+varXs_sums <- c(13,17,18,30,43)
 
 # Get Lc
 lc <- modOut$multiOut[,,11,,1] - modOut$multiOut[,,14,,1]
@@ -64,6 +64,7 @@ for(i in 1:length(varXs_means)){
   li[[length(li)+1]] <- baWmean
   names_li[length(names_li)+1] <- varNames[varXs_means[i]]
 }
+
 
 # Build tabX
 tabX <- data.table()
