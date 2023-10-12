@@ -2,68 +2,16 @@ source('scripts/settings.R')
 source('./r/multiSite.R')
 
 
-# Run multisite prebas for different layers (trees or clusters) based on NFI data. Ids in settings.R.
+# Run multisite prebas for different layers (trees or clusters) based on NFI data. LayerIds in settings.R.
 # Produces modOut_<layer name> and and multiOut_<layer name> rdata files.
 # Run for both layers from run.R.
 
 
-# Get tran files
+### Climate data loaded from settings.R ###
+### Soil data loaded from settings.R ###
+### SiteInfo created in settings.R ###
 
-## Reading tran csv files is very slow so instead read df and create tran tables.
-
-# # Get eobs df
-# df <- as_tibble(read.csv(prebas_eobs_path, header=T))
-
-# # Get gitlab df
-# df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
-
-# PARtran <- data.matrix(get_prebas_tran(df, "par"))
-# VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
-# CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
-# Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
-# TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
-
-# soilData loaded from settings.R
-
-## VPD from hPa to kPa
-# VPDtran_kpa <- VPDtran*0.1
-## Run only once!!!
-# VPDtran <- VPDtran*0.1
-
-# fileName <- paste0(rdata_path, "weather_inputs",".rdata")
-# save(PARtran,VPDtran_kpa,CO2tran,Preciptran,TAirtran, file=fileName)
-
-#number of sites in this case matches the number of climIDs
-nSites <- nrow(PARtran)
-
-#number of simulation years
-nYears <- floor(ncol(PARtran)/365)
-
-# Soil parameters
-WP <- soilData[,13]/1000
-FC <- soilData[,12]/1000
-soilDepth <- 1000
-
-# Create siteInfo matrix
-siteID <- soilData[,1]
-climID <- soilData[,14]
-#
-# SiteType estimated
-estimated <- estimatedList[[estimatedID]]
-soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
-
-
-swInit <- rep(c(160), times=nSites)
-zeros <- rep(c(0), times=nSites)
-sInit <- rep(c(20), times=nSites)
-nLayersCol <- rep(c(1), times=nSites)
-nSpeciesCol <- rep(c(1), times=nSites)
-soilDepthCol <- rep(c(soilDepth), times=nSites)
-
-# Create siteInfo
-param_table <- cbind(siteID,climID,soilData$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
-siteInfo <- build_siteInfo(param_table)
-
+print(paste0("Running multiSiteLayers.R for layer ", layerNames[layerID]))
 
 # NFI DATA
 nfi_path <- nfi_sweden_paths[layerID]
@@ -97,7 +45,7 @@ for(i in 1:nSites){
   multiInitVar[i,6,1:nLayers[i]] <- NA
 }
 
-
+print("Initialising model...")
 # Initialise model
 ### Using siteType estimate based on N
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
@@ -111,8 +59,7 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   defaultThin=0,
   ClCut=0)
 
-initPrebas$nLayers
-siteInfo
+print("Done.")
 
 
 # Run multisite model
@@ -121,7 +68,7 @@ modOut <- multiPrebas(initPrebas)
 # Save as rdata
 fileName <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
 save(modOut, file=fileName)
-
+print(paste0("modOut saved to ",rdata_path, "modOut_", layerNames[layerID],".rdata"))
 
 # Get multiOut output
 multiOut<-modOut$multiOut
@@ -129,7 +76,7 @@ multiOut<-modOut$multiOut
 # Save as rdata
 fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
 save(multiOut, file=fileName)
-
+print(paste0("multiOut saved to ",rdata_path, "multiOut_", layerNames[layerID],".rdata"))
 
 
 

@@ -41,6 +41,7 @@ plotsVars <- list(list())
 
 
 # Plot
+# CHECK VARIABLE 'data_from' IN settings.R
 for (siteX in 1:nSites) {
   for(variableX in varNames){
     plotsVars <- get_weather_plotsVars(plotsVars,variableX,siteX,tabX, data_from)

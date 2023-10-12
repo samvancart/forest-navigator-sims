@@ -17,7 +17,7 @@ get_samples_df <- function(original, new, seed=1234, replace=T) {
   
   # Create table of keys and values
   df <- data.table(k = all, v = all)
-  df <- df[k %in% new, v:=NA] ## Set new to NA
+  df <- df[k %in% new, v:=NA] ## Set new v to NA
   
   set.seed(seed)
   

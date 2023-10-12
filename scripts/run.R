@@ -1,4 +1,5 @@
 source('scripts/settings.R')
+
 # Run scripts with different settings
 
 
@@ -57,8 +58,8 @@ run_species_and_estimate <- function(estimated_vector,species_vector,sources,set
   }
 }
 
-# Run for species
-run_ID <- function(id_vector,id_name, old_id, sources, settings_file="scripts/settings.R") {
+# Run for ID
+run_ID <- function(id_vector, id_name, old_id, sources, settings_file="scripts/settings.R") {
   for (i in id_vector) {
     id <- i
     new_id <- paste0(id_name, " <- ", as.character(id))

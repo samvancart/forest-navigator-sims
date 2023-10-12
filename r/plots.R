@@ -44,6 +44,7 @@ get_weather_plotsVars <- function(plotsVars,variableX,siteX,tabX,data_from="") {
 get_by_site_plot_path <- function(folder, siteX, data_from="gitlab") {
   file_path <- paste0(folder,"/", data_from, "/site_", siteX)
   full_path <- paste0("data/plots/by_site/", file_path, ".pdf")
+  
   return(full_path)
 }
 

@@ -68,7 +68,7 @@ tabX$runID <- as.factor(tabX$runID)
 plotsVars <- list()
 
 
-# Plot with shadow. CHECK DATA FROM IN SETTINGS
+# Plot with shadow. # CHECK VARIABLE 'data_from' IN settings.R
 for(variableX in varNames[varXs]){
   plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,data_from)
 }

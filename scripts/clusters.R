@@ -1,6 +1,9 @@
-
 source('scripts/settings.R')
 
+# Chooses optimal number of clusters (fviz_nbclust function)
+# for all subgroups of a grouped data frame based on given columns in that data frame,
+# generates the clusters for each subgroup, and assigns a clusterID to each subgroup member.
+# Result is the data frame sorted by original groupID, original subgroupID and assigned clusterID.
 
 # Functions
 

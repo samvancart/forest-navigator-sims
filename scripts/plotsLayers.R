@@ -39,14 +39,14 @@ plotsVars_clusters <- list(list())
 
 
 # Plot
-# CHECK DATA FROM IN SETTINGS
+# CHECK VARIABLE 'data_from' IN settings.R
 for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
     plotsVars_trees <- get_plotsVars(plotsVars_trees,variableX,siteX,tabX_trees,1, data_from)
     plotsVars_clusters <- get_plotsVars(plotsVars_clusters,variableX,siteX,tabX_clusters,2, data_from)
     
   }
-  # CHECK DATA FROM IN SETTINGS
+  # CHECK VARIABLE 'data_from' IN settings.R
   plot_path <- get_by_site_plot_path("side_by_side",siteX, data_from)
   pdf(plot_path, width=14, height=7)
   for(variableX in varNames[varXs]){
