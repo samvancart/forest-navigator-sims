@@ -14,6 +14,7 @@ library(ncdf4)
 library(geosphere)
 library(zoo)
 library(parallel)
+library(doParallel)
 library(foreach)
 
 ### Variables ###

@@ -34,6 +34,10 @@ get_kmax <- function(df) {
 
 # Get all clusterIDs from groups and species
 get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh", "Height")) {
+  # Import libraries here to enable parallel processing 
+  library(tibble)
+  library(dplyr)
+  library(factoextra)
   
   # Convert df to tibble
   df <- as_tibble(df)
@@ -83,21 +87,57 @@ df <- grouped_nfi_swe_sorted
 # Vector with all groups
 groups_vector <- unique(df$groupID)
 
+length(groups_vector)
+
+
+# TEST RUN IN PARALLEL (WORKS)
+# MAKE FUNCTION TO COMBINE SPLIT DFS N TIMES BASED ON AVAILABLE CORES
+filtered_groups_vector <- groups_vector[1:1600]
+df_filtered <- filter(df,groupID %in% filtered_groups_vector)
+
+
+split_df <- split(df_filtered, df_filtered$groupID)
+
+df1 <- filter(df_filtered,groupID %in% 1:400)
+df2 <- filter(df_filtered,groupID %in% 401:800)
+df3 <- filter(df_filtered,groupID %in% 801:1200)
+df4 <- filter(df_filtered,groupID > 1200)
+
+dfs <- list(df1,df2,df3,df4)
+
+cores <- detectCores(logical=T)
+cl <- makeCluster(4, type="SOCK")
+registerDoParallel(cl)
+system.time(
+  clusterIDs_list_parallel <- foreach(df = dfs) %dopar% get_clusterIDs_groups_species(df,unique(df$groupID))
+)
+
+stopCluster(cl)
+clusterIDs_list_parallel_combined <- Reduce(append,clusterIDs_list_parallel,c())
+
+
+
 print("Creating clusters...")
 
 # Get clusterIDs vector
-clusterIDs_list <- get_clusterIDs_groups_species(df, groups_vector)
+# clusterIDs_list <- get_clusterIDs_groups_species(df, groups_vector)
+system.time(
+  clusterIDs_list <- get_clusterIDs_groups_species(df_filtered, filtered_groups_vector)
+)
+
 
 print("Done.")
 
-# Add clusterIDs to df
-df$clusterID <- clusterIDs_list
+setequal(clusterIDs_list_parallel_combined,clusterIDs_list)
 
-# Sort by group then species then cluster
-df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
-
-path <- paste0("data/nfi/sweden/all_sorted_group_species_cIDs_speciesID11to4.csv")
-write.csv(df_sorted, path, row.names = F)
+# # Add clusterIDs to df
+# df$clusterID <- clusterIDs_list
+# 
+# # Sort by group then species then cluster
+# df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
+# 
+# path <- paste0("data/nfi/sweden/all_sorted_group_species_cIDs_speciesID11to4.csv")
+# write.csv(df_sorted, path, row.names = F)
 
 
 
