@@ -7,6 +7,25 @@ source('scripts/settings.R')
 
 # Functions
 
+
+get_dfs_split_by_cores_list <- function(split_df, cores, number_of_groups) {
+  
+  dfs <- c()
+  offset <- 1
+  for (i in 1:cores) {
+    if(i<cores) {
+      df <- Reduce(rbind, split_df[offset:(offset+(number_of_groups-1))], data.table())    
+    } else {
+      df <- Reduce(rbind, split_df[offset:(offset+(length(split_df)-offset))], data.table())
+    }
+    dfs <- c(list(df),dfs)
+    offset <-(offset+groups_in_df)
+  }
+  return(rev(dfs))
+}
+
+
+
 # Optimal number of cluster centers
 get_centers <- function(df, kmax) {
   
@@ -91,22 +110,19 @@ length(groups_vector)
 
 
 # TEST RUN IN PARALLEL (WORKS)
-# MAKE FUNCTION TO COMBINE SPLIT DFS N TIMES BASED ON AVAILABLE CORES
-filtered_groups_vector <- groups_vector[1:1600]
+filtered_groups_vector <- groups_vector[1:1601]
 df_filtered <- filter(df,groupID %in% filtered_groups_vector)
 
-
+# Split df by groupID
 split_df <- split(df_filtered, df_filtered$groupID)
-
-df1 <- filter(df_filtered,groupID %in% 1:400)
-df2 <- filter(df_filtered,groupID %in% 401:800)
-df3 <- filter(df_filtered,groupID %in% 801:1200)
-df4 <- filter(df_filtered,groupID > 1200)
-
-dfs <- list(df1,df2,df3,df4)
-
+# Get number of available cores
 cores <- detectCores(logical=T)
-cl <- makeCluster(4, type="SOCK")
+# Number of groups in one df (last group will have possible remainder)
+groups_in_df <- floor(length(filtered_groups_vector) / cores)
+
+dfs <- get_dfs_split_by_cores_list(split_df,cores,groups_in_df)
+
+cl <- makeCluster(cores, type="SOCK")
 registerDoParallel(cl)
 system.time(
   clusterIDs_list_parallel <- foreach(df = dfs) %dopar% get_clusterIDs_groups_species(df,unique(df$groupID))
