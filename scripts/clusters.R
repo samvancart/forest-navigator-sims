@@ -41,49 +41,54 @@ get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh
   # Initialise list for clusterIDs
   clusterIDs_list <- c()
   
-  for (i in groups_vector) {
-    # Choose 1 site
-    filtered_groups <- df %>% filter(groupID == i)
-    
-    # Species vector
-    species_vector <- unique(filtered_groups$speciesID)
-    
-    for (j in species_vector) {
-      # Choose species
-      filtered_species <- filtered_groups %>% filter(speciesID == j)
+    for (i in groups_vector) {
+      # Choose 1 site
+      filtered_groups <- df %>% filter(groupID == i)
       
-      # Df for clustering
-      df_cluster_cols <- filtered_species[, cluster_cols]
+      # Species vector
+      species_vector <- unique(filtered_groups$speciesID)
       
-      # Get max number of clusters
-      kmax <- get_kmax(df_cluster_cols)
+      for (j in species_vector) {
+        # Choose species
+        filtered_species <- filtered_groups %>% filter(speciesID == j)
+        
+        # Df for clustering
+        df_cluster_cols <- filtered_species[, cluster_cols]
+        
+        # Get max number of clusters
+        kmax <- get_kmax(df_cluster_cols)
+        
+        # Get optimal number of clusters
+        centers <- get_centers(df_cluster_cols, kmax)
+        
+        # K-means set up
+        set.seed(123)
+        model <- kmeans(df_cluster_cols, centers = centers, nstart = 25, iter.max=50)
+        
+        ## Append clusterIDs to list
+        clusterIDs <- model$cluster
+        clusterIDs_list <- append(clusterIDs_list, clusterIDs)
+      }
       
-      # Get optimal number of clusters
-      centers <- get_centers(df_cluster_cols, kmax)
-      
-      # K-means set up
-      set.seed(123)
-      model <- kmeans(df_cluster_cols, centers = centers, nstart = 25)
-      
-      ## Append clusterIDs to list
-      clusterIDs <- model$cluster
-      clusterIDs_list <- append(clusterIDs_list, clusterIDs)
     }
-    
-  }
+
   return(clusterIDs_list)
 }
 
 
 # Load sorted data
-grouped_nfi_swe_sorted <- fread("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/grouped_nfi_swe_sorted.csv")
+grouped_nfi_swe_sorted <- fread("data/nfi/sweden/grouped_nfi_swe_sorted_speciesID11to4.csv")
 df <- grouped_nfi_swe_sorted
 
 # Vector with all groups
 groups_vector <- unique(df$groupID)
 
+print("Creating clusters...")
+
 # Get clusterIDs vector
 clusterIDs_list <- get_clusterIDs_groups_species(df, groups_vector)
+
+print("Done.")
 
 # Add clusterIDs to df
 df$clusterID <- clusterIDs_list
@@ -91,6 +96,9 @@ df$clusterID <- clusterIDs_list
 # Sort by group then species then cluster
 df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
 
-# path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/all_sorted_group_species_cIDs.csv")
-# write.csv(df_sorted, path, row.names = F)
+path <- paste0("data/nfi/sweden/all_sorted_group_species_cIDs_speciesID11to4.csv")
+write.csv(df_sorted, path, row.names = F)
+
+
+
 

@@ -27,7 +27,7 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # } else {
 #   df <- NULL
 #   stop(paste0("'",data_from,"'"," is not a valid climate data source! Modify variable 'data_from' in settings.R."))
-#   
+# 
 # }
 # 
 # print("Creating tran files...")
@@ -37,17 +37,7 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
 # TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
 # print("Done.")
-# 
-# # CHECK VPD UNITS
-# # Run only once!!!
-# print("VPD from hpa to kpa")
-# VPDtran <- VPDtran*0.1
 
-
-
-
-## VPD from hPa to kPa
-# VPDtran_kpa <- VPDtran*0.1
 
 print("Creating siteInfo...")
 

@@ -5,6 +5,8 @@ source('./r/plots.R')
 
 # Run multiSiteLayers.R and then modout_sums_and_means.R to get tabXs.
 
+print(paste0("Running plotsSumsMeans.R"))
+
 # Load tabX trees
 fileName <- (paste0(rdata_path, "tabX_sums_means_",layerNames[1],".rdata"))
 load(fileName)
@@ -44,7 +46,7 @@ plotsVars_trees <- list(list())
 plotsVars_clusters <- list(list())
 plotsVars <- list(list())
 
-
+print("Creating plots...")
 # Plot
 # CHECK DATA FROM IN SETTINGS
 for (siteX in 1:nSites) {
@@ -62,6 +64,8 @@ for (siteX in 1:nSites) {
   dev.off()
 }
 
+folder_path <- get_folder_path_from_plot_path(plot_path)
+print(paste0("Plots saved to ", folder_path))
 
 
 # # print plots

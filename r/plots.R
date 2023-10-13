@@ -55,3 +55,14 @@ get_by_species_plot_path <- function(species, estimatedName, data_from="gitlab")
   return(full_path)
 }
 
+get_folder_path_from_plot_path <- function(plot_path) {
+  c_idxs <- gregexpr("/", plot_path)
+  end <- c_idxs[[1]][(length(c_idxs[[1]]))]
+  folder_path <- substr(plot_path, start=0,stop=end)  
+  
+  return(folder_path)
+}
+
+
+
+

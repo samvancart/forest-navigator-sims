@@ -5,6 +5,7 @@
 
 source('scripts/settings.R')
 
+print(paste0("Running modout_sums_and_means.R for layer ", layerNames[layerID]))
 
 fileName <- (paste0(rdata_path, "modOut_",layerNames[layerID],".rdata"))
 load(fileName)
@@ -30,22 +31,15 @@ maxNlayers <- max(nLayers)
 varXs_means <- c(11,12,14)
 varXs_sums <- c(13,17,18,30,43)
 
-# Get Lc
-lc <- modOut$multiOut[,,11,,1] - modOut$multiOut[,,14,,1]
+li <- list() # List of all variable matrices
+names_li <- list() # List of variable names
 
 # Get sums
-li <- list()
-names_li <- list()
 for(i in 1:length(varXs_sums)){
-  sum <- apply(modOut$multiOut[,,varXs_sums[i],,1],1:2,sum)
-  li[[i]] <- sum
+  varX_sum <- apply(modOut$multiOut[,,varXs_sums[i],,1],1:2, sum)
+  li[[i]] <- varX_sum
   names_li <- append(names_li, varNames[varXs_sums[i]])
 }
-
-# Add Lc
-sum <-apply(lc,1:2,sum)
-li[[length(li)+1]] <- sum
-names_li[length(names_li)+1] <- "Lc"
 
 
 # Non existent layers to NA
@@ -66,6 +60,12 @@ for(i in 1:length(varXs_means)){
 }
 
 
+# Add Lc (Length of crown = Height - Hc_base)
+lc_means <- li[[which(names_li=="H")]] - li[[which(names_li=="Hc_base")]]
+li[[length(li)+1]] <- lc_means
+names_li[length(names_li)+1] <- "Lc"
+
+
 # Build tabX
 tabX <- data.table()
 for (i in 1:length(li)) {
@@ -80,7 +80,7 @@ for (i in 1:length(li)) {
 # Write rdata
 fileName <- paste0(rdata_path, "tabX_sums_means_", layerNames[layerID],".rdata")
 save(tabX, file=fileName)
-
+print(paste0("tabX saved to ", fileName))
 
 
 

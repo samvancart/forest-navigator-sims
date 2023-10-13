@@ -13,6 +13,8 @@ library(lubridate)
 library(ncdf4)
 library(geosphere)
 library(zoo)
+library(parallel)
+library(foreach)
 
 ### Variables ###
 
@@ -37,7 +39,7 @@ soilData_path <- "data/soil/soil_data_wp_fc_gitlab_picus_prebas.csv"
 
 # climate
 historical_climate_data_gitlab_path = paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_climate_data.csv")
-prebas_gitlab_path <- paste0("data/climate/provided/historical_only_prebas_picus_sites.csv")
+prebas_gitlab_path <- paste0("data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv")
 prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
 
 # nfi

@@ -65,7 +65,6 @@ df <- fread(path)
 df <- df %>%
   group_by(groupID)
 
-
 # 1. Get aggregate sums for basal_areas and Multiplier_tree_Number_Ha
 df_baLayers <- get_variable_sums(df, "basal_area")
 df_tree_density <- get_variable_sums(df, "Multiplier_tree_Number_Ha")
