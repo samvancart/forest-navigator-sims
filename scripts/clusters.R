@@ -106,22 +106,19 @@ df <- grouped_nfi_swe_sorted
 # Vector with all groups
 groups_vector <- unique(df$groupID)
 
-length(groups_vector)
-
-
-# TEST RUN IN PARALLEL (WORKS)
-filtered_groups_vector <- groups_vector[1:1601]
-df_filtered <- filter(df,groupID %in% filtered_groups_vector)
-
 # Split df by groupID
-split_df <- split(df_filtered, df_filtered$groupID)
+split_df <- split(df, df$groupID)
+
 # Get number of available cores
 cores <- detectCores(logical=T)
-# Number of groups in one df (last group will have possible remainder)
-groups_in_df <- floor(length(filtered_groups_vector) / cores)
 
+# Number of groups in one df (last group will have possible remainder)
+groups_in_df <- floor(length(groups_vector) / cores)
+
+# Get dfs list
 dfs <- get_dfs_split_by_cores_list(split_df,cores,groups_in_df)
 
+# Get clusterIDs vector with parallel processing
 cl <- makeCluster(cores, type="SOCK")
 registerDoParallel(cl)
 system.time(
@@ -129,6 +126,8 @@ system.time(
 )
 
 stopCluster(cl)
+
+# Combine clusterIDs from all runs
 clusterIDs_list_parallel_combined <- Reduce(append,clusterIDs_list_parallel,c())
 
 
