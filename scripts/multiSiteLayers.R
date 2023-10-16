@@ -17,6 +17,8 @@ print(paste0("Running multiSiteLayers.R for layer ", layerNames[layerID]))
 nfi_path <- nfi_sweden_paths[layerID]
 df <- fread(nfi_path)
 
+print(paste0("NFI path is ", nfi_path))
+
 # Choose sites
 df_nSites <- df %>%
   group_by(groupID) %>%

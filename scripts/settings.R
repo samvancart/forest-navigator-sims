@@ -44,8 +44,9 @@ prebas_gitlab_path <- paste0("data/climate/provided/historical_only_prebas_picus
 prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
 
 # nfi
-nfi_sweden_path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/nfi/sweden/")
-nfi_sweden_paths <- c(paste0(nfi_sweden_path,"sorted_group_species_cIDs_basal_area.csv"), paste0(nfi_sweden_path,"cluster_weighted_means.csv"))
+nfi_sweden_path <- paste0("data/nfi/sweden/")
+nfi_sweden_paths <- c(paste0(nfi_sweden_path,"sorted_group_species_cIDs_speciesID11to4_basal_area.csv"), 
+                      paste0(nfi_sweden_path,"cluster_weighted_means_speciesID11to4.csv"))
 
 # rdata
 rdata_path <- "data/rdata/"

@@ -3,7 +3,7 @@ source('./r/cluster_aggregates.R')
 
 # Get clusters before running
 
-# Calculate weighted means (by cluster) for dbh, age and height
+# Calculates weighted means (by cluster) for dbh, age and height
 
 # 1. Read nfi data sorted by groupID, speciesID, clusterID and get basal area of each tree
 # 2. Get aggreagated basal area and tree density sums for each cluster
@@ -11,13 +11,12 @@ source('./r/cluster_aggregates.R')
 # 4. Calculate quadratic mean (dbh) based on basal area and tree density sums
 # 5. Write cluster_weighted_means file
 
-
+print(paste0("Running cluster_weighted_means.R"))
 
 # Basal area for NFI Sweden
 path <- paste0("data/nfi/sweden/all_sorted_group_species_cIDs_speciesID11to4.csv")
 df <- fread(path)
 df$Dbh <- df$Dbh/10
-
 
 # Apply to each df row to get basal_area vector
 basal_area <- apply(df, 1, get_basal_area, dbh_col=6, multiplier_col=15)
@@ -25,13 +24,9 @@ basal_area <- apply(df, 1, get_basal_area, dbh_col=6, multiplier_col=15)
 # Add vector as column to df
 df$basal_area <- basal_area
 
+# Write file for running multiSiteLayers.R for trees 
 path <- paste0("data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv")
 write.csv(df, path, row.names = F)
-
-
-# # # NFI DATA
-path <- paste0("data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv")
-df <- fread(path)
 
 # Df to tibble
 df <- as_tibble(df)
@@ -72,7 +67,7 @@ df_weighted <- df_weighted %>% rename("basal_area" = "basal_area_layer")
 df_weighted_sorted <- df_weighted[with(df_weighted,order(groupID,speciesID,clusterID)),]
 df <- df_weighted_sorted
 
-# Write csv
+# # Write file for running multiSiteLayers.R for clusters 
 path <- paste0("data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv")
 write.csv(df, path, row.names = F)
 

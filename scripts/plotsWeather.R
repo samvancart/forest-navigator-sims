@@ -17,7 +17,7 @@ build_long_format_weather_table <- function(tabX,varMatrix,varName) {
   return(tabX)
 }
 
-
+print(paste0("Running plotsWeather.R"))
 
 # Initialise tabX
 tabX <- data.table()
@@ -39,6 +39,7 @@ nSites <- length(unique(tabX$site))
 
 plotsVars <- list(list())
 
+print(paste0("Creating plots..."))
 
 # Plot
 # CHECK VARIABLE 'data_from' IN settings.R
@@ -57,6 +58,7 @@ for (siteX in 1:nSites) {
 
 }
 
-
+folder_path <- get_folder_path_from_plot_path(plot_path)
+print(paste0("Plots saved to ", folder_path))
 
 
