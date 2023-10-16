@@ -5,25 +5,47 @@ source('scripts/settings.R')
 # generates the clusters for each subgroup, and assigns a clusterID to each subgroup member.
 # Result is the data frame sorted by original groupID, original subgroupID and assigned clusterID.
 
+# Uses parallel processing to speed up process.
+# Data must first be split into chunks (based on available cores on system) to enable this.
+
+
 # Functions
 
+# Divide data frame into chunks. First divides df into equal chunks based on number of rows.
+# Actual chunks are determined by parameter 'ids' values. Each unique id will belong to same chunk.
+# Data frame must be sorted by 'ids' prior to running.
+# Params:
+# df (data.frame): The original data frame sorted by 'ids'.
+# max_chunk_size (integer): The max number of chunks to split df into.
+# ids (numeric or integer vector): The column of ids from original df.
+# Returns:
+# List: List of data frames
 
-get_dfs_split_by_cores_list <- function(split_df, cores, number_of_groups) {
+get_chunked_dfs <- function(df, max_chunk_size, ids) {
+  if(max_chunk_size==0){stop(paste0("max_chunk_size must be > 0."))}
+  if(max_chunk_size>nrow(df)){stop(paste0("max_chunk_size must be <= nrow(df)."))}
+  if(class(ids)!="integer" & class(ids)!="numeric"){stop(paste0("Parameter ids must be of class numeric or integer."))}
+  if(length(ids)!=nrow(df)){stop(paste0("Length of parameter ids must match nrow(df)."))}
   
+  groups <- ids
+  max_chunk_size <- max_chunk_size
+  chunk <- floor(length(groups)/max_chunk_size)
+  firstidx <- 1
   dfs <- c()
-  offset <- 1
-  for (i in 1:cores) {
-    if(i<cores) {
-      df <- Reduce(rbind, split_df[offset:(offset+(number_of_groups-1))], data.table())    
-    } else {
-      df <- Reduce(rbind, split_df[offset:(offset+(length(split_df)-offset))], data.table())
-    }
-    dfs <- c(list(df),dfs)
-    offset <-(offset+groups_in_df)
+  toidx <- chunk
+  
+  while (toidx <= length(groups) & firstidx < length(groups)){
+    toidx <- (firstidx +(chunk)-1)
+    if(toidx > length(groups)) {toidx <- length(groups)}
+    
+    last <- tail(groups[firstidx:toidx],n=1)
+    lastidx <- tail(which(groups==last),n=1)
+    chunk_df <- df[(firstidx:lastidx),]
+    dfs <- append(dfs,list(chunk_df))
+    firstidx <- lastidx+1
   }
-  return(rev(dfs))
+  return(dfs)
 }
-
 
 
 # Optimal number of cluster centers
@@ -103,54 +125,40 @@ get_clusterIDs_groups_species <- function(df, groups_vector, cluster_cols=c("Dbh
 grouped_nfi_swe_sorted <- fread("data/nfi/sweden/grouped_nfi_swe_sorted_speciesID11to4.csv")
 df <- grouped_nfi_swe_sorted
 
-# Vector with all groups
-groups_vector <- unique(df$groupID)
-
-# Split df by groupID
-split_df <- split(df, df$groupID)
-
 # Get number of available cores
 cores <- detectCores(logical=T)
 
-# Number of groups in one df (last group will have possible remainder)
-groups_in_df <- floor(length(groups_vector) / cores)
+# Get all groupIDs
+ids <- df$groupID
 
-# Get dfs list
-dfs <- get_dfs_split_by_cores_list(split_df,cores,groups_in_df)
+# Get chunked dfs
+dfs <- get_chunked_dfs(df = df, max_chunk_size = cores, ids = ids)
+
+# Number of chunks = Number of cores to use
+chunks <- length(dfs)
+
+print("Creating clusters in parallel...")
 
 # Get clusterIDs vector with parallel processing
-cl <- makeCluster(cores, type="SOCK")
+cl <- makeCluster(chunks, type="SOCK")
 registerDoParallel(cl)
 system.time(
-  clusterIDs_list_parallel <- foreach(df = dfs) %dopar% get_clusterIDs_groups_species(df,unique(df$groupID))
+  clusterIDs_lists <- foreach(df = dfs) %dopar% get_clusterIDs_groups_species(df,unique(df$groupID))
 )
-
+# Remember to stop cluster!
 stopCluster(cl)
 
 # Combine clusterIDs from all runs
-clusterIDs_list_parallel_combined <- Reduce(append,clusterIDs_list_parallel,c())
-
-
-
-print("Creating clusters...")
-
-# Get clusterIDs vector
-# clusterIDs_list <- get_clusterIDs_groups_species(df, groups_vector)
-system.time(
-  clusterIDs_list <- get_clusterIDs_groups_species(df_filtered, filtered_groups_vector)
-)
-
+clusterIDs_list <- Reduce(append, clusterIDs_lists, c())
 
 print("Done.")
 
-setequal(clusterIDs_list_parallel_combined,clusterIDs_list)
+# Add clusterIDs to df
+df$clusterID <- clusterIDs_list
 
-# # Add clusterIDs to df
-# df$clusterID <- clusterIDs_list
-# 
-# # Sort by group then species then cluster
-# df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
-# 
+# Sort by group then species then cluster
+df_sorted <- df[with(df,order(df$groupID,df$speciesID,df$clusterID)),]
+
 # path <- paste0("data/nfi/sweden/all_sorted_group_species_cIDs_speciesID11to4.csv")
 # write.csv(df_sorted, path, row.names = F)
 

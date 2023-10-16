@@ -83,7 +83,7 @@ multi_and_plots_layers <- c("scripts/multiSiteLayers.R", "scripts/plotsLayers.R"
 multi_and_outputs_species <- c("scripts/multiSiteSpecies.R", "scripts/output_tables.R")
 multi_and_outputs_layers <- c("scripts/multiSiteLayers.R", "scripts/output_tables.R")
 plot_tables <- c("scripts/plot_tables.R")
-util_f <- c("scripts/utility_functions.R")
+cluster_weighted_means <- c("scripts/cluster_weighted_means.R")
 sums_means <- c("scripts/modout_sums_and_means.R")
 
 # Vector values for loop. Values correspond to ids
@@ -104,7 +104,7 @@ old_lID <- get_line(lines, "layerID")
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)
-# run_ID(layer_vector, "layerID", old_lID, util_f)
+# run_ID(layer_vector, "layerID", old_lID, cluster_weighted_means)
 # run_ID(layer_vector, "layerID", old_lID, sums_means)
 
 
@@ -116,10 +116,10 @@ old_lID <- get_line(lines, "layerID")
 # # MultiSiteSpecies and plotsSpecies
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 
-# Get layers and then sums and means
-run_ID(layer_vector, "layerID", old_lID, multiLayers)
-run_ID(layer_vector, "layerID", old_lID, sums_means)
-source("scripts/plotsSumsMeans.R")
+# # Get layers and then sums and means
+# run_ID(layer_vector, "layerID", old_lID, multiLayers)
+# run_ID(layer_vector, "layerID", old_lID, sums_means)
+# source("scripts/plotsSumsMeans.R")
 
 # # Get layers and then plot tables to get side by side layer plots
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)

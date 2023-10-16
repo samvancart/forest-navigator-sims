@@ -1,6 +1,15 @@
-# Helper functions
-
 source('scripts/settings.R')
+
+# Get clusters before running
+
+# Calculate weighted means (by cluster) for dbh, age and height
+
+# 1. Read nfi data sorted by groupID, speciesID, clusterID and get basal area of each tree
+# 2. Get aggreagated basal area and tree density sums for each cluster
+# 3. Calculate weighted means (dbh, age and height) based on basal area sums
+# 4. Calculate quadratic mean (dbh) based on basal area and tree density sums
+# 5. Write cluster_weighted_means file
+
 
 # Calculate basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
 get_basal_area_nfi_sweden <- function(x) {
