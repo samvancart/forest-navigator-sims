@@ -100,7 +100,7 @@ old_sID <- get_line(lines, "speciesID")
 old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
 
-# run_ID(layer_vector, "layerID", old_lID, multiLayers)
+run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)
@@ -116,15 +116,15 @@ old_lID <- get_line(lines, "layerID")
 # # MultiSiteSpecies and plotsSpecies
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 
-# Get layers and then sums and means
-run_ID(layer_vector, "layerID", old_lID, multiLayers)
-run_ID(layer_vector, "layerID", old_lID, sums_means)
-source("scripts/plotsSumsMeans.R")
+# # Get layers and then sums and means
+# run_ID(layer_vector, "layerID", old_lID, multiLayers)
+# run_ID(layer_vector, "layerID", old_lID, sums_means)
+# source("scripts/plotsSumsMeans.R")
 
-# Get layers and then plot tables to get side by side layer plots
-run_ID(layer_vector, "layerID", old_lID, multiLayers)
-run_ID(layer_vector, "layerID", old_lID, plot_tables)
-source("scripts/plotsLayers.R")
+# # Get layers and then plot tables to get side by side layer plots
+# run_ID(layer_vector, "layerID", old_lID, multiLayers)
+# run_ID(layer_vector, "layerID", old_lID, plot_tables)
+# source("scripts/plotsLayers.R")
 
 # # Get weather plots
 # source("scripts/plotsWeather.R")

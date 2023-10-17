@@ -10,8 +10,8 @@ get_basal_area <- function(x, dbh_col, multiplier_col) {
 
 
 # Aggregate sums of variable based on groupID, speciesID, clusterID
-get_variable_sums <- function(df, var) {
-  formula <- as.formula(paste0(var,"~groupID + speciesID + clusterID"))
+get_variable_sums <- function(df, var, formula=paste0(var,"~groupID + speciesID + clusterID")) {
+  formula <- as.formula(formula)
   df <- aggregate(formula, data=df, FUN=sum)
   df <- rename_col(df, var, "_layer")
   
@@ -19,12 +19,12 @@ get_variable_sums <- function(df, var) {
 }
 
 # Weighted aggregate means of a variable by groupID, speciesID, clusterID
-get_weighted_variable <- function(df,var,weighted_by="basal_area") {
+get_weighted_variable <- function(df, var, formula=paste0(var,"~groupID + speciesID + clusterID"), weighted_by="basal_area") {
   
   df[,var] <- df[, var]*df[,weighted_by]
   weighted_layer <- paste0(weighted_by,"_layer")
   df[,var] <- df[,var]/df[,weighted_layer]
-  formula <- as.formula(paste0(var,"~groupID + speciesID + clusterID"))
+  formula <- as.formula(formula)
   df <- aggregate(formula,FUN=sum,data=df)
   
   return(df)

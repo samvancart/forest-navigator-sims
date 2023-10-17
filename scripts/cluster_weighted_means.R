@@ -26,7 +26,7 @@ df$basal_area <- basal_area
 
 # Write file for running multiSiteLayers.R for trees 
 path <- paste0("data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv")
-write.csv(df, path, row.names = F)
+# write.csv(df, path, row.names = F)
 
 # Df to tibble
 df <- as_tibble(df)

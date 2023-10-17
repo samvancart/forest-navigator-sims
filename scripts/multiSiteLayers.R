@@ -64,6 +64,12 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
 print("Done.")
 
 
+# Save as rdata
+fileName <- paste0(rdata_path, "initPrebas_", layerNames[layerID],".rdata")
+save(initPrebas, file=fileName)
+print(paste0("initPrebas saved to ",fileName))
+
+
 # Run multisite model
 modOut <- multiPrebas(initPrebas)
 
