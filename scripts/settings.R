@@ -18,7 +18,6 @@ library(doParallel)
 library(foreach)
 
 ### Variables ###
-
 layerID <- 2
 speciesID <- 1
 defaultThin <- 0
@@ -29,6 +28,8 @@ layerNames <- c("Trees","Clusters")
 estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
 estimatedNames <- c("User", "Quantile")
+tabXNames <- c("layer","layerAggr")
+tabXID <- 2
 
 # Where climate data is from.
 data_from <- "gitlab"

@@ -102,6 +102,6 @@ print(unique(species21$species))
 
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "tabX_layer_", layerNames[layerID],".rdata")
 save(tabX, file=fileName)
-
+print(paste0("tabX saved to ", fileName))

@@ -25,6 +25,9 @@ fileName <- (paste0(rdata_path, "modOut_",layerNames[layerID],".rdata"))
 load(fileName)
 tabX <- data.table(melt(modOut$multiOut[,,varXs,,1]))
 
+# Load speciesNames
+speciesNames <- colnames(pCROB)
+
 # NFI DATA
 nfi_path <- nfi_sweden_paths[layerID]
 df <- fread(nfi_path)
@@ -127,13 +130,22 @@ df_layers <- df_weighted_sorted %>%
   mutate(layer = as.integer(1:n())) %>%
   ungroup()
 
+# Add site col
+df_layers$site <-df_layers$groupID
+
+# Add species name col
+df_layers$species <- speciesNames[df_layers$speciesID]
+
 # Get long format table
-tabX_result <- data.table(melt(df_layers,id.vars = c("groupID","speciesID","clusterID","year","layer")))
-# print(tabX_result)
+tabX <- data.table(melt(df_layers,id.vars = c("site","groupID","speciesID","clusterID","year","layer","species")))
+
+# To factor
+tabX <- to_factor(tabX, c(1:6))
+tabX$year <- as.integer(tabX$year)
 
 # Write rdata
 fileName <- paste0(rdata_path, "tabX_layerAggr_", layerNames[layerID],".rdata")
-save(tabX_result, file=fileName)
+save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))
 
 

@@ -59,7 +59,7 @@ run_species_and_estimate <- function(estimated_vector,species_vector,sources,set
 }
 
 # Run for ID
-run_ID <- function(id_vector, id_name, old_id, sources, settings_file="scripts/settings.R") {
+run_ID <- function(id_vector, id_name, old_id, sources=c(""), settings_file="scripts/settings.R") {
   for (i in id_vector) {
     id <- i
     new_id <- paste0(id_name, " <- ", as.character(id))
@@ -70,7 +70,6 @@ run_ID <- function(id_vector, id_name, old_id, sources, settings_file="scripts/s
     sapply(sources, source)
   }
 }
-
 
 
 # Initialise variables
@@ -91,6 +90,8 @@ layerAggr <- c("scripts/layerAggr.R")
 species_vector <- c(1:4)
 estimated_vector <- c(1:2)
 layer_vector <- c(1:2)
+tabX_layer_vector <- c(1)
+tabX_layerAggr_vector <- c(2)
 settings_file <- "scripts/settings.R"
 
 # 1. Get file lines
@@ -100,6 +101,7 @@ lines <- get_file_lines(settings_file)
 old_sID <- get_line(lines, "speciesID")
 old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
+old_tabXID <- get_line(lines, "tabXID")
 
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
@@ -107,7 +109,7 @@ old_lID <- get_line(lines, "layerID")
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)
 # run_ID(layer_vector, "layerID", old_lID, cluster_weighted_means)
 # run_ID(layer_vector, "layerID", old_lID, sums_means)
-run_ID(layer_vector, "layerID", old_lID, layerAggr)
+# run_ID(layer_vector, "layerID", old_lID, layerAggr)
 
 
 
@@ -124,6 +126,8 @@ run_ID(layer_vector, "layerID", old_lID, layerAggr)
 # source("scripts/plotsSumsMeans.R")
 
 # # Get layers and then plot tables to get side by side layer plots
+# # Set tabXID to 1
+# run_ID(tabX_layer_vector, "tabXID", old_tabXID)
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)
 # source("scripts/plotsLayers.R")
@@ -132,7 +136,12 @@ run_ID(layer_vector, "layerID", old_lID, layerAggr)
 # source("scripts/plotsWeather.R")
 
 
-
+# Get layers and then plot tables to get side by side layerAggr plots
+# Set tabXID to 2
+run_ID(tabX_layerAggr_vector, "tabXID", old_tabXID)
+# run_ID(layer_vector, "layerID", old_lID, multiLayers)
+run_ID(layer_vector, "layerID", old_lID, layerAggr)
+source("scripts/plotsLayers.R")
 
 
 
