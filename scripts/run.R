@@ -85,6 +85,7 @@ multi_and_outputs_layers <- c("scripts/multiSiteLayers.R", "scripts/output_table
 plot_tables <- c("scripts/plot_tables.R")
 cluster_weighted_means <- c("scripts/cluster_weighted_means.R")
 sums_means <- c("scripts/modout_sums_and_means.R")
+layerAggr <- c("scripts/layerAggr.R")
 
 # Vector values for loop. Values correspond to ids
 species_vector <- c(1:4)
@@ -100,12 +101,13 @@ old_sID <- get_line(lines, "speciesID")
 old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
 
-run_ID(layer_vector, "layerID", old_lID, multiLayers)
+# run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)
 # run_ID(layer_vector, "layerID", old_lID, cluster_weighted_means)
 # run_ID(layer_vector, "layerID", old_lID, sums_means)
+run_ID(layer_vector, "layerID", old_lID, layerAggr)
 
 
 

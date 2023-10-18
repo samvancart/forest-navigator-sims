@@ -19,7 +19,7 @@ library(foreach)
 
 ### Variables ###
 
-layerID <- 1
+layerID <- 2
 speciesID <- 1
 defaultThin <- 0
 ClCut <- 0

@@ -48,13 +48,13 @@ plotsVars <- list(list())
 
 print("Creating plots...")
 # Plot
-# CHECK DATA FROM IN SETTINGS
+# CHECK data_from IN SETTINGS
 for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
     plotsVars <- get_sums_means_plotsVars(plotsVars,variableX,siteX,tabX, data_from)
 
   }
-  # CHECK DATA FROM IN SETTINGS
+  # CHECK data_from IN SETTINGS
   plot_path <- get_by_site_plot_path("sums_means",siteX, data_from)
   pdf(plot_path)
   

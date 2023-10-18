@@ -1,7 +1,7 @@
 source('scripts/settings.R')
 source('./r/cluster_aggregates.R')
 
-# Get clusters before running
+# Before running: Get clusters 
 
 # Calculates weighted means (by cluster) for dbh, age and height
 
