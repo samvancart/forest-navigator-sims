@@ -39,7 +39,31 @@ get_weather_plotsVars <- function(plotsVars,variableX,siteX,tabX,data_from="") {
   return(plotsVars)
 }
 
+# Residuals
 
+get_residuals_pointplots <- function(plotsVars,variableX,siteX,tabX,data_from="", shape="species", col="layer") {
+  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes_string(x = "year",y = "residuals", shape=shape, col=col)) +
+    geom_point() +
+    ggtitle(paste0("Site ",siteX),variableX) +
+    labs(tag=data_from)
+  
+  return(plotsVars)
+}
+
+
+get_residuals_boxplots <- function(plotsVars,variableX,siteX,tabX,data_from="", col="species", fill="layer") {
+  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes_string(y = "residuals", col=col, fill=fill)) +
+    geom_boxplot() +
+    ggtitle(paste0("Site ",siteX),variableX) +
+    labs(tag=data_from)
+  
+  return(plotsVars)
+}
+
+
+
+
+# Paths
 
 get_by_site_plot_path <- function(folder, siteX, data_from="gitlab", sub_folder="/") {
   file_path <- paste0(folder,sub_folder, data_from, "/site_", siteX)

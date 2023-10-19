@@ -139,9 +139,13 @@ df_layers$species <- speciesNames[df_layers$speciesID]
 # Get long format table
 tabX <- data.table(melt(df_layers,id.vars = c("site","groupID","speciesID","clusterID","year","layer","species")))
 
+# Calculate N value
+tabX[variable=="N"]$value <- tabX[variable=="BA"]$value/(pi*(tabX[variable=="D"]$value/200)^2)
+
 # To factor
-tabX <- to_factor(tabX, c(1:6))
+tabX <- to_factor(tabX, c(1:4,7))
 tabX$year <- as.integer(tabX$year)
+tabX$variable <- as.character(tabX$variable)
 
 # Write rdata
 fileName <- paste0(rdata_path, "tabX_layerAggr_", layerNames[layerID],".rdata")
