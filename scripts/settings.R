@@ -16,6 +16,7 @@ library(zoo)
 library(parallel)
 library(doParallel)
 library(foreach)
+library(ggpubr)
 
 ### Variables ###
 layerID <- 2

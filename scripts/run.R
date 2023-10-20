@@ -138,9 +138,9 @@ old_tabXID <- get_line(lines, "tabXID")
 
 # Get layers and then aggregates to get side by side layerAggr plots
 # Set tabXID to 2
-run_ID(tabX_layerAggr_vector, "tabXID", old_tabXID)
+# run_ID(tabX_layerAggr_vector, "tabXID", old_tabXID)
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
-run_ID(layer_vector, "layerID", old_lID, layerAggr)
+# run_ID(layer_vector, "layerID", old_lID, layerAggr)
 source("scripts/plotsLayers.R")
 
 

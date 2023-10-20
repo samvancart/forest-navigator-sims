@@ -47,6 +47,8 @@ plotsVars_clusters <- list(list())
 # Subfolder for plots
 sub_folder <- paste0("/",tabXNames[tabXID],"/")
 
+print("Creating plots...")
+
 # Plot
 # CHECK VARIABLE 'data_from' IN settings.R
 for (siteX in 1:nSites) {
@@ -59,7 +61,7 @@ for (siteX in 1:nSites) {
   plot_path <- get_by_site_plot_path("side_by_side",siteX, data_from, sub_folder = sub_folder)
   pdf(plot_path, width=14, height=7)
   for(variableX in varNames[varXs]){
-    print(grid.arrange(plotsVars_trees[[variableX]],plotsVars_clusters[[variableX]],ncol=2))
+    grid.arrange(plotsVars_trees[[variableX]],plotsVars_clusters[[variableX]],ncol=2)
   }
   dev.off()
 }
