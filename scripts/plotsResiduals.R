@@ -41,12 +41,18 @@ plot_combined_residuals <- function(tabX, plot_path, formula=as.formula(paste("~
   
   print("Plotting combined...")
   
+  # Convert to symbol in order to use aes with !! instead of deprecated aes_string
+  if(!is.null(col)){col <- sym(col)}
+  if(!is.null(fill)){fill <- sym(fill)}
+  
   for(varX in unique(tabX$variable)){
-    p1 <- ggplot(data = tabX[variable==varX], aes_string(x = "year", y = "residuals", col=col)) +
+    p1 <- ggplot(data = tabX[variable==varX], aes(x = year, y = residuals, col=!!col)) +
       geom_boxplot()
     
-    p2 <- ggplot(data = tabX[variable==varX], aes_string(x = "residuals", fill=fill)) +
-      geom_histogram(bins = 30) + facet_wrap(formula)
+    p2 <- ggplot(data = tabX[variable==varX], aes(x = residuals, fill=!!fill)) +
+      geom_histogram(bins = 30) + 
+      facet_wrap(formula)
+    
     plotX <- ggarrange(p1,p2,nrow=2)
     
     plotX <-annotate_figure(plotX, top = text_grob(varX, face = "bold", size = 14))
@@ -114,14 +120,17 @@ plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/layer/"), varNames 
 # Define vars
 varXs <- c(13,30,43)
 
-tabX_trees_aggrSpecies <- tabX_trees[variable %in% c("BA","V","grossGrowth"),sum(tree),by=.(site,groupID,speciesID,year,species,variable)]
-tabX_clusters_aggrSpecies <- tabX_clusters[variable %in% c("BA","V","grossGrowth"),sum(cluster),by=.(site,groupID,speciesID,year,species,variable)]
+tabX_trees_aggrSpecies <- tabX_trees[variable %in% c("BA","V","grossGrowth"),
+                                     sum(tree),by=.(site,groupID,speciesID,year,species,variable)]
+tabX_clusters_aggrSpecies <- tabX_clusters[variable %in% c("BA","V","grossGrowth"),
+                                           sum(cluster),by=.(site,groupID,speciesID,year,species,variable)]
 
 # Prepare tabX
 tabX <- prepare_tabX(tabX_trees_aggrSpecies,tabX_clusters_aggrSpecies,old_val = "V1")
 
 # Plot species
-plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/species/"), varNames = varNames, varXs = varXs, shape = NULL, point_col="species", box_col = "species", fill=NULL)
+plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/species/"), 
+               varNames = varNames, varXs = varXs, shape = NULL, point_col="species", box_col = "species", fill=NULL)
 
 # Plot combined
 species_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/species/", data_from, "/combined/")
@@ -140,7 +149,8 @@ tabX_clusters_aggrSite <- tabX_clusters[variable %in% c("BA","V","grossGrowth"),
 tabX <- prepare_tabX(tabX_trees_aggrSite,tabX_clusters_aggrSite,old_val = "V1")
 
 # Plot site
-plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/site/"), varNames = varNames, varXs = varXs, shape = NULL, point_col=NULL, box_col = NULL, fill=NULL)
+plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/site/"), 
+               varNames = varNames, varXs = varXs, shape = NULL, point_col=NULL, box_col = NULL, fill=NULL)
 
 # Plot combined
 site_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/site/", data_from, "/combined/")
@@ -154,8 +164,17 @@ plot_combined_residuals(tabX = tabX, plot_path = site_plot_path, formula = NULL,
 
 
 
-# ggplot(data = tabX[site==4 & variable=="grossGrowth"], aes_string(x = "year",y = "residuals",shape="species",col="layer")) +
-#   geom_point() #+ ylim(-5,5) + geom_hline(yintercept=c(-1,1))
-# 
-# ggplot(data = tabX[site==21 & variable=="grossGrowth"], aes(y = residuals,col=species,fill=layer)) +
-#   geom_boxplot() #+ ylim(-5,5) + geom_hline(yintercept=c(-1,1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+

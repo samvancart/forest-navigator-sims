@@ -42,7 +42,10 @@ get_weather_plotsVars <- function(plotsVars,variableX,siteX,tabX,data_from="") {
 # Residuals
 
 get_residuals_pointplots <- function(plotsVars,variableX,siteX,tabX,data_from="", shape="species", col="layer") {
-  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes_string(x = "year",y = "residuals", shape=shape, col=col)) +
+  # Convert to symbol in order to use aes with !! instead of deprecated aes_string
+  if(!is.null(shape)){shape <- sym(shape)}
+  if(!is.null(col)){col <- sym(col)}
+  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes(x = year, y = residuals, shape=!!shape, col=!!col)) +
     geom_point() +
     ggtitle(paste0("Site ",siteX),variableX) +
     labs(tag=data_from)
@@ -52,7 +55,10 @@ get_residuals_pointplots <- function(plotsVars,variableX,siteX,tabX,data_from=""
 
 
 get_residuals_boxplots <- function(plotsVars,variableX,siteX,tabX,data_from="", col="species", fill="layer") {
-  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes_string(y = "residuals", col=col, fill=fill)) +
+  # Convert to symbol in order to use aes with !! instead of deprecated aes_string
+  if(!is.null(col)){col <- sym(col)}
+  if(!is.null(fill)){fill <- sym(fill)}
+  plotsVars[[variableX]] <- ggplot(data = tabX[site==siteX & variable==variableX], aes(y = residuals, col=!!col, fill=!!fill)) +
     geom_boxplot() +
     ggtitle(paste0("Site ",siteX),variableX) +
     labs(tag=data_from)
