@@ -1,77 +1,12 @@
 source('scripts/settings.R')
 source('./r/plots.R')
 source('./r/utils.R')
+source('./r/residuals.R')
 
 
-plot_residuals <- function(tabX, sub_folder, varNames, varXs, shape="species", point_col="layer", box_col="species", fill = "layer") {
-  point_plots <- list(list())
-  boxplots <- list(list())
-  
-  # Set nSites
-  nSites <- max(as.integer(tabX$site))
-  
-  print(paste0("Creating ", sub_folder, " plots..."))
-  
-  # Plot
-  for (siteX in 1:nSites) {
-    for(variableX in varNames[varXs]){
-      point_plots <- get_residuals_pointplots(point_plots,variableX,siteX,tabX, data_from, shape=shape, col=point_col)
-      boxplots <- get_residuals_boxplots(boxplots,variableX,siteX,tabX, data_from, col=box_col, fill=fill)
+# Calculates and plots residuals on layer level, species level and site level
 
-    }
-    plot_path <- get_by_site_plot_path("side_by_side",siteX, data_from, sub_folder = sub_folder)
-    pdf(plot_path, width=14, height=7)
-    for(variableX in varNames[varXs]){
-      grid.arrange(point_plots[[variableX]],boxplots[[variableX]],ncol=2)
-    }
-    dev.off()
-  }
-  
-  folder_path <- get_folder_path_from_plot_path(plot_path)
-  print(paste0("Plots saved to ", folder_path))
-}
-
-
-plot_combined_residuals <- function(tabX, plot_path, formula=as.formula(paste("~", "species")), col="species", fill="species") {
-  
-  tabX$year <- as.factor(tabX$year)
-  
-  path <- paste0(plot_path,"combined.pdf")
-  pdf(file=path)
-  
-  print("Plotting combined...")
-  
-  # Convert to symbol in order to use aes with !! instead of deprecated aes_string
-  if(!is.null(col)){col <- sym(col)}
-  if(!is.null(fill)){fill <- sym(fill)}
-  
-  for(varX in unique(tabX$variable)){
-    p1 <- ggplot(data = tabX[variable==varX], aes(x = year, y = residuals, col=!!col)) +
-      geom_boxplot()
-    
-    p2 <- ggplot(data = tabX[variable==varX], aes(x = residuals, fill=!!fill)) +
-      geom_histogram(bins = 30) + 
-      facet_wrap(formula)
-    
-    plotX <- ggarrange(p1,p2,nrow=2)
-    
-    plotX <-annotate_figure(plotX, top = text_grob(varX, face = "bold", size = 14))
-    print(plotX)
-  }
-  dev.off()
-  folder_path <- get_folder_path_from_plot_path(plot_path)
-  print(paste0("Plots saved to ", folder_path))
-}
-
-
-prepare_tabX <- function(trees, clusters, old_val) {
-  setnames(clusters,old_val,"cluster")
-  setnames(trees,old_val,"tree")
-  tabX <- merge(clusters,trees)
-  tabX <- tabX[,residuals:=cluster-tree]
-  
-  return(tabX)
-}
+# Before running: Run layerAggr.R to get aggregated tabXs.
 
 
 print(paste0("Running plotsResiduals.R"))

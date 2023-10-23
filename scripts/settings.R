@@ -17,6 +17,9 @@ library(parallel)
 library(doParallel)
 library(foreach)
 library(ggpubr)
+library(sf)
+library(foreign)
+
 
 ### Variables ###
 layerID <- 2
