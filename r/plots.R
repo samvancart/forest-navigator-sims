@@ -129,6 +129,16 @@ plot_combined_residuals <- function(tabX, plot_path, formula=as.formula(paste("~
 }
 
 
+get_shape_file_plot <- function(backgroundData,backgroundColour,topData,topColour,size) {
+  plot <- ggplot() + 
+    geom_sf(data = backgroundData, size = size, color = backgroundColour) +
+    geom_sf(data = topData, size = size, color = topColour)
+  
+  return(plot)
+}
+
+
+
 
 
 # Paths
