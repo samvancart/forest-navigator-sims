@@ -8,6 +8,8 @@ source('./r/utils.R')
 path <- paste0(nfi_sweden_path,"sorted_group_species_cIDs_speciesID11to4_basal_area_lonLats.csv")
 nfi_df <- fread(path)
 
+# Make deep copy
+temp_df <- nfi_df %>% as.data.table()
 
 # Load speciesNames
 speciesnames <- colnames(pCROB)
@@ -17,16 +19,20 @@ coniferousIDs <- c(1,2)
 broadLeavedIDs <- c(3,4,8)
 
 
+
 # Site total basal area
-nfi_df[,BAtot := sum(basal_area),by=groupID]
-nfi_df[,ba_share := basal_area/BAtot]
+temp_df[,BAtot := sum(basal_area),by=groupID]
+
+# Site tree basal area share
+temp_df[,ba_share := basal_area/BAtot]
 
 # Get shares of tree species in site
-shares <- nfi_df %>%
+shares <- temp_df %>%
   group_by(groupID) %>%
   summarise(conif_share=sum(ba_share[speciesID %in% coniferousIDs]),
             broadLeaf_share=sum(ba_share[speciesID %in% broadLeavedIDs])) %>%
   ungroup()
+
 
 # Assign forest class based on CORINE protocol
 forest_class <- shares %>%
@@ -35,16 +41,18 @@ forest_class <- shares %>%
   ungroup() %>%
   as.data.table()
 
+
+
 # Forest class name column to df
-nfi_df_mix_types <- left_join(nfi_df,forest_class,by="groupID")
+nfi_df_forest_classes <- left_join(nfi_df,forest_class,by="groupID")
 
 # Forest class ID column to df
-setDT(nfi_df_mix_types)[, forestClassID := .GRP, by = forest_class_name]
+setDT(nfi_df_forest_classes)[, forestClassID := .GRP, by = forest_class_name]
 
 
 # Test
 groupIDs <- unique(nfi_df$groupID)
-check_mix_types <- sapply(groupIDs,function(x) setequal(forest_class[groupID == x]$mix_type,unique(nfi_df_mix_types[groupID==x]$mix_type)))
+check_mix_types <- sapply(groupIDs,function(x) setequal(forest_class[groupID == x]$mix_type,unique(nfi_df_forest_classes[groupID==x]$mix_type)))
 setequal(length(unique(check_mix_types)),1)
 
 
