@@ -9,7 +9,8 @@ path <- paste0(nfi_sweden_path,"sorted_group_species_cIDs_speciesID11to4_basal_a
 nfi_df <- fread(path)
 
 # Make deep copy
-temp_df <- nfi_df %>% as.data.table()
+# temp_df <- nfi_df %>% as.data.table()
+
 
 # Load speciesNames
 speciesnames <- colnames(pCROB)
@@ -19,15 +20,15 @@ coniferousIDs <- c(1,2)
 broadLeavedIDs <- c(3,4,8)
 
 
-
 # Site total basal area
-temp_df[,BAtot := sum(basal_area),by=groupID]
+nfi_df[,BAtot := sum(basal_area),by=groupID]
 
 # Site tree basal area share
-temp_df[,ba_share := basal_area/BAtot]
+nfi_df[,ba_share := basal_area/BAtot]
+
 
 # Get shares of tree species in site
-shares <- temp_df %>%
+shares <- nfi_df %>%
   group_by(groupID) %>%
   summarise(conif_share=sum(ba_share[speciesID %in% coniferousIDs]),
             broadLeaf_share=sum(ba_share[speciesID %in% broadLeavedIDs])) %>%
@@ -40,7 +41,6 @@ forest_class <- shares %>%
   summarise(forest_class_name = get_forest_class_name(cur_data(),conif_share,broadLeaf_share)) %>%
   ungroup() %>%
   as.data.table()
-
 
 
 # Forest class name column to df
