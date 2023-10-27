@@ -19,6 +19,7 @@ library(foreach)
 library(ggpubr)
 library(sf)
 library(foreign)
+library(stars)
 
 
 ### Variables ###

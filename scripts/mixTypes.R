@@ -62,12 +62,13 @@ mix_types <- shares_wide[,c("groupID", "mixtype")]
 # Add mixtype column to nfi df
 nfi_df_mixTypes <- left_join(nfi_df, mix_types, by="groupID")
 
+unique(nfi_df_mixTypes$mixtype)
 
 nfi_df_mixTypes[groupID==2]
 shares_wide[mixtype=="PS_PA"]
 shares_wide[groupID==1]
 
-# NAs should be zero
+# Number of NAs should be zero
 setequal(sum(is.na(shares_wide$mixtype)),0)
 
 

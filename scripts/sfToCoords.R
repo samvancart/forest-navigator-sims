@@ -24,27 +24,16 @@ cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))
 # Filter shape file by nfi cellcodes
 filtered_cc <- filter(shape_file,shape_file$CELLCODE %in% cellcode)
 
-
 # Get lat lons
-nfi_lat_lon <- filtered_cc %>%
-  st_transform(4258) %>% # Transform to desired coordinate reference system
-  st_coordinates() %>% # Get all coordinates (bboxes of grid cells)
-  as.data.frame() %>%
-  group_by(L2) %>% # Group by bboxes
-  unique() %>% # Get rid of duplicates
-  reframe(get_grid_centre(cur_data(),X,Y)) %>% # Get grid centre coords
-  rename(c("lon"="x","lat"="y")) %>%
-  ungroup() %>%
-  cbind(.,Inspire=filtered_cc$CELLCODE) %>% # Bind cellcodes column
+lat_lons <- get_sf_centre_coords(filtered_cc)
+
+# Format and merge
+nfi_lat_lon <- lat_lons  %>%
+  cbind(.,Inspire=filtered_cc$CELLCODE) %>% # Attach cellcodes column
   mutate(Inspire=gsub("1kmE","", gsub("N","_", Inspire))) %>% # Format cellcode names
-  select(.,-L2) %>% # Drop L2 column
   merge(nfi_df,.,by=merge_by) %>% # Merge with nfi data
   reframe(.[with(.,order(groupID,speciesID,clusterID)),]) %>% # Sort
   as.data.table()
-
-
-
-
 
 # Plot
 nfi_sites_plot <- get_shape_file_plot(backgroundData = shape_file,
