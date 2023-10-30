@@ -9,7 +9,7 @@ shape_file_path <- paste0(path, shape_file_name)
 shape_file <- st_read(shape_file_path)
 
 # Get nfi data
-nfi_df <- read.csv(nfi_sweden_paths[1])
+nfi_df <- fread(nfi_sweden_paths[1])
 
 # Get cellcodes from nfi data
 cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))

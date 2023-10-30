@@ -1,15 +1,18 @@
 
 # Functions
 
-get_nLayers <- function(df, nSites) {
+get_df_nSites <- function(df, nSites) {
+  
   # Choose sites
   df_nSites <- df %>%
     group_by(groupID) %>%
     filter(groupID<=nSites)
   
-  
-  nLayers <- (df_nSites %>% count(groupID))$n
-  
+  return(df_nSites)
+}
+
+get_nLayers <- function(df) {
+  nLayers <- (df %>% count(groupID))$n
   return(nLayers)
 }
 
@@ -31,12 +34,12 @@ get_grid_centre <- function(df, x, y) {
 
 # Transformed sf crs grid centre point coordinates
 # Params:
-# sf (sf): File to transform
+# sf (sf): Sf object to transform
 # crs (string): Destination coordinate reference system
 # newXName: New x coordinate name
 # newYName: New y coordinate name
 # Returns:
-# data frame of the centre point coordinates of the original grid
+# data frame of the centre point coordinates in the original grid
 
 get_sf_centre_coords <- function(sf, crs=4258, newXName = "lon", newYName = "lat") {
   lat_lons <- sf %>%

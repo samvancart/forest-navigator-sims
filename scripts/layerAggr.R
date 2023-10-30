@@ -38,7 +38,7 @@ print(paste0("NFI path is ", nfi_path))
 nSites <- length(unique(tabX$site))
 
 # Get nLayers
-nLayers <- get_nLayers(df, nSites)
+nLayers <- get_nLayers(get_df_nSites(df, nSites))
 
 # Layer col to factor
 tabX <- to_factor(tabX, c(4))

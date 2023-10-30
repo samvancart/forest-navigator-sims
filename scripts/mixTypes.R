@@ -72,5 +72,3 @@ shares_wide[groupID==1]
 setequal(sum(is.na(shares_wide$mixtype)),0)
 
 
-
-
