@@ -35,6 +35,13 @@ nfi_lat_lon <- lat_lons  %>%
   reframe(.[with(.,order(groupID,speciesID,clusterID)),]) %>% # Sort
   as.data.table()
 
+# Round coords
+round_by <- 5
+
+nfi_lat_lon$lon <- round(nfi_lat_lon$lon,round_by)
+nfi_lat_lon$lat <- round(nfi_lat_lon$lat,round_by)
+
+
 # Plot
 nfi_sites_plot <- get_shape_file_plot(backgroundData = shape_file,
                                       backgroundColour = "#006AA7",
