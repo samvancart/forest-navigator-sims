@@ -78,29 +78,29 @@ n_gridIDs <- dt_1 %>% count(gridID)
 n_gridIDs <- data.table(n_gridIDs)
 n_gridIDs[which(n==max(n))]
 
-
+# Which gridID to filter by
 by_gridID <- 9960
 
 # Get 1by1 cells based on gridID
 sites_cc <- paste0("1kmE",gsub("_","N",  unique(nfi_gridId_df[gridID == by_gridID]$Inspire)))
 filtered_sites_cc <- filter(filtered_cc, filtered_cc$CELLCODE %in% sites_cc)
 
-# Get one 10by10 grid cell
+# Get 10by10 grid cell
 filtered_grid <- grid[by_gridID,]
 
 # Plot one
 plot <- ggplot() + 
-  geom_sf(data = filtered_grid, size = 3, color = "#FECC02") +
-  geom_sf(data = filtered_sites_cc, size = 3, color = "#006AA7", fill = "#006AA7")
+  geom_sf(data = filtered_grid, size = 3, color = "#FECC02", alpha=0.6) +
+  geom_sf(data = filtered_sites_cc, size = 3, color = "white", fill = "#006AA7",)
 
 
 setequal(unique(nfi_gridId_df$gridID), unique(dt_1$gridID))
 
 
 # Plot all
-nfi_sites_plot <- get_shape_file_plot(backgroundData = filtered_grid,
+nfi_sites_plot <- get_shape_file_plot(backgroundData = grid,
                                       backgroundColour = "#FECC02",
-                                      topData = filtered_sites_cc,
+                                      topData = filtered_cc,
                                       topColour = "#006AA7",
                                       size = 3)
 

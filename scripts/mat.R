@@ -30,7 +30,7 @@ tair_df$year <- format(tair_df$time, format="%Y")
 # Annual means for each groupID
 tair_means_df <- data.table(aggregate(formula = (tair ~ groupID + year), data =  tair_df, FUN = mean))
 
-# Mix type to use (Either CORINE forest class or mixture type)
+# Mix type column to use (either CORINE forest class or mixture type)
 join_col <- "mixtype"
 join_df <- unique(df_nSites[, c("groupID", ..join_col)])
 
@@ -43,8 +43,22 @@ joined_tair_means_df$groupID <- as.factor(joined_tair_means_df$groupID)
 # Filter
 filtered <- joined_tair_means_df
 
+# Remove outliers:
+# Replace upper outliers with max value from data with outliers removed
+# Replace lower outliers with min value from data with outliers removed
+outliers_removed <- filtered %>%
+  group_by(groupID) %>%
+  mutate(upper=get_upperQ(cur_data(),"tair"),lower=get_lowerQ(cur_data(),"tair")) %>%
+  mutate(outlier = tair<lower | tair>upper) %>%
+  mutate(tair = ifelse((outlier==T & tair<lower), min(filter(cur_data(), outlier==F)$tair), tair)) %>%
+  mutate(tair = ifelse((outlier==T & tair>upper), max(filter(cur_data(), outlier==F)$tair), tair)) %>%
+  ungroup() %>%
+  reframe(.,.[,(1:4)]) %>%
+  as.data.table(.)
+
+
 # Plot
-ggplot(data = filtered, mapping = aes(x = year, y = tair, group=groupID, fill=groupID)) +
+ggplot(data = outliers_removed, mapping = aes(x = year, y = tair, group=groupID, fill=groupID)) +
   geom_boxplot()
 
 # Get mat ranges

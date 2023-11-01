@@ -3,7 +3,6 @@
 
 get_df_nSites <- function(df, nSites) {
   
-  # Choose sites
   df_nSites <- df %>%
     group_by(groupID) %>%
     filter(groupID<=nSites)
@@ -67,3 +66,65 @@ get_forest_class_name <- function(df,conif_share,broadLeaf_share) {
     return("mixed")
   }
 }
+
+# Get df rows that are outside 1.5 x interquartile range
+get_outliers <- function(df, col) {
+  df <- data.table(df)
+  
+  qs <- quantile(df[[col]], probs = c(0.25,0.75))
+  
+  q1 <- qs[[1]]
+  q3 <- qs[[2]]
+  
+  iqr <- IQR(qs, type = 1)
+  
+  belowQ1 <- q1-1.5*iqr
+  aboveQ3 <- q3 + 1.5*iqr
+  
+  lower <- df[which(df[,..col] < belowQ1),]
+  upper <- df[which(df[,..col] > aboveQ3),]
+  
+  lower$upper_lower <- "lower"
+  upper$upper_lower <- "upper"
+  
+  cols <- colnames(lower)
+  
+  df_outliers <- left_join(lower, upper, by=cols)
+  
+  return(data.table(df_outliers))
+}
+
+
+
+get_lowerQ <- function(df,col) {
+  df <- data.table(df)
+  
+  qs <- quantile(df[[col]], probs = c(0.25,0.75))
+  
+  q1 <- qs[[1]]
+  q3 <- qs[[2]]
+  
+  iqr <- IQR(qs, type = 1)
+
+  iqr <- IQR(qs, type = 1)
+  
+  return(q1 - 1.5 * iqr)
+}
+
+get_upperQ <- function(df,col) {
+  df <- data.table(df)
+  
+  qs <- quantile(df[[col]], probs = c(0.25,0.75))
+  
+  q1 <- qs[[1]]
+  q3 <- qs[[2]]
+  
+  iqr <- IQR(qs, type = 1)
+  
+  iqr <- IQR(qs, type = 1)
+  
+  return(q3 + 1.5 * iqr)
+}
+
+
+

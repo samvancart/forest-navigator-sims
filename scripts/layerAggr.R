@@ -72,7 +72,6 @@ varXs_means <- c(11,12,14)
 varXs_sums <- c(13,17,18,30,43)
 
 # tabX to wide format
-# tabX_ids <- to_factor(tabX_ids, c(1:5))
 tabX_ids <- data.table(tabX_ids)
 tabX_wide <- reshape(tabX_ids, idvar = c("year","groupID","speciesID","clusterID","layer"),
                      timevar = "variable", direction = "wide")
