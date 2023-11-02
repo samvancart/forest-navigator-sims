@@ -10,7 +10,6 @@ nfi_df <- fread(paste0(nfi_sweden_path,"mix_types.csv"))
 
 # Get climate data
 climate_df <- fread(prebas_gitlab_path)
-class(climate_df)
 
 # Get nSites
 nSites <- length(unique(climate_df$climID))
@@ -44,14 +43,14 @@ joined_tair_means_df$groupID <- as.factor(joined_tair_means_df$groupID)
 filtered <- joined_tair_means_df
 
 # Remove outliers:
-# Replace upper outliers with max value from data with outliers removed
-# Replace lower outliers with min value from data with outliers removed
+# Replace high outliers with max value from data with outliers removed
+# Replace low outliers with min value from data with outliers removed
 outliers_removed <- filtered %>%
   group_by(groupID) %>%
-  mutate(upper=get_upperQ(cur_data(),"tair"),lower=get_lowerQ(cur_data(),"tair")) %>%
-  mutate(outlier = tair<lower | tair>upper) %>%
-  mutate(tair = ifelse((outlier==T & tair<lower), min(filter(cur_data(), outlier==F)$tair), tair)) %>%
-  mutate(tair = ifelse((outlier==T & tair>upper), max(filter(cur_data(), outlier==F)$tair), tair)) %>%
+  mutate(upper = get_upperQ(pick(everything()), "tair"), lower = get_lowerQ(pick(everything()), "tair")) %>%
+  mutate(outlier = tair < lower | tair > upper) %>%
+  mutate(tair = ifelse((outlier & tair < lower), min(filter(pick(tair), !outlier)$tair), tair)) %>%
+  mutate(tair = ifelse((outlier & tair > upper), max(filter(pick(tair), !outlier)$tair), tair)) %>%
   ungroup() %>%
   reframe(.,.[,(1:4)]) %>%
   as.data.table(.)
@@ -61,9 +60,10 @@ outliers_removed <- filtered %>%
 ggplot(data = outliers_removed, mapping = aes(x = year, y = tair, group=groupID, fill=groupID)) +
   geom_boxplot()
 
+
 # Get mat ranges
-max_mat <- joined_tair_means_df[, list(max_mat = max(tair)), by =  joined_tair_means_df[, ..join_col]]
-min_mat <- joined_tair_means_df[, list(min_mat = min(tair)), by =  joined_tair_means_df[, ..join_col]]
+max_mat <- outliers_removed[, list(max_mat = max(tair)), by =  outliers_removed[, ..join_col]]
+min_mat <- outliers_removed[, list(min_mat = min(tair)), by =  outliers_removed[, ..join_col]]
 mat <- left_join(max_mat, min_mat, by = join_col)
 
 # Join with nfi

@@ -88,13 +88,29 @@ filtered_sites_cc <- filter(filtered_cc, filtered_cc$CELLCODE %in% sites_cc)
 # Get 10by10 grid cell
 filtered_grid <- grid[by_gridID,]
 
+# Get all 10by10 grid cells with 1by1 cells inside
+filtered_grid_all <- grid[n_gridIDs$gridID,]
+
+# Test
+setequal(unique(nfi_gridId_df$gridID), unique(dt_1$gridID))
+
+
+
+
 # Plot one
-plot <- ggplot() + 
+one_site_plot <- ggplot() + 
   geom_sf(data = filtered_grid, size = 3, color = "#FECC02", alpha=0.6) +
   geom_sf(data = filtered_sites_cc, size = 3, color = "white", fill = "#006AA7",)
 
 
-setequal(unique(nfi_gridId_df$gridID), unique(dt_1$gridID))
+
+
+# Plot all on filtered grid
+filtered_nfi_sites_plot <- get_shape_file_plot(backgroundData = filtered_grid_all,
+                                               backgroundColour = "#FECC02",
+                                               topData = filtered_cc,
+                                               topColour = "#006AA7",
+                                               size = 3)
 
 
 # Plot all
@@ -103,8 +119,6 @@ nfi_sites_plot <- get_shape_file_plot(backgroundData = grid,
                                       topData = filtered_cc,
                                       topColour = "#006AA7",
                                       size = 3)
-
-
 
 
 
