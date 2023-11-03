@@ -15,6 +15,7 @@ shape_file <- st_read(shape_file_path)
 # Get nfi data
 nfi_df <- fread(paste0(nfi_sweden_path,"forest_classes.csv"))
 
+nfi_df[Inspire=="4675_3690"]
 
 # Get cellcodes from nfi data
 cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))
@@ -50,7 +51,7 @@ filtered_10by10 <- dt_10[c(unique(ind)),]
 nrow(filtered_10by10)
 
 # Assign gridIDs to 1by1
-dt_1$gridID <- ind
+dt_1$gridID_10km <- ind
 
 
 # Get rid of rounding errors
@@ -61,12 +62,14 @@ dt_1$lat <- round(dt_1$lat,round_by)
 nrow(dt_1)
 nrow(unique(nfi_df[,c("lon", "lat")]))
 
-# Add gridID column to nfi
+# Add gridID_10km column to nfi
 nfi_gridId_df <- merge(x=nfi_df, y=dt_1, by.x = c("lon","lat"), by.y = c("lon","lat"))
 
 # Sort
 nfi_gridId_df <- nfi_gridId_df[with(nfi_gridId_df, order(groupID,speciesID,clusterID)),]
 
+# Add gridID_1km column to nfi
+nfi_gridId_df[, gridID_1km := .GRP, by="Inspire"]
 
 
 
@@ -74,33 +77,49 @@ nfi_gridId_df <- nfi_gridId_df[with(nfi_gridId_df, order(groupID,speciesID,clust
 
 
 # Get gridID counts
-n_gridIDs <- dt_1 %>% count(gridID)
+n_gridIDs <- dt_1 %>% count(gridID_10km)
 n_gridIDs <- data.table(n_gridIDs)
 n_gridIDs[which(n==max(n))]
 
-# Which gridID to filter by
+# Which gridID_10km to filter by
 by_gridID <- 9960
 
 # Get 1by1 cells based on gridID
-sites_cc <- paste0("1kmE",gsub("_","N",  unique(nfi_gridId_df[gridID == by_gridID]$Inspire)))
+sites_cc <- paste0("1kmE",gsub("_","N",  unique(nfi_gridId_df[gridID_10km == by_gridID]$Inspire)))
 filtered_sites_cc <- filter(filtered_cc, filtered_cc$CELLCODE %in% sites_cc)
+
+# Get number of forest sites in a 1km by 1km grid cell
+site_counts <- nfi_gridId_df[gridID_10km==by_gridID] %>%
+  group_by(Inspire) %>%
+  reframe(.,count(unique(pick(groupID)))) %>%
+  ungroup() %>%
+  rename("CELLCODE"="Inspire")
+
+# Add forest site counts to filtered sf table
+site_counts$CELLCODE <- paste0("1kmE",gsub("_","N",  unique(site_counts$CELLCODE)))
+filtered_sites_cc_n <- left_join(filtered_sites_cc, site_counts, by="CELLCODE")
+
 
 # Get 10by10 grid cell
 filtered_grid <- grid[by_gridID,]
 
-# Get all 10by10 grid cells with 1by1 cells inside
-filtered_grid_all <- grid[n_gridIDs$gridID,]
+# Get all 10by10 grid cells that contain 1by1 grid cells
+filtered_grid_all <- grid[n_gridIDs$gridID_10km,]
 
 # Test
-setequal(unique(nfi_gridId_df$gridID), unique(dt_1$gridID))
+setequal(unique(nfi_gridId_df$gridID_10km), unique(dt_1$gridID_10km))
 
 
 
 
 # Plot one
 one_site_plot <- ggplot() + 
-  geom_sf(data = filtered_grid, size = 3, color = "#FECC02", alpha=0.6) +
-  geom_sf(data = filtered_sites_cc, size = 3, color = "white", fill = "#006AA7",)
+  geom_sf(data = filtered_grid, size = 3, color = "#FECC02", alpha=0.6,) +
+  xlab(expression(paste("Longitude"))) +
+  ylab(expression(paste("Latitude"))) +
+  geom_sf(data = filtered_sites_cc_n, size = 3, color = "white", fill = "#006AA7",) +
+  geom_sf_text(data = filtered_sites_cc_n, aes(label = n), colour = "#FECC02") +
+  ggtitle(paste0("10 km by 10 km grid cell"), paste0("ID: ", by_gridID))
 
 
 
