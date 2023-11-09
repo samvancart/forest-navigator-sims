@@ -7,13 +7,13 @@ source('./r/utils.R')
 
 
 # Get shape file
-path <- "data/nfi/sweden/shape_files/"
+path <- "data/nfi/sweden/shape_files/1km/"
 shape_file_name <- "se_1km.shp"
 shape_file_path <- paste0(path, shape_file_name)
 shape_file <- st_read(shape_file_path)
 
 # Get nfi data
-nfi_df <- fread(paste0(nfi_sweden_path,"forest_classes.csv"))
+nfi_df <- fread(paste0(nfi_sweden_path,"mix_types.csv"))
 
 nfi_df[Inspire=="4675_3690"]
 
@@ -22,6 +22,7 @@ cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))
 
 # Filter shape file by nfi cellcodes
 filtered_cc <- filter(shape_file,shape_file$CELLCODE %in% cellcode)
+
 
 # Get 10by10km grid
 grid = st_as_stars(st_bbox(shape_file), dx = 10000, dy = 10000)
@@ -71,7 +72,7 @@ nfi_gridId_df <- nfi_gridId_df[with(nfi_gridId_df, order(groupID,speciesID,clust
 # Add gridID_1km column to nfi
 nfi_gridId_df[, gridID_1km := .GRP, by="Inspire"]
 
-
+unique(dt_1$gridID_10km)
 
 # Filter gridIDs
 
@@ -82,7 +83,7 @@ n_gridIDs <- data.table(n_gridIDs)
 n_gridIDs[which(n==max(n))]
 
 # Which gridID_10km to filter by
-by_gridID <- 9960
+by_gridID <- 6027 
 
 # Get 1by1 cells based on gridID
 sites_cc <- paste0("1kmE",gsub("_","N",  unique(nfi_gridId_df[gridID_10km == by_gridID]$Inspire)))
@@ -109,18 +110,73 @@ filtered_grid_all <- grid[n_gridIDs$gridID_10km,]
 # Test
 setequal(unique(nfi_gridId_df$gridID_10km), unique(dt_1$gridID_10km))
 
+unique(nfi_gridId_df[gridID_10km==6027]$gridID_1km)
+nfi_gridId_df[gridID_1km==9344]
+
+# TEST forest class shares
+forest_class = "coniferous"
+
+group_forest_class <- nfi_gridId_df[gridID_10km==6027][,c(19,24)]
+group_forest_class <- group_forest_class[!duplicated(groupID)]
+conif_share_10km <- nrow(group_forest_class[forest_class_name==forest_class])/nrow(group_forest_class)
+mixed_share_10km <- nrow(group_forest_class[forest_class_name=="mixed"])/nrow(group_forest_class)
+broad_leaved_share_10km <- nrow(group_forest_class[forest_class_name=="broad-leaved"])/nrow(group_forest_class)
+
+get_share <- function(data,forest_class){
+  data <- data.table(data)
+  group_forest_class <- data[!duplicated(groupID)]
+  share_10km <- nrow(group_forest_class[forest_class_name==forest_class])/nrow(group_forest_class)
+  return(share_10km)
+}
+
+get_forest_class_name_10km <- function(data, conif_share_10km,broad_leaved_share_10km) {
+  conif_share_10km <- unique(conif_share_10km)
+  broad_leaved_share_10km <- unique(broad_leaved_share_10km)
+  
+  if((conif_share_10km > 0.7 & broad_leaved_share_10km < 0.1)) {
+    return("coniferous_dominated")
+  } else if((broad_leaved_share_10km > 0.7 & conif_share_10km < 0.1)) {
+    return("broad-leaved_dominated")
+  } else {
+    return("mixed_forest")
+  }
+}
+
+table(nfi_gridId_df$mixtype)/sum(table(nfi_gridId_df$mixtype))*100
+nfi_gridId_df[mixtype=='PA3']
 
 
+nfi_gridId_df_forestClassShares <- nfi_gridId_df %>%
+  group_by(gridID_10km) %>%
+  mutate(conif_share_10km=get_share(pick(groupID,forest_class_name),"coniferous")) %>%
+  mutate(broad_leaved_share_10km=get_share(pick(groupID,forest_class_name),"broad-leaved")) %>%
+  mutate(mixed_share_10km=get_share(pick(groupID,forest_class_name),"mixed")) %>%
+  ungroup() %>%
+  as.data.table(.)
+
+
+nfi_gridId_df_forestClass_10km <- nfi_gridId_df_forestClassShares %>%
+  group_by(groupID) %>%
+  mutate(forest_class_name_10km = get_forest_class_name_10km(cur_data(), conif_share_10km, broad_leaved_share_10km)) %>%
+  ungroup() %>%
+  as.data.table(.)
+
+
+nfi_gridId_df_forestClassShares[,29]
+
+nfi_gridId_df_forestClassShares
+  
+
+nfi_gridId_df_forestClassShares[gridID_10km==6027]
 
 # Plot one
 one_site_plot <- ggplot() + 
-  geom_sf(data = filtered_grid, size = 3, color = "#FECC02", alpha=0.6,) +
+  geom_sf(data = filtered_grid, size = 3, colour = "#FECC02", alpha=0.6,) +
   xlab(expression(paste("Longitude"))) +
   ylab(expression(paste("Latitude"))) +
-  geom_sf(data = filtered_sites_cc_n, size = 3, color = "white", fill = "#006AA7",) +
+  geom_sf(data = filtered_sites_cc_n, size = 3, colour = "white", fill = "#006AA7",) +
   geom_sf_text(data = filtered_sites_cc_n, aes(label = n), colour = "#FECC02") +
   ggtitle(paste0("10 km by 10 km grid cell"), paste0("ID: ", by_gridID))
-
 
 
 

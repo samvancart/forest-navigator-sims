@@ -78,5 +78,3 @@ nfi_mat <- left_join(nfi_df, mat, by = join_col)
 
 
 
-
-

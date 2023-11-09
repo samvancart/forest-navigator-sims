@@ -45,7 +45,7 @@ get_sf_centre_coords <- function(sf, crs=4258, newXName = "lon", newYName = "lat
     st_transform(crs) %>% # Transform to desired coordinate reference system
     st_coordinates() %>% # Get all coordinates (bboxes of grid cells)
     as.data.frame() %>%
-    group_by(L2) %>% # Group by bboxes
+    group_by(.[,(ncol(.))]) %>% # Group by bboxes
     unique() %>% # Get rid of duplicates
     reframe(get_grid_centre(cur_data(),X,Y)) %>% # Get grid centre coords
     ungroup() %>%
@@ -127,4 +127,8 @@ get_upperQ <- function(df,col) {
 }
 
 
+
+get_colnames_with_prefix_from_ids <- function(ids, prefix="value.") {
+  return(paste0(prefix, ids))
+}
 
