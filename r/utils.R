@@ -147,7 +147,7 @@ rename_column <- function(x, useSpeciesCode, name, prefix="value", splitBy = "\\
 # Some mixtype identifier names (eg. AC) contain multiple subspecies that need to be combined
 combine_grouped_mixtype_cols <- function(codes_df, useSpeciesCode, name_col, short_name) {
   
-  ids <- c(codes_df[codes_df[[name_col]]==short_name][, c(..useSpeciesCode)])[[1]]
+  ids <- codes_df[codes_df[[name_col]]==short_name][, get(useSpeciesCode)]
   cols <- get_colnames_with_prefix_from_ids(ids)
   
   return(cols)

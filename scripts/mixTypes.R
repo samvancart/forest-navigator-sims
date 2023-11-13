@@ -12,7 +12,8 @@ source('./r/utils.R')
 
 
 # Get nfi data
-path <- paste0(nfi_sweden_path,"forest_classes.csv")
+nfi_filename <- "forest_classes_originalSpeciesID.csv"
+path <- paste0(nfi_sweden_path, nfi_filename)
 nfi_df <- fread(path)
 
 # Get species codes df
@@ -26,8 +27,8 @@ useSpeciesID <- "Species_code_name"
 useSpeciesCode <- "code"
 
 # Get as vector
-ids_in_nfi <- c(unique(nfi_df[, c(..useSpeciesID)]))[[1]]
-ids_in_codes <- c(species_codes_df[, ..useSpeciesCode])[[1]]
+ids_in_nfi <- unique(nfi_df[, get(useSpeciesID)])
+ids_in_codes <- species_codes_df[, get(useSpeciesCode)]
 
 # Filter codes
 filtered_codes <- species_codes_df %>% filter(ids_in_codes %in% ids_in_nfi)
@@ -42,14 +43,16 @@ required_cols <- c("PA", "FS", "QU", "PS", "PN", "DF", "LD", "AA", "PC", "CB", "
 # Column of mix type names in species codes df
 name_col <- "shortName"
 
+
+
 # Define BLT species ids
-blt_ids <- c(filtered_codes[isBlt==T][,c(..useSpeciesCode)])[[1]]
+blt_ids <- filtered_codes[isBlt==T][,get(useSpeciesCode)]
 
 # Get BLT columns
 blt_cols <- get_colnames_with_prefix_from_ids(blt_ids)
 
 # Define CON species ids
-con_ids <- c(filtered_codes[isCon==T][,c(..useSpeciesCode)])[[1]]
+con_ids <- filtered_codes[isCon==T][,get(useSpeciesCode)]
 
 # Get CON columns
 con_cols <- get_colnames_with_prefix_from_ids(con_ids)
@@ -64,7 +67,7 @@ ac_cols <- combine_grouped_mixtype_cols(filtered_codes,useSpeciesCode,name_col,s
 qu_cols <- combine_grouped_mixtype_cols(filtered_codes,useSpeciesCode,name_col,short_name ="QU")
 
 # Define CON and BLT cols to drop
-drop_cols_ids <- c(filtered_codes[shortName=="CON" | shortName=="BLT"][, c(..useSpeciesCode)])[[1]]
+drop_cols_ids <- filtered_codes[shortName=="CON" | shortName=="BLT"][, get(useSpeciesCode)]
 
 # Get columns to drop
 drop_cols <- get_colnames_with_prefix_from_ids(drop_cols_ids)
@@ -169,5 +172,7 @@ shares_wide[groupID==1]
 
 # Number of NAs should be zero
 setequal(sum(is.na(shares_wide$mixtype)),0)
+
+
 
 

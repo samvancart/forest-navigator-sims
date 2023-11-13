@@ -8,16 +8,29 @@ source('./r/utils.R')
 path <- paste0(nfi_sweden_path,"sorted_group_species_cIDs_speciesID11to4_basal_area_lonLats.csv")
 nfi_df <- fread(path)
 
-# Make deep copy
-# temp_df <- nfi_df %>% as.data.table()
+# Get species codes df
+species_codes_path <- paste0(nfi_sweden_path, "speciesCodesSweden.csv")
+species_codes_df <- fread(species_codes_path)
 
+# Column name in nfi df with speciesID to be used
+useSpeciesID <- "Species_code_name"
 
-# Load speciesNames
-speciesnames <- colnames(pCROB)
-unique_speciesIDs <- unique(nfi_df$speciesID)
-speciesnames[unique_speciesIDs]
-coniferousIDs <- c(1,2)
-broadLeavedIDs <- c(3,4,8)
+# Column name in species codes df with speciesID to be used
+useSpeciesCode <- "code"
+
+# Get as vector
+ids_in_nfi <- unique(nfi_df[, get(useSpeciesID)])
+ids_in_codes <- species_codes_df[, get(useSpeciesCode)]
+
+# Filter codes
+filtered_codes <- species_codes_df %>% filter(ids_in_codes %in% ids_in_nfi)
+
+# Define BLT species ids
+blt_ids <- filtered_codes[isBlt==T][,get(useSpeciesCode)]
+
+# Define CON species ids
+con_ids <- filtered_codes[isCon==T][,get(useSpeciesCode)]
+
 
 
 # Site total basal area
@@ -27,11 +40,13 @@ nfi_df[,BAtot := sum(basal_area),by=groupID]
 nfi_df[,ba_share := basal_area/BAtot]
 
 
+nfi_df[groupID==2]
+
 # Get shares of tree species in site
 shares <- nfi_df %>%
   group_by(groupID) %>%
-  summarise(conif_share=sum(ba_share[speciesID %in% coniferousIDs]),
-            broadLeaf_share=sum(ba_share[speciesID %in% broadLeavedIDs])) %>%
+  summarise(conif_share=sum(ba_share[get(useSpeciesID) %in% con_ids]),
+            broadLeaf_share=sum(ba_share[get(useSpeciesID) %in% blt_ids])) %>%
   ungroup()
 
 
@@ -54,7 +69,6 @@ setDT(nfi_df_forest_classes)[, forestClassID := .GRP, by = forest_class_name]
 groupIDs <- unique(nfi_df$groupID)
 check_mix_types <- sapply(groupIDs,function(x) setequal(forest_class[groupID == x]$mix_type,unique(nfi_df_forest_classes[groupID==x]$mix_type)))
 setequal(length(unique(check_mix_types)),1)
-
 
 
 
