@@ -56,6 +56,45 @@ get_sf_centre_coords <- function(sf, crs=4258, newXName = "lon", newYName = "lat
   return(lat_lons)
 }
 
+
+# Parallel process centre coords
+get_sf_centre_coords_parallel <- function(sf){
+  
+  # Get number of available cores
+  cores <- detectCores(logical=T)
+  
+  print(paste0("Splitting frame..."))
+  
+  # Split frame
+  sfs <- split(sf, factor(sort(rank(row.names(sf))%%cores)))
+  
+  print("Done.")
+  
+  print(paste0("Parallel processing..."))
+  
+  # Parallel process file
+  cl <- makeCluster(length(sfs), type="SOCK")
+  registerDoParallel(cl)
+  t <- system.time(
+        lat_lons_list <- foreach(sf = sfs) %dopar% {
+          library(dplyr)
+          library(sf)
+          library(data.table)
+          source('./r/utils.R')
+          get_sf_centre_coords(sf=sf)
+        }
+      )
+  
+  print("Done.")
+  print(t)
+  
+  # Remember to stop cluster!
+  on.exit(parallel::stopCluster(cl))
+  
+  return(bind_rows(lat_lons_list))
+  
+}
+
 # CORINE forest class
 get_forest_class_name <- function(df,conif_share,broadLeaf_share) {
   if(conif_share > 0.75) {

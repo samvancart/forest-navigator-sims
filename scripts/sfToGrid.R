@@ -13,7 +13,7 @@ shape_file_path <- paste0(path, shape_file_name)
 shape_file <- st_read(shape_file_path)
 
 # Get nfi data
-nfi_df <- fread(paste0(nfi_sweden_path,"mix_types.csv"))
+nfi_df <- fread(paste0(nfi_sweden_path,"mix_types_originalSpeciesID.csv"))
 
 nfi_df[Inspire=="4675_3690"]
 
@@ -25,20 +25,24 @@ filtered_cc <- filter(shape_file,shape_file$CELLCODE %in% cellcode)
 
 
 # Get 10by10km grid
-grid = st_as_stars(st_bbox(shape_file), dx = 10000, dy = 10000)
-grid = st_as_sf(grid)
+# grid = st_as_stars(st_bbox(shape_file), dx = 10000, dy = 10000)
+# grid = st_as_sf(grid)
+grid_path <- "data/nfi/sweden/shape_files/10km/se_10km.shp"
+grid <- st_read(grid_path)
 
 
 # Get lat lons
-lat_lons_10by10 <- get_sf_centre_coords(sf=grid)
+lat_lons_10by10 <- get_sf_centre_coords_parallel(sf=grid)
 dt_10 <- data.table(lat_lons_10by10)
 m_10 <- as.matrix(dt_10)
 # Assign IDs to 10by10 based on index
-dt_10[, ID := .GRP, by=list(lon,lat)]
+# dt_10[, ID := .GRP, by=list(lon,lat)]
+dt_10$id10 <- grid$id
 
 
 # Get lat lons
-lat_lons_1by1 <- get_sf_centre_coords(sf=filtered_cc)
+# lat_lons_1by1 <- get_sf_centre_coords(sf=filtered_cc)
+lat_lons_1by1 <- get_sf_centre_coords_parallel(sf=shape_file)
 dt_1 <- data.table(lat_lons_1by1)
 m_1 <- as.matrix(dt_1)
 
@@ -113,61 +117,7 @@ setequal(unique(nfi_gridId_df$gridID_10km), unique(dt_1$gridID_10km))
 unique(nfi_gridId_df[gridID_10km==6027]$gridID_1km)
 nfi_gridId_df[gridID_1km==9344]
 
-# TEST forest class shares
-forest_class = "coniferous"
 
-group_forest_class <- nfi_gridId_df[gridID_10km==6027][,c(19,24)]
-group_forest_class <- group_forest_class[!duplicated(groupID)]
-conif_share_10km <- nrow(group_forest_class[forest_class_name==forest_class])/nrow(group_forest_class)
-mixed_share_10km <- nrow(group_forest_class[forest_class_name=="mixed"])/nrow(group_forest_class)
-broad_leaved_share_10km <- nrow(group_forest_class[forest_class_name=="broad-leaved"])/nrow(group_forest_class)
-
-get_share <- function(data,forest_class){
-  data <- data.table(data)
-  group_forest_class <- data[!duplicated(groupID)]
-  share_10km <- nrow(group_forest_class[forest_class_name==forest_class])/nrow(group_forest_class)
-  return(share_10km)
-}
-
-get_forest_class_name_10km <- function(data, conif_share_10km,broad_leaved_share_10km) {
-  conif_share_10km <- unique(conif_share_10km)
-  broad_leaved_share_10km <- unique(broad_leaved_share_10km)
-  
-  if((conif_share_10km > 0.7 & broad_leaved_share_10km < 0.1)) {
-    return("coniferous_dominated")
-  } else if((broad_leaved_share_10km > 0.7 & conif_share_10km < 0.1)) {
-    return("broad-leaved_dominated")
-  } else {
-    return("mixed_forest")
-  }
-}
-
-table(nfi_gridId_df$mixtype)/sum(table(nfi_gridId_df$mixtype))*100
-nfi_gridId_df[mixtype=='PA3']
-
-
-nfi_gridId_df_forestClassShares <- nfi_gridId_df %>%
-  group_by(gridID_10km) %>%
-  mutate(conif_share_10km=get_share(pick(groupID,forest_class_name),"coniferous")) %>%
-  mutate(broad_leaved_share_10km=get_share(pick(groupID,forest_class_name),"broad-leaved")) %>%
-  mutate(mixed_share_10km=get_share(pick(groupID,forest_class_name),"mixed")) %>%
-  ungroup() %>%
-  as.data.table(.)
-
-
-nfi_gridId_df_forestClass_10km <- nfi_gridId_df_forestClassShares %>%
-  group_by(groupID) %>%
-  mutate(forest_class_name_10km = get_forest_class_name_10km(cur_data(), conif_share_10km, broad_leaved_share_10km)) %>%
-  ungroup() %>%
-  as.data.table(.)
-
-
-nfi_gridId_df_forestClassShares[,29]
-
-nfi_gridId_df_forestClassShares
-  
-
-nfi_gridId_df_forestClassShares[gridID_10km==6027]
 
 # Plot one
 one_site_plot <- ggplot() + 
