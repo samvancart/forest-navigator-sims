@@ -20,6 +20,7 @@ library(ggpubr)
 library(sf)
 library(foreign)
 library(stars)
+library(geoTS)
 
 
 ### Variables ###

@@ -1,9 +1,17 @@
-source('scripts/settings.R')
-source('./r/utils.R')
 
+# Functions
 
-# Parallel process
-get_in_parallel <- function(data, fun, libs, sources, ...){
+# Use parallel processing to run a function
+# Params:
+# data (list): List of inputs to process eg. data frames or vectors.
+# fun (function): Function to be run in parallel. Must have one required parameter which has the same class as an object in data.
+# libs (list): List of libraries required to run input function.
+# sources (list): List of source files required to run input function.
+# fun_kwargs (list): List of additional arguments or keyword arguments required by input function.
+# Returns:
+# Results as list.
+
+get_in_parallel <- function(data, fun, libs = list(), sources = list(), fun_kwargs = list()){
   
   print(paste0("Parallel processing..."))
   
@@ -17,9 +25,9 @@ get_in_parallel <- function(data, fun, libs, sources, ...){
       
       # Source files
       lapply(sources, source)
-      
+
       # Call function
-      fun(df, ...)
+      do.call(fun, c(list(df), fun_kwargs))
     }
   )
   
@@ -29,68 +37,9 @@ get_in_parallel <- function(data, fun, libs, sources, ...){
   # Remember to stop cluster!
   on.exit(parallel::stopCluster(cl))
   
-  return(bind_rows(result))
+  return(result)
   
 }
-
-
-
-split_df_equal <- function(...){
-  
-  kwargs <- (...)
-  df <- kwargs$df
-  n <- kwargs$n
-  
-  print(paste0("Splitting frame..."))
-  list <- split(df, factor(sort(rank(row.names(df))%%n)))
-  print("Done.")
-  
-  return(list)
-}
-
-
-
-test_fun <- function(data, fun, ...) {
-  kwargs <- list(...)
-  args <-kwargs$fun_args
-  # print(args$n)
-  fun(args)
-}
-
-
-# Get shape file
-path <- "data/nfi/sweden/shape_files/1km/"
-shape_file_name <- "se_1km.shp"
-shape_file_path <- paste0(path, shape_file_name)
-sf <- st_read(shape_file_path)
-
-cores <- detectCores(logical = T)
-data <- split_df_equal(list(df=sf,n=cores))
-
-
-
-test_fun(sf, split_df_equal, fun_args=list(df=sf,n=cores))
-
-
-libs <- c("data.table", "sf", "dplyr")
-sources <- c("./r/utils.R")
-
-
-
-
-lat_lons_1by1 <- get_in_parallel(data, fun = get_sf_centre_coords, libs = libs, sources = sources)
-dt_1 <- data.table(lat_lons_1by1)
-m_1 <- as.matrix(dt_1)
-
-
-
-
-
-
-
-
-
-
 
 
 

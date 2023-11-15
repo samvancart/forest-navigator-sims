@@ -1,9 +1,11 @@
 source('scripts/settings.R')
 source('./r/plots.R')
 source('./r/utils.R')
+source('./r/parallelProcess.R')
 
 
 # Create 10km by 10km grid and assign gridIDs for 1km by 1km pixels 
+
 
 
 # Get shape file
@@ -11,6 +13,14 @@ path <- "data/nfi/sweden/shape_files/1km/"
 shape_file_name <- "se_1km.shp"
 shape_file_path <- paste0(path, shape_file_name)
 shape_file <- st_read(shape_file_path)
+
+
+
+
+# NFI
+
+
+
 
 # Get nfi data
 nfi_df <- fread(paste0(nfi_sweden_path,"mix_types_originalSpeciesID.csv"))
@@ -24,39 +34,77 @@ cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))
 filtered_cc <- filter(shape_file,shape_file$CELLCODE %in% cellcode)
 
 
+
+
+# 10by10 PARALLEL
+
+
+
+
 # Get 10by10km grid
-# grid = st_as_stars(st_bbox(shape_file), dx = 10000, dy = 10000)
-# grid = st_as_sf(grid)
 grid_path <- "data/nfi/sweden/shape_files/10km/se_10km.shp"
 grid <- st_read(grid_path)
 
+# Define libraries and sources needed for parallel procesing
+libs <- c("data.table", "sf", "dplyr")
+sources <- c("./r/utils.R")
 
-# Get lat lons
-lat_lons_10by10 <- get_sf_centre_coords_parallel(sf=grid)
+# Get available cores
+cores <- detectCores(logical = T)
+
+# Split 10by10 sf for parallel processing
+data10 <- do.call(split_df_equal, list(df=grid,n=cores))
+
+# Get 10by10 lat lons
+lat_lons_10by10 <- bind_rows(get_in_parallel(data10, fun = get_sf_centre_coords, libs = libs, sources = sources))
 dt_10 <- data.table(lat_lons_10by10)
-m_10 <- as.matrix(dt_10)
-# Assign IDs to 10by10 based on index
-# dt_10[, ID := .GRP, by=list(lon,lat)]
 dt_10$id10 <- grid$id
 
 
-# Get lat lons
-# lat_lons_1by1 <- get_sf_centre_coords(sf=filtered_cc)
-lat_lons_1by1 <- get_sf_centre_coords_parallel(sf=shape_file)
+
+
+# 1by1 PARALLEL
+
+
+
+
+# Split 1by1 sf for parallel processing
+data1 <- do.call(split_df_equal, list(df=shape_file,n=cores))
+
+# Get 1by1 lat lons
+lat_lons_1by1 <- bind_rows(get_in_parallel(data1, fun = get_sf_centre_coords, libs = libs, sources = sources))
 dt_1 <- data.table(lat_lons_1by1)
-m_1 <- as.matrix(dt_1)
+
+
+
+
+# LAT LONS HAVERSINE PARALLEL
+
+
+
+
+# Split 1by1 lat lons for parallel processing
+data1_latLon <- do.call(split_df_equal, list(df=lat_lons_1by1, n=cores))
+
+# Define kwargs
+fun_kwargs <- list(dt_10)
 
 # Get 10by10 table indexes for nearest neighbour coordinates of 1by1 table
-ind <- sapply(1:nrow(m_1), function(x) {
-  which.min(geosphere::distHaversine(m_1[x, ], m_10))
-})
+ind <- unlist(get_in_parallel(data = data1_latLon, fun = get_haversine_dist, sources = sources, fun_kwargs = fun_kwargs))
 
 # Get unique 10by10 coordinate points
 filtered_10by10 <- dt_10[c(unique(ind)),]
 nrow(filtered_10by10)
 
 # Assign gridIDs to 1by1
-dt_1$gridID_10km <- ind
+dt_1$gridID_10km <- dt_10$id10[ind]
+
+
+
+
+# POST PROCESS
+
+
 
 
 # Get rid of rounding errors

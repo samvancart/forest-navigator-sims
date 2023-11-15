@@ -57,44 +57,6 @@ get_sf_centre_coords <- function(sf, crs=4258, newXName = "lon", newYName = "lat
 }
 
 
-# Parallel process centre coords
-get_sf_centre_coords_parallel <- function(sf){
-  
-  # Get number of available cores
-  cores <- detectCores(logical=T)
-  
-  print(paste0("Splitting frame..."))
-  
-  # Split frame
-  sfs <- split(sf, factor(sort(rank(row.names(sf))%%cores)))
-  
-  print("Done.")
-  
-  print(paste0("Parallel processing..."))
-  
-  # Parallel process file
-  cl <- makeCluster(length(sfs), type="SOCK")
-  registerDoParallel(cl)
-  t <- system.time(
-        lat_lons_list <- foreach(sf = sfs) %dopar% {
-          library(dplyr)
-          library(sf)
-          library(data.table)
-          source('./r/utils.R')
-          get_sf_centre_coords(sf=sf)
-        }
-      )
-  
-  print("Done.")
-  print(t)
-  
-  # Remember to stop cluster!
-  on.exit(parallel::stopCluster(cl))
-  
-  return(bind_rows(lat_lons_list))
-  
-}
-
 # CORINE forest class
 get_forest_class_name <- function(df,conif_share,broadLeaf_share) {
   if(conif_share > 0.75) {
@@ -190,4 +152,27 @@ combine_grouped_mixtype_cols <- function(codes_df, useSpeciesCode, name_col, sho
   cols <- get_colnames_with_prefix_from_ids(ids)
   
   return(cols)
+}
+
+
+
+split_df_equal <- function(df, n){
+  print(paste0("Splitting frame..."))
+  list <- split(df, factor(sort(rank(row.names(df))%%n)))
+  print("Done.")
+  
+  return(list)
+}
+
+
+get_haversine_dist <- function(df1, df2) {
+  ind <- sapply(1:nrow(df1), function(x) {
+    which.min(geosphere::distHaversine(df1[x, ], df2))
+  })
+  return(ind)
+}
+
+
+extract_raster_values <- function(vector_obj, raster_obj) {
+  return(raster::extract(raster_obj, vector_obj))
 }
