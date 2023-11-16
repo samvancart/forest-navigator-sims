@@ -155,7 +155,7 @@ combine_grouped_mixtype_cols <- function(codes_df, useSpeciesCode, name_col, sho
 }
 
 
-
+# Split df or sf into equal chunks
 split_df_equal <- function(df, n){
   print(paste0("Splitting frame..."))
   list <- split(df, factor(sort(rank(row.names(df))%%n)))
@@ -164,7 +164,7 @@ split_df_equal <- function(df, n){
   return(list)
 }
 
-
+# Indexes in df2 of nearest neighbour coordinates for each coordinate pair in df1
 get_haversine_dist <- function(df1, df2) {
   ind <- sapply(1:nrow(df1), function(x) {
     which.min(geosphere::distHaversine(df1[x, ], df2))
@@ -172,7 +172,71 @@ get_haversine_dist <- function(df1, df2) {
   return(ind)
 }
 
-
+# Extract all raster values that are within an area specified by a polygon 
 extract_raster_values <- function(vector_obj, raster_obj) {
   return(raster::extract(raster_obj, vector_obj))
 }
+
+# Get forest class of a cell
+calculate_forest_class_10km <- function(x) {
+  dt <- data.table(V1=x)
+  counts <- get_counts(dt)
+  total_forest <- get_total_forest(counts)
+  forest_class <- get_forest_class_10km(counts, total_forest)
+  return(forest_class)
+}
+
+# Total forest area of cell
+get_total_forest <- function(dt) {
+  total_forest <- sum(dt[V1 %between% c(23,25)]$n)
+  return(total_forest)
+}
+
+# Sums of pixels that contain con, bl, mix and no forest respectively 
+get_counts <- function(dt){
+  dt[!V1 %between% c(23,25)] <- 0
+  counts <- dt %>% count(V1)
+  return(counts)
+}
+
+# Assign forest class based on shares
+get_forest_class_10km <- function(dt, total_forest) {
+  
+  if(total_forest==0) {return("no_forest")} 
+  
+  bl <- sum(dt[V1==23]$n)
+  con <- sum(dt[V1==24]$n)
+  
+  if((con/total_forest) > 0.7 & (bl/total_forest) < 0.1) {
+    return("coniferous_dominated")
+  } else if((bl/total_forest) > 0.7 & (con/total_forest) < 0.1) {
+    return("broad-leaved_dominated")
+  } else {
+    return("mixed_forest")
+  }
+}
+
+
+# Extract CORINE forest classes from raster values based on polygons in vector file. Uses parallel processing. 
+extract_forest_classes_10km <- function(sf, cores, fromRow=1, toRow=nrow(sf), libs=list(), sources=list(), fun_kwargs=list()) {
+  # Sf as spatial
+  spatial_poly <- as(sf[fromRow:toRow,], "Spatial")
+  
+  # Split sf
+  data <- split_df_equal(df=spatial_poly, n = cores)
+  
+  # Parallel process
+  raster_vals_lists <- unlist(
+    get_in_parallel(data = data, fun = extract_raster_values, libs = libs, sources = sources, fun_kwargs = fun_kwargs), 
+    recursive = F)
+  
+  print(paste0("Assigning forest classes..."))
+  
+  # Get forest class
+  forest_classes <- data.table(forest_class_10km=lapply(raster_vals_lists, function(x) calculate_forest_class_10km(x)))
+  
+  print("Done.")
+  
+  return(forest_classes)
+}
+
