@@ -42,7 +42,7 @@ filtered_cc <- filter(shape_file,shape_file$CELLCODE %in% cellcode)
 
 
 # Get 10by10km grid
-grid_path <- "data/nfi/sweden/shape_files/10km/se_10km.shp"
+grid_path <- "data/nfi/sweden/shape_files/10km/se_10km_forest_class.shp"
 grid <- st_read(grid_path)
 
 # Define libraries and sources needed for parallel procesing
@@ -69,7 +69,7 @@ dt_10$id10 <- grid$id
 
 
 # Split 1by1 sf for parallel processing
-data1 <- do.call(split_df_equal, list(df=shape_file,n=cores))
+data1 <- do.call(split_df_equal, list(df=filtered_cc, n=cores))
 
 # Get 1by1 lat lons
 lat_lons_1by1 <- bind_rows(get_in_parallel(data1, fun = get_sf_centre_coords, libs = libs, sources = sources))
@@ -135,7 +135,7 @@ n_gridIDs <- data.table(n_gridIDs)
 n_gridIDs[which(n==max(n))]
 
 # Which gridID_10km to filter by
-by_gridID <- 6027 
+by_gridID <- 3894
 
 # Get 1by1 cells based on gridID
 sites_cc <- paste0("1kmE",gsub("_","N",  unique(nfi_gridId_df[gridID_10km == by_gridID]$Inspire)))
@@ -154,7 +154,8 @@ filtered_sites_cc_n <- left_join(filtered_sites_cc, site_counts, by="CELLCODE")
 
 
 # Get 10by10 grid cell
-filtered_grid <- grid[by_gridID,]
+# filtered_grid <- grid[by_gridID,]
+filtered_grid <- grid[grid$id==by_gridID,]
 
 # Get all 10by10 grid cells that contain 1by1 grid cells
 filtered_grid_all <- grid[n_gridIDs$gridID_10km,]
@@ -162,8 +163,16 @@ filtered_grid_all <- grid[n_gridIDs$gridID_10km,]
 # Test
 setequal(unique(nfi_gridId_df$gridID_10km), unique(dt_1$gridID_10km))
 
-unique(nfi_gridId_df[gridID_10km==6027]$gridID_1km)
-nfi_gridId_df[gridID_1km==9344]
+unique(nfi_gridId_df[gridID_10km==3894]$gridID_1km)
+nfi_gridId_df[gridID_1km==1685]
+
+nfi_gridId_df[gridID_10km==7505 & !duplicated(groupID)] %>% count(forest_class_name)
+
+
+# 10KM CELLS WITH FORESTS BUT NO NFI (CELLS THAT NEED TO BE GAP FILLED) 
+no_nfi <- grid[!grid$id %in% unique(nfi_gridId_df$gridID_10km),]
+no_nfi[no_nfi$frs__10!="no_forest",]
+no_nfi[no_nfi$id==6055,]
 
 
 
