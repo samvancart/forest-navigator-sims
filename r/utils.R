@@ -227,7 +227,7 @@ extract_forest_classes_10km <- function(sf, cores, fromRow=1, toRow=nrow(sf), li
   
   # Parallel process
   raster_vals_lists <- unlist(
-    get_in_parallel(data = data, fun = extract_raster_values, libs = libs, sources = sources, fun_kwargs = fun_kwargs), 
+    get_in_parallel(data = data, fun = extract_raster_values, cores = cores, libs = libs, sources = sources, fun_kwargs = fun_kwargs), 
     recursive = F)
   
   print(paste0("Assigning forest classes..."))

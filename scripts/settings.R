@@ -21,6 +21,7 @@ library(sf)
 library(foreign)
 library(stars)
 library(geoTS)
+library(parallelly)
 
 
 ### Variables ###
@@ -43,7 +44,8 @@ data_from <- "gitlab"
 ### Paths ###
 
 # soil
-soilData_path <- "data/soil/soil_data_wp_fc_gitlab_picus_prebas.csv"
+# soilData_path2 <- "data/soil/soil_data_wp_fc_gitlab_picus_prebas.csv"
+soilData_path <- "data/soil/grd5_soil_data_prebas.csv"
 
 # climate
 historical_climate_data_gitlab_path = paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_climate_data.csv")

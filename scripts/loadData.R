@@ -10,6 +10,8 @@ estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(estimated_user, estimated_quantile)
 
 
+
+
 # climate
 
 # Get tran files
@@ -19,23 +21,26 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # if(data_from == "gitlab") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get gitlab df
-#   df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
+#   # df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
+#   df <- fread(prebas_gitlab_path, header = T)
 # } else if(data_from=="eobs") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get eobs df
-#   df <- as_tibble(read.csv(prebas_eobs_path, header=T))
+#   # df <- as_tibble(read.csv(prebas_eobs_path, header=T))
+#   df <- fread(prebas_eobs_path, header = T)
 # } else {
 #   df <- NULL
 #   stop(paste0("'",data_from,"'"," is not a valid climate data source! Modify variable 'data_from' in settings.R."))
 # 
 # }
 # 
+# 
 # print("Creating tran files...")
-# PARtran <- data.matrix(get_prebas_tran(df, "par"))
-# VPDtran <- data.matrix(get_prebas_tran(df, "vpd"))
-# CO2tran <- data.matrix(get_prebas_tran(df, "co2"))
-# Preciptran <- data.matrix(get_prebas_tran(df, "precip"))
-# TAirtran <- data.matrix(get_prebas_tran(df, "tair"))
+# PARtran <- get_prebas_tran_2(df, "par")
+# VPDtran <- get_prebas_tran_2(df, "vpd")
+# CO2tran <- get_prebas_tran_2(df, "co2")
+# Preciptran <- get_prebas_tran_2(df, "precip")
+# TAirtran <- get_prebas_tran_2(df, "tair")
 # print("Done.")
 
 
@@ -50,13 +55,13 @@ nSites <- nrow(PARtran)
 nYears <- floor(ncol(PARtran)/365)
 
 # Soil parameters
-WP <- soilData[,13]/1000
-FC <- soilData[,12]/1000
+WP <- soilData[,"WP"]/1000
+FC <- soilData[,"FC"]/1000
 soilDepth <- 1000
 
 # Create siteInfo matrix
-siteID <- soilData[,1]
-climID <- soilData[,14]
+siteID <- soilData[, "siteID"]
+climID <- soilData[, "climID"]
 
 # SiteType estimated
 estimated <- estimatedList[[estimatedID]]

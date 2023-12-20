@@ -4,6 +4,7 @@
 # Use parallel processing to run a function
 # Params:
 # data (list): List of inputs to process eg. data frames or vectors.
+# cores (integer): Number of cores to use.
 # fun (function): Function to be run in parallel. Must have one required parameter which has the same class as an object in data.
 # libs (list): List of libraries required to run input function.
 # sources (list): List of source files required to run input function.
@@ -11,12 +12,12 @@
 # Returns:
 # Results as list.
 
-get_in_parallel <- function(data, fun, libs = list(), sources = list(), fun_kwargs = list()){
+get_in_parallel <- function(data, fun, cores=8, libs = list(), sources = list(), fun_kwargs = list()){
   
   print(paste0("Parallel processing..."))
   
   # Parallel process file
-  cl <- makeCluster(length(data), type="SOCK")
+  cl <- makeCluster(cores, type="SOCK")
   registerDoParallel(cl)
   t <- system.time(
     result <- foreach(df = data) %dopar% {

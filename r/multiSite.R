@@ -26,12 +26,18 @@ get_prebas_tran <- function(df, var) {
   
   for(id in siteIDs) {
     filtered <- filter(df,siteID==id)
-    var_col <- filtered[var]
-    df_wide <- as.data.frame(t(var_col))
+    var_col <- filtered[, ..var]
+    df_wide <- transpose(var_col)
     all_wide <- rbind(all_wide,df_wide)
   }
   
   return(all_wide)
+}
+
+get_prebas_tran_2 <- function(df, var) {
+  siteIDs <- unique(df$siteID)
+  result <- data.matrix(rbindlist(lapply(siteIDs, function(x) rbind(transpose(df[siteID==x][, ..var])))))
+  return(result)
 }
 
 

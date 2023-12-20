@@ -28,7 +28,8 @@ sf10 <- st_read(filepath10)
 sf_utm <- st_transform(sf10, st_crs(se_raster))
 
 # Get available cores
-cores <- detectCores(logical = T)
+# cores <- detectCores(logical = T)
+cores <- parallelly::availableCores()
 
 # Define sources
 sources <- c("./r/utils.R")
