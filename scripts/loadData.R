@@ -21,12 +21,10 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # if(data_from == "gitlab") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get gitlab df
-#   # df <- as_tibble(read.csv(prebas_gitlab_path, header=T))
 #   df <- fread(prebas_gitlab_path, header = T)
 # } else if(data_from=="eobs") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get eobs df
-#   # df <- as_tibble(read.csv(prebas_eobs_path, header=T))
 #   df <- fread(prebas_eobs_path, header = T)
 # } else {
 #   df <- NULL
@@ -55,9 +53,12 @@ nSites <- nrow(PARtran)
 nYears <- floor(ncol(PARtran)/365)
 
 # Soil parameters
-WP <- soilData[,"WP"]/1000
-FC <- soilData[,"FC"]/1000
-soilDepth <- 1000
+
+### SOIL DEPTH WAS 1000. CHECK THIS!!! 
+soilDepth <- soilData[,"soil depth"] * 10
+WP <- soilData[,"WP"]/ soilDepth
+FC <- soilData[,"FC"]/ soilDepth
+
 
 # Create siteInfo matrix
 siteID <- soilData[, "siteID"]
@@ -73,10 +74,10 @@ zeros <- rep(c(0), times=nSites)
 sInit <- rep(c(20), times=nSites)
 nLayersCol <- rep(c(1), times=nSites)
 nSpeciesCol <- rep(c(1), times=nSites)
-soilDepthCol <- rep(c(soilDepth), times=nSites)
+# soilDepthCol <- rep(c(soilDepth), times=nSites)
 
 # Create siteInfo
-param_table <- cbind(siteID,climID,soilData$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepthCol,FC,WP)
+param_table <- cbind(siteID,climID,soilData$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepth,FC,WP)
 siteInfo <- build_siteInfo(param_table)
 
 print("Done.")
