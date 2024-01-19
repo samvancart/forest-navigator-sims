@@ -59,7 +59,7 @@ run_species_and_estimate <- function(estimated_vector,species_vector,sources,set
 }
 
 # Run for ID
-run_ID <- function(id_vector, id_name, old_id, sources=c(""), settings_file="scripts/settings.R") {
+run_ID <- function(id_vector, id_name, old_id, sources=c(NULL), settings_file="scripts/settings.R") {
   for (i in id_vector) {
     id <- i
     new_id <- paste0(id_name, " <- ", as.character(id))
@@ -93,6 +93,8 @@ layer_vector <- c(1:2)
 tabX_layer_vector <- c(1)
 tabX_layerAggr_vector <- c(2)
 settings_file <- "scripts/settings.R"
+noManagement_vector <- c(0)
+managed_vector <- c(1)
 
 # 1. Get file lines
 lines <- get_file_lines(settings_file)
@@ -102,6 +104,7 @@ old_sID <- get_line(lines, "speciesID")
 old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
 old_tabXID <- get_line(lines, "tabXID")
+old_managementID <- get_line(lines, "managementID")
 
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
@@ -114,10 +117,23 @@ old_tabXID <- get_line(lines, "tabXID")
 
 
 
+# GET OUTPUT TABLES
+
+# MODIFY FILE STRUCTURE FOR USER/QUNANTILE ESTIMATION IF NECESSARY
+
+# run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
+
 
 # GET ALL PLOTS
 
 # # MultiSiteSpecies and plotsSpecies
+# # Set management to noManagement
+# run_ID(noManagement_vector, "managementID", old_managementID)
+# run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
+
+# # MultiSiteSpecies and plotsSpecies
+# # Set management to managed
+# run_ID(managed_vector, "managementID", old_managementID)
 # run_species_and_estimate(estimated_vector, species_vector, multi_and_plots_species)
 
 # # Get layers and then sums and means
@@ -125,8 +141,8 @@ old_tabXID <- get_line(lines, "tabXID")
 # run_ID(layer_vector, "layerID", old_lID, sums_means)
 # source("scripts/plotsSumsMeans.R")
 
-# # Get layers and then plot tables to get side by side layer plots
-# # Set tabXID to 1
+# Get layers and then plot tables to get side by side layer plots
+# Set tabXID to 1
 # run_ID(tabX_layer_vector, "tabXID", old_tabXID)
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
 # run_ID(layer_vector, "layerID", old_lID, plot_tables)

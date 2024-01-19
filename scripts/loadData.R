@@ -11,7 +11,6 @@ estimatedList <- list(estimated_user, estimated_quantile)
 
 
 
-
 # climate
 
 # Get tran files
@@ -56,8 +55,8 @@ nYears <- floor(ncol(PARtran)/365)
 
 ### SOIL DEPTH WAS 1000. CHECK THIS!!! 
 soilDepth <- soilData[,"soil depth"] * 10
-WP <- soilData[,"WP"]/ soilDepth
-FC <- soilData[,"FC"]/ soilDepth
+WP <- soilData[,"WP"]/ 1000
+FC <- soilData[,"FC"]/ 1000
 
 
 # Create siteInfo matrix

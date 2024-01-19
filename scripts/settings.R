@@ -26,9 +26,7 @@ library(parallelly)
 
 ### Variables ###
 layerID <- 2
-speciesID <- 1
-defaultThin <- 0
-ClCut <- 0
+speciesID <- 4
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 layerNames <- c("Trees","Clusters")
 # SiteType estimates either by user, or by quantile
@@ -36,7 +34,15 @@ estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
 estimatedNames <- c("User", "Quantile")
 tabXNames <- c("layer","layerAggr")
-tabXID <- 2
+tabXID <- 1
+
+# # Management 
+# defaultThin <- 0
+# ClCut <- 0
+managementID <- 0
+managementNames <- c("noManagement", "managed")
+
+
 
 # Where climate data is from.
 data_from <- "gitlab"
@@ -44,7 +50,7 @@ data_from <- "gitlab"
 ### Paths ###
 
 # soil
-# soilData_path2 <- "data/soil/soil_data_wp_fc_gitlab_picus_prebas.csv"
+# soilData_path <- "data/soil/original_with_soil_depth_1000.csv"
 soilData_path <- "data/soil/grd5_soil_data_prebas.csv"
 
 # climate

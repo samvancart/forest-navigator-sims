@@ -14,6 +14,7 @@ source('./r/utils.R')
 ### nSites from loadData.R ###
 
 print(paste0("Running multiSiteLayers.R for layer ", layerNames[layerID]))
+print(paste0("Management: ", managementNames[managementID+1]))
 
 # NFI DATA
 nfi_path <- nfi_sweden_paths[layerID]
@@ -55,21 +56,69 @@ system.time(
 
 
 
+
+
+
 print("Initialising model...")
 # Initialise model
 ### Using siteType estimate based on N
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
-  siteInfo = siteInfo,
+  siteInfo = as.matrix(siteInfo),
   multiInitVar = multiInitVar,
   PAR = PARtran,
   VPD = VPDtran, # Check VPD or VPDtran_kpa
   CO2= CO2tran,
   Precip=Preciptran,
   TAir=TAirtran,
-  defaultThin=0,
-  ClCut=0)
+  defaultThin=managementID,
+  ClCut=managementID)
 
 print("Done.")
+
+
+### TEST START ### 
+
+
+# siteInfo1 <- siteInfo2 <- as.matrix(siteInfo)
+# siteInfo1[,10:12] <- modOut_original$siteInfo[,8:10]
+# siteInfo2[,10:12] <- modOut$siteInfo[,8:10]
+# 
+# siteInfo2[,10] <- 10
+# 
+# initPrebas1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+#                             siteInfo = as.matrix(siteInfo1),
+#                             multiInitVar = multiInitVar,
+#                             PAR = PARtran,
+#                             VPD = VPDtran, # Check VPD or VPDtran_kpa
+#                             CO2= CO2tran,
+#                             Precip=Preciptran,
+#                             TAir=TAirtran,
+#                             defaultThin=0,
+#                             ClCut=0)
+# 
+# initPrebas2 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
+#                             siteInfo = as.matrix(siteInfo2),
+#                             multiInitVar = multiInitVar,
+#                             PAR = PARtran,
+#                             VPD = VPDtran, # Check VPD or VPDtran_kpa
+#                             CO2= CO2tran,
+#                             Precip=Preciptran,
+#                             TAir=TAirtran,
+#                             defaultThin=0,
+#                             ClCut=0)
+# 
+# 
+# 
+# modOut1 <- multiPrebas(initPrebas1)
+# modOut2 <- multiPrebas(initPrebas2)
+# 
+# cbind(modOut1$multiOut[3,,40,1,1], modOut2$multiOut[3,,40,1,1])
+# 
+# cbind(modOut1$dailyPRELES[3,150:200,3], modOut2$dailyPRELES[3,150:200,3])
+
+
+### TEST END ### 
+
 
 
 # Save as rdata
@@ -93,6 +142,27 @@ multiOut<-modOut$multiOut
 fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
 save(multiOut, file=fileName)
 print(paste0("multiOut saved to ", fileName))
+
+
+
+### TEST START ### 
+
+
+# modOut_original <- multiPrebas(initPrebas)
+# mod_path <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
+# load(file=mod_path)
+# 
+# modOut_original$siteInfo
+# modOut$siteInfo
+# 
+# cbind(rowSums(modOut_original$multiOut[3,,30,,1]), rowSums(modOut$multiOut[3,,30,,1]))
+# 
+# modOut_original$P0y[2,,1]
+# modOut$P0y[2,,1]
+# 
+# cbind(modOut_original$multiOut[3,,40,1,1], modOut$multiOut[3,,40,1,1])
+
+### TEST END ### 
 
 
 

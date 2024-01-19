@@ -1,10 +1,10 @@
 # Output variables to csv: Years as rows and sites as columns.
 
-source('scripts/settings.R')
+source('scripts/settings.R') 
 
 # Functions
 
-write_output_table <- function(tabX,clim_sites,var,varName,species){
+write_output_table <- function(tabX,clim_sites,var,varName,species, managementName="managed"){
   
   # Array to matrix and transpose
   table <- t(as.matrix(tabX[,,var]))
@@ -18,7 +18,7 @@ write_output_table <- function(tabX,clim_sites,var,varName,species){
   
   table_name <- tolower(paste0(varName, "_", species))
   folder <- tolower(species)
-  path <- paste0("C:/Users/samu/Documents/yucatrote/r/forest_navigator23_r/data/outputs/", folder,"/", table_name,".csv")
+  path <- paste0("data/outputs/", managementName, "/", folder,"/", table_name,".csv")
   
   
   write.csv(table, path, row.names = T)
@@ -31,6 +31,8 @@ fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
 load(fileName)
 
 species <- speciesNames[speciesID]
+managementName <- managementNames[managementID+1]
+
 varXs <- c(11:14,17,18,30,43)
 
 # Get crown length: H-hc_base
@@ -53,10 +55,10 @@ nYears <- length(unique(year(climateData$time)))
 dim(lc) <- c(nSites, nYears, 1)
 
 for (i in 1:length(namesVars)) {
-  write_output_table(tabXst,clim_sites,i,namesVars[i],species)
+  write_output_table(tabXst,clim_sites,i,namesVars[i],species, managementName)
 }
 
-write_output_table(lc,clim_sites,1,"Lc",species)
+write_output_table(lc,clim_sites,1,"Lc",species, managementName)
 
 
 

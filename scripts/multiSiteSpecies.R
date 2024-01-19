@@ -12,6 +12,7 @@ source('scripts/loadData.R')
 
 print(paste0("Running multiSiteSpecies.R for species ",
              speciesNames[speciesID], " and site type estimated by ", estimatedNames[estimatedID]))
+print(paste0("Management: ", managementNames[managementID+1]))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
@@ -35,8 +36,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                             CO2= CO2tran,
                             Precip=Preciptran,
                             TAir=TAirtran,
-                            defaultThin=0, 
-                            ClCut=0)
+                            defaultThin=managementID, 
+                            ClCut=managementID)
 print("Done.")
 print("Initialising model with site type 1...")
 # setting site type to 1
@@ -49,8 +50,8 @@ initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= CO2tran,
                                 Precip=Preciptran,
                                 TAir=TAirtran,
-                                defaultThin=0, 
-                                ClCut=0)
+                                defaultThin=managementID, 
+                                ClCut=managementID)
 
 print("Done.")
 print("Initialising model with site type 5...")
@@ -64,8 +65,8 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= CO2tran,
                                 Precip=Preciptran,
                                 TAir=TAirtran,
-                                defaultThin=0,
-                                ClCut=0)
+                                defaultThin=managementID,
+                                ClCut=managementID)
 print("Done.")
 # run multisite model
 modOut <- multiPrebas(initPrebas)

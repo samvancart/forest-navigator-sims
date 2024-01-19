@@ -150,9 +150,9 @@ get_by_site_plot_path <- function(folder, siteX, data_from="gitlab", sub_folder=
   return(full_path)
 }
 
-get_by_species_plot_path <- function(species, estimatedName, data_from="gitlab") {
+get_by_species_plot_path <- function(species, estimatedName, data_from="gitlab", managementName="managed") {
   file_path <- paste0(data_from, "/", species, "_plots_", estimatedName)
-  full_path <- paste0("data/plots/by_species/", file_path, ".pdf")
+  full_path <- paste0("data/plots/by_species/", managementName , "/",file_path, ".pdf")
 
   return(full_path)
 }

@@ -18,10 +18,12 @@ melt_lc <- function(lc,runID,siteType){
 fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
 load(fileName)
 
+# Settings variables
 species <- speciesNames[speciesID]
-
 estimatedName <- estimatedNames[estimatedID]
-estimated <- estimatedList[[estimatedID]]
+# estimated <- estimatedList[[estimatedID]]
+managementName <- managementNames[managementID+1]
+
 
 # Define variables
 varXs <- c(11:14,17,18,30,43)
@@ -75,7 +77,7 @@ for(variableX in varNames[varXs]){
 
 
 # plots to pdf
-plot_path <- get_by_species_plot_path(species, estimatedName, data_from)
+plot_path <- get_by_species_plot_path(species, estimatedName, data_from, managementName)
 
 pdf(plot_path)
 for(variableX in varNames[varXs]){
