@@ -68,6 +68,12 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 defaultThin=managementID,
                                 ClCut=managementID)
 print("Done.")
+
+
+# # Save initPrebas
+# filename <- paste0(rdata_path, "initPrebas_", speciesNames[speciesID], ".rdata")
+# save(initPrebas,initPrebas_st1,initPrebas_st5, file=filename)
+
 # run multisite model
 modOut <- multiPrebas(initPrebas)
 modOut_st1 <- multiPrebas(initPrebas_st1)

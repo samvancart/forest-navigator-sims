@@ -25,10 +25,11 @@ library(parallelly)
 
 
 ### Variables ###
-layerID <- 2
 speciesID <- 4
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
+speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
 layerNames <- c("Trees","Clusters")
+
 # SiteType estimates either by user, or by quantile
 estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
@@ -37,12 +38,11 @@ tabXNames <- c("layer","layerAggr")
 tabXID <- 1
 
 # # Management 
-# defaultThin <- 0
-# ClCut <- 0
 managementID <- 0
 managementNames <- c("noManagement", "managed")
 
-
+# Output variable names from comparison protocol
+outputNames <- c('hei', 'dg', 'ba', 'Hc_base', 'dens', 'npp', 'et', 'vol', 'mort', 'inc')
 
 # Where climate data is from.
 data_from <- "gitlab"
