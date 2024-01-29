@@ -95,6 +95,9 @@ tabX_layerAggr_vector <- c(2)
 settings_file <- "scripts/settings.R"
 noManagement_vector <- c(0)
 managed_vector <- c(1)
+historical_climate_vector <-c(1)
+GFDL_ESM4_SSP370_climate_vector <-c(2)
+UKESM1_0_LL_ssp370_climate_vector <-c(3)
 
 # 1. Get file lines
 lines <- get_file_lines(settings_file)
@@ -105,6 +108,7 @@ old_eID <- get_line(lines, "estimatedID")
 old_lID <- get_line(lines, "layerID")
 old_tabXID <- get_line(lines, "tabXID")
 old_managementID <- get_line(lines, "managementID")
+old_climateID <- get_line(lines, "climateID")
 
 # run_ID(species_vector, "speciesID", old_sID, multiSpecies)
 # run_ID(layer_vector, "layerID", old_lID, multiLayers)
@@ -122,6 +126,16 @@ old_managementID <- get_line(lines, "managementID")
 
 # MODIFY FILE STRUCTURE FOR USER/QUNANTILE ESTIMATION IF NECESSARY
 
+# # Set historical climate
+# run_ID(historical_climate_vector, "climateID", old_climateID)
+# run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
+
+# # Set GFDL_ESM4_SSP370 climate
+# run_ID(GFDL_ESM4_SSP370_climate_vector, "climateID", old_climateID)
+# run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
+
+# # Set UKESM1_0_LL_ssp370 climate
+# run_ID(UKESM1_0_LL_ssp370_climate_vector, "climateID", old_climateID)
 # run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
 
 

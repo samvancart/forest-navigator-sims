@@ -42,7 +42,7 @@ managementID <- 0
 managementNames <- c("noManagement", "managed")
 
 # Output variable names from comparison protocol
-outputNames <- c('hei', 'dg', 'ba', 'Hc_base', 'dens', 'npp', 'et', 'vol', 'mort', 'inc')
+outputNames <- c('hei', 'dg', 'ba', 'dens', 'npp', 'et', 'vol', 'mort', 'inc')
 
 # Where climate data is from.
 data_from <- "gitlab"
@@ -56,7 +56,13 @@ soilData_path <- "data/soil/grd5_soil_data_prebas.csv"
 # climate
 historical_climate_data_gitlab_path = paste0("C:/Users/samu/Documents/yucatrote/projects/forest-navigator23/data/csv/climate/historical_climate_data.csv")
 prebas_gitlab_path <- paste0("data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv")
+prebas_future_GFDL_ESM4_SSP370 <- paste0("data/climate/provided/GFDL-ESM4_SSP370_prebas.csv")
+prebas_future_UKESM1_0_LL_ssp370 <- paste0("data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv")
 prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
+
+climateID <- 1
+climate_paths <- c(prebas_gitlab_path, prebas_future_GFDL_ESM4_SSP370, prebas_future_UKESM1_0_LL_ssp370)
+climateNames <- c("historical", "GFDL-ESM4_SSP370", "UKESM1-0-LL_ssp370")
 
 # nfi
 nfi_sweden_path <- paste0("data/nfi/sweden/")

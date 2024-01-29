@@ -20,7 +20,8 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # if(data_from == "gitlab") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get gitlab df
-#   df <- fread(prebas_gitlab_path, header = T)
+#   df <- fread(climate_paths[climateID], header = T)
+#   print(paste0("Loaded ", climateNames[climateID], " climate scenario."))
 # } else if(data_from=="eobs") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get eobs df

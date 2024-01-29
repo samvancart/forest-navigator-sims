@@ -13,6 +13,7 @@ source('scripts/loadData.R')
 print(paste0("Running multiSiteSpecies.R for species ",
              speciesNames[speciesID], " and site type estimated by ", estimatedNames[estimatedID]))
 print(paste0("Management: ", managementNames[managementID+1]))
+print(paste0("Climate: ", climateNames[climateID]))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
