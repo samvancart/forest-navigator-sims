@@ -25,7 +25,7 @@ library(parallelly)
 
 
 ### Variables ###
-speciesID <- 4
+speciesID <- 1
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
 layerNames <- c("Trees","Clusters")
@@ -38,7 +38,7 @@ tabXNames <- c("layer","layerAggr")
 tabXID <- 1
 
 # # Management 
-managementID <- 0
+managementID <- 1
 managementNames <- c("noManagement", "managed")
 
 # Output variable names from comparison protocol

@@ -71,6 +71,18 @@ run_ID <- function(id_vector, id_name, old_id, sources=c(NULL), settings_file="s
   }
 }
 
+# Modify an ID value
+change_ID <- function(id, id_name, old_id, settings_file = "scripts/settings.R") {
+  source(settings_file)
+  new_id <- paste0(id_name, " <- ", as.character(id))
+  lines <- get_file_lines(settings_file)
+  new_lines <- replace_patterns(c(old_id),c(new_id),lines)
+  writeLines(new_lines, settings_file)
+  old_id <- new_id
+
+}
+
+
 
 # Initialise variables
 
@@ -120,6 +132,28 @@ old_climateID <- get_line(lines, "climateID")
 # run_ID(layer_vector, "layerID", old_lID, layerAggr)
 
 
+
+# # Change ID
+# change_ID(1, "climateID", old_climateID)
+
+
+# lines <- get_file_lines(settings_file)
+# old_climateID <- get_line(lines, "climateID")
+# change_ID(2, "climateID", old_climateID)
+
+# # Get species outputs for all climate and management scenarios
+# for(i in 1:3){
+#   lines <- get_file_lines(settings_file)
+#   old_climateID <- get_line(lines, "climateID")
+#   change_ID(i, "climateID", old_climateID)
+#   for(j in 0:1){
+#     lines <- get_file_lines(settings_file)
+#     old_managementID <- get_line(lines, "managementID")
+#     old_sID <- get_line(lines, "speciesID")
+#     change_ID(j, "managementID", old_managementID)
+#     run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
+#   }
+# }
 
 
 # GET OUTPUT TABLES
