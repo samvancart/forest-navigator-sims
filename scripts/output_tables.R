@@ -2,7 +2,7 @@
 
 source('scripts/settings.R') 
 source('./r/outputs.R')
-
+source('./r/utils.R')
 
 
 # Load multiout for species
@@ -10,7 +10,7 @@ fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
 load(fileName)
 
 climateScenario <- tolower(climateNames[climateID])
-species <- speciesNames[speciesID]
+species <- get_speciesName(speciesID, speciesDict)
 managementName <- managementNames[managementID+1]
 
 # Specify output variables

@@ -1,6 +1,11 @@
 
 # Functions
 
+get_speciesName <- function(speciesID, speciesDict){
+  return (speciesDict[as.character(speciesID)][[1]])
+}
+
+
 get_df_nSites <- function(df, nSites) {
   
   df_nSites <- df %>%

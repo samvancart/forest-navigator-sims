@@ -1,5 +1,6 @@
 source('scripts/settings.R')
 source('scripts/loadData.R')
+source('./r/utils.R')
 
 # Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in settings.R.
 # Produces multiOut_spID<speciesID> rdata file.
@@ -11,7 +12,7 @@ source('scripts/loadData.R')
 ### SiteInfo created in loadData.R ###
 
 print(paste0("Running multiSiteSpecies.R for species ",
-             speciesNames[speciesID], " and site type estimated by ", estimatedNames[estimatedID]))
+             get_speciesName(speciesID, speciesDict), " and site type estimated by ", estimatedNames[estimatedID]))
 print(paste0("Management: ", managementNames[managementID+1]))
 print(paste0("Climate: ", climateNames[climateID]))
 
@@ -69,7 +70,6 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 defaultThin=managementID,
                                 ClCut=managementID)
 print("Done.")
-
 
 # # Save initPrebas
 # filename <- paste0(rdata_path, "initPrebas_", speciesNames[speciesID], ".rdata")

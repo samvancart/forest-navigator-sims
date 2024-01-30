@@ -1,5 +1,6 @@
 source('scripts/settings.R')
 source('./r/plots.R')
+source('./r/utils.R')
 
 # Functions
 
@@ -19,7 +20,7 @@ fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
 load(fileName)
 
 # Settings variables
-species <- speciesNames[speciesID]
+species <- get_speciesName(speciesID, speciesDict)
 estimatedName <- estimatedNames[estimatedID]
 # estimated <- estimatedList[[estimatedID]]
 managementName <- managementNames[managementID+1]
