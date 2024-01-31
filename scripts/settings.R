@@ -26,14 +26,14 @@ library(parallelly)
 
 ### Variables ###
 speciesID <- 12
-speciesDict <- c('1' = 'Pine', '2' = 'Spruce', '3' = 'Birch', '4' = 'Beech')
+speciesDict <- c('1' = 'Pine', '2' = 'Spruce', '3' = 'Birch', '12' = 'Beech')
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
 layerNames <- c("Trees","Clusters")
 layerID <- 1
 
 # SiteType estimates either by user, or by quantile
-estimatedID <- 1
+estimatedID <- 2
 estimated_user <- c(3.5,4.5,6,7)
 estimatedNames <- c("User", "Quantile")
 tabXNames <- c("layer","layerAggr")

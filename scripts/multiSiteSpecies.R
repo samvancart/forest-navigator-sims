@@ -27,7 +27,6 @@ pPRELES <- get_pPRELES(speciesID)
 multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 10)
 
 
-
 print(paste0("Initialising model with site type estimated by soil N..."))
 # Initialise model
 ###using siteType estimate based on N

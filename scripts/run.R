@@ -99,7 +99,7 @@ sums_means <- c("scripts/modout_sums_and_means.R")
 layerAggr <- c("scripts/layerAggr.R")
 
 # Vector values for loop. Values correspond to ids
-species_vector <- c(1:4)
+species_vector <- c((1:3), 12)
 estimated_vector <- c(1:2)
 layer_vector <- c(1:2)
 tabX_layer_vector <- c(1)

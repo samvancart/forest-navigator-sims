@@ -85,9 +85,17 @@ get_multiInitVar_species <- function(data = NA, nRows, nLayers, speciesID, initA
 }
 
 
+#' Get pPRELES parameter for model initialisation (different for speciesID 12)
+#'
+#' @param speciesID 
+#'
+#' @return pPRELES vector
+#' @export
+#'
+#' @examples
 get_pPRELES <- function(speciesID) {
   if(speciesID == 12) {return(pPRELESfasy)}
-  return(pPRELES)
+  return(pPREL)
 }
 
 
