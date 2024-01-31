@@ -26,7 +26,7 @@ library(parallelly)
 
 ### Variables ###
 speciesID <- 12
-speciesDict <- c('1' ='Pine', '2'='Spruce', '3'='Birch', '12'='Beech')
+speciesDict <- c('1' = 'Pine', '2' = 'Spruce', '3' = 'Birch', '12' = 'Beech')
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
 layerNames <- c("Trees","Clusters")

@@ -1,8 +1,8 @@
 source('scripts/settings.R')
 
 # Climate scenario
-# climate_name <- "GFDL-ESM4_SSP370"
-climate_name <- "UKESM1-0-LL_ssp370"
+climate_name <- "GFDL-ESM4_SSP370"
+# climate_name <- "UKESM1-0-LL_ssp370"
 
 # Get climate data
 climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
@@ -28,6 +28,9 @@ colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "rh", "vpd", "clim
 
 # Filter using reference table
 data <- data[siteID %in% ref_data$siteID]
+
+# Vpd from hpa to kpa
+data[, vpd := vpd/10]
 
 # Get rss from qq
 data[, rss := qq*0.0864]
