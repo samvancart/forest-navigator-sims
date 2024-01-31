@@ -1,6 +1,7 @@
 source('scripts/settings.R')
 source('scripts/loadData.R')
 source('./r/utils.R')
+source('./r/multiSite.R')
 
 # Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in settings.R.
 # Produces multiOut_spID<speciesID> rdata file.
@@ -19,12 +20,12 @@ print(paste0("Climate: ", climateNames[climateID]))
 # Number of layers and species
 nLayers <- nSpecies <- 1
 
+# Get pPRELES parameter (different for speciesID 12)
+pPRELES <- get_pPRELES(speciesID)
+
 # Create multiInitVar
-multiInitVar <- array(NA,dim=c(nSites,7,nLayers))
-multiInitVar[,1,] <- speciesID
-multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]
-multiInitVar[,5,] <- initSeedling.def[3]; multiInitVar[,6,] <- initSeedling.def[4]
-multiInitVar[,2,] <- 100
+multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 10)
+
 
 
 print(paste0("Initialising model with site type estimated by soil N..."))
@@ -33,6 +34,7 @@ print(paste0("Initialising model with site type estimated by soil N..."))
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                             siteInfo = siteInfo,
                             multiInitVar = multiInitVar,
+                            pPRELES = pPRELES,
                             PAR = PARtran,
                             VPD = VPDtran,
                             CO2= CO2tran,
@@ -47,6 +49,7 @@ siteInfo[,3]=1
 initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 siteInfo = siteInfo,
                                 multiInitVar = multiInitVar,
+                                pPRELES = pPRELES,
                                 PAR = PARtran,
                                 VPD = VPDtran,
                                 CO2= CO2tran,
@@ -62,6 +65,7 @@ siteInfo[,3]=5
 initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 siteInfo = siteInfo,
                                 multiInitVar = multiInitVar,
+                                pPRELES = pPRELES,
                                 PAR = PARtran,
                                 VPD = VPDtran,
                                 CO2= CO2tran,

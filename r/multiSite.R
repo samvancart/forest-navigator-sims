@@ -62,5 +62,49 @@ get_prebas_tran_2 <- function(dt, var, id = "siteID") {
 
 
 
+#' Create multiInitVar for initialising multisite prebas with one species
+#'
+#' @param data Type of data to initialise array with (default NA)
+#' @param nRows Number of rows (corresponds to number of sites)
+#' @param nLayers Number of layers
+#' @param speciesID speciesID
+#' @param initAge Initial age of forest
+#'
+#' @return 3 dimensional array
+#' @export
+#'
+#' @examples
+get_multiInitVar_species <- function(data = NA, nRows, nLayers, speciesID, initAge=100) {
+  multiInitVar <- array(NA, dim=c(nRows, 7, nLayers))
+  multiInitVar[,1,] <- speciesID
+  multiInitVar[,3,] <- initSeedling.def[1]; multiInitVar[,4,] <- initSeedling.def[2]
+  multiInitVar[,5,] <- initSeedling.def[3]; multiInitVar[,6,] <- initSeedling.def[4]
+  multiInitVar[,2,] <- initAge
+  
+  return(multiInitVar)
+}
+
+
+get_pPRELES <- function(speciesID) {
+  if(speciesID == 12) {return(pPRELESfasy)}
+  return(pPRELES)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

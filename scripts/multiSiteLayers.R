@@ -32,6 +32,8 @@ nSites <- length(unique(df_nSites$groupID))
 nLayers <- (df_nSites %>% count(groupID))$n
 nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
 
+# Get pPRELES parameter (different for speciesID 12)
+pPRELES <- get_pPRELES(speciesID)
 
 siteInfo[,8] <- nLayers
 siteInfo[,9] <- nSpecies
@@ -40,8 +42,8 @@ maxNlayers <- max(nLayers)
 
 
 
-multiInitVar <- array(0,dim=c(nSites,7,maxNlayers))
-multiInitVar[,6:7,NA]
+multiInitVar <- array(0, dim=c(nSites,7,maxNlayers))
+multiInitVar[,6:7,NA] # Redundant?
 system.time(
   for(i in 1:nSites){
     filtered <- df_nSites %>% filter(groupID==i)
@@ -58,13 +60,13 @@ system.time(
 
 
 
-
 print("Initialising model...")
 # Initialise model
 ### Using siteType estimate based on N
 initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   siteInfo = as.matrix(siteInfo),
   multiInitVar = multiInitVar,
+  pPRELES = pPRELES,
   PAR = PARtran,
   VPD = VPDtran, # Check VPD or VPDtran_kpa
   CO2= CO2tran,
