@@ -100,7 +100,25 @@ get_pPRELES <- function(speciesID) {
 
 
 
-
+#' Modify parameter 17 in pCROBAS according to species 
+#'
+#' @param speciesID
+#' @param pCROBAS_multipliers Dictionary of pCROBAS multipliers for each species by speciesID
+#' @param pCROB Original pCROB array
+#'
+#' @return Copy of pCROB with modified value
+#' @export
+#'
+#' @examples
+get_pCROBAS <- function(speciesID, pCROBAS_multipliers, pCROB) {
+  pCROB_copy <- pCROB
+  pCROB_multiplier <- pCROBAS_multipliers[as.character(speciesID)][[1]]
+  if(is.na(pCROB_multiplier)){
+    stop(paste0("pCROB multiplier is ",  NA, ", check speciesID."))
+    }
+  pCROB_copy[17, speciesID] <- pCROB_copy[17, speciesID] * pCROB_multiplier
+  return(pCROB_copy)
+}
 
 
 

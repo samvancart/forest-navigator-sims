@@ -31,9 +31,13 @@ nSites <- length(unique(df_nSites$groupID))
 
 nLayers <- (df_nSites %>% count(groupID))$n
 nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
+ 
+### CHECK IF MODIFICATIONS TO PRELES AND CROBAS ARE NECESSARY ###
 
 # Get pPRELES parameter (different for speciesID 12)
 pPRELES <- get_pPRELES(speciesID)
+
+
 
 siteInfo[,8] <- nLayers
 siteInfo[,9] <- nSpecies

@@ -25,12 +25,15 @@ library(parallelly)
 
 
 ### Variables ###
-speciesID <- 12
+speciesID <- 1
 speciesDict <- c('1' = 'Pine', '2' = 'Spruce', '3' = 'Birch', '12' = 'Beech')
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
 layerNames <- c("Trees","Clusters")
 layerID <- 1
+
+# pCROBAS multipliers
+pCROBAS_multipliers <- c('1'=1.3, '2'=1.3, '3'=0.6, '12'=1)
 
 # SiteType estimates either by user, or by quantile
 estimatedID <- 2

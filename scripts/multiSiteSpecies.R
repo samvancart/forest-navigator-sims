@@ -23,8 +23,12 @@ nLayers <- nSpecies <- 1
 # Get pPRELES parameter (different for speciesID 12)
 pPRELES <- get_pPRELES(speciesID)
 
+# Get pCROBAS parameter
+pCROB_copy <- get_pCROBAS(speciesID = speciesID, pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
+
+
 # Create multiInitVar
-multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 10)
+multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 100) # CHECK AGE
 
 
 print(paste0("Initialising model with site type estimated by soil N..."))
@@ -34,6 +38,7 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                             siteInfo = siteInfo,
                             multiInitVar = multiInitVar,
                             pPRELES = pPRELES,
+                            pCROBAS = pCROB_copy,
                             PAR = PARtran,
                             VPD = VPDtran,
                             CO2= CO2tran,
@@ -49,6 +54,7 @@ initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 siteInfo = siteInfo,
                                 multiInitVar = multiInitVar,
                                 pPRELES = pPRELES,
+                                pCROBAS = pCROB_copy,
                                 PAR = PARtran,
                                 VPD = VPDtran,
                                 CO2= CO2tran,
@@ -65,6 +71,7 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 siteInfo = siteInfo,
                                 multiInitVar = multiInitVar,
                                 pPRELES = pPRELES,
+                                pCROBAS = pCROB_copy,
                                 PAR = PARtran,
                                 VPD = VPDtran,
                                 CO2= CO2tran,
