@@ -23,6 +23,7 @@ plot_initPrebas <- function(def_multiOut, new_multiOut, varXs, species, yieldTab
 
 varXs <- c(11:13,17)
 y_units <- c("11"="m", "12"="cm", "13"="m²/ha", "17"="N")
+plot_path <- "data/plots/pCrobasDefNew/"
 
 
 fileName <- paste0(rdata_path, "initPrebas_Beech.rdata")
@@ -42,10 +43,18 @@ h_yieldTab <- c(13,25,28)
 age_yieldTab <- c(45,90,120)
 d_yieldTab <- c(13,29,43)
 
+## All
+pdf_path <- paste0(plot_path,"All.pdf")
+pdf(pdf_path, width = 14, height = 9)
+
+
+# pdf_path <- paste0(plot_path,"Beech.pdf")
+# pdf(pdf_path)
+
 # Create plots
 plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 
                 'Beech', yieldTabs=c(h_yieldTab, age_yieldTab, d_yieldTab), y_units = y_units)
-
+# dev.off()
 
 ####Spruce analysis
 # rm(list=ls()); gc()
@@ -62,9 +71,14 @@ run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 initPrebas$pCROBAS[17,2] <- initPrebas$pCROBAS[17,2] * 1.3
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
+
+# pdf_path <- paste0(plot_path,"Spruce.pdf")
+# pdf(pdf_path)
+
 # Create plots
 plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Spruce', y_units = y_units)
 
+# dev.off()
 
 
 ####Pine analysis
@@ -82,8 +96,13 @@ run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 initPrebas$pCROBAS[17,1] <- initPrebas$pCROBAS[17,1] * 1.3
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
+# pdf_path <- paste0(plot_path,"Pine.pdf")
+# pdf(pdf_path)
+
 # Create plots
 plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Pine', y_units = y_units)
+
+# dev.off()
 
 
 
@@ -102,8 +121,13 @@ run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 initPrebas$pCROBAS[17,3] <- initPrebas$pCROBAS[17,3] * 0.6
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
+
+# pdf_path <- paste0(plot_path,"Birch.pdf")
+# pdf(pdf_path)
+
 # Create plots
 plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Birch', y_units = y_units)
 
+dev.off()
 
 
