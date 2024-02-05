@@ -24,7 +24,7 @@ nLayers <- nSpecies <- 1
 pPRELES <- get_pPRELES(speciesID)
 
 # Get pCROBAS parameter
-pCROB_copy <- get_pCROBAS(speciesID = speciesID, pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
+pCROB_copy <- get_pCROBAS(speciesIDs = c(speciesID), pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
 
 
 # Create multiInitVar

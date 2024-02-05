@@ -1,6 +1,7 @@
 source('scripts/settings.R')
 source('scripts/loadData.R')
 source('./r/utils.R')
+source('./r/multiSite.R')
 
 
 # Run multisite prebas for different layers (trees or clusters) based on NFI data. LayerIds in settings.R.
@@ -35,8 +36,17 @@ nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
 ### CHECK IF MODIFICATIONS TO PRELES AND CROBAS ARE NECESSARY ###
 
 # Get pPRELES parameter (different for speciesID 12)
-pPRELES <- get_pPRELES(speciesID)
+# pPRELES <- get_pPRELES(speciesID)
 
+
+
+speciesIDs = as.numeric(names(speciesDict))
+# speciesIDs = c(1,2,15,3)
+# speciesIDs <- unique(df_nSites$speciesID)
+
+pCROB_copy <- get_pCROBAS(speciesIDs = speciesIDs, pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
+pCROB[17,]
+pCROB_copy[17,]
 
 
 siteInfo[,8] <- nLayers
