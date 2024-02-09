@@ -55,7 +55,6 @@ siteInfo[,9] <- nSpecies
 maxNlayers <- max(nLayers)
 
 
-
 multiInitVar <- array(0, dim=c(nSites,7,maxNlayers))
 multiInitVar[,6:7,NA] # Redundant?
 system.time(

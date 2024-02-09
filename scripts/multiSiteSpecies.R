@@ -23,9 +23,11 @@ nLayers <- nSpecies <- 1
 # Get pPRELES parameter (different for speciesID 12)
 pPRELES <- get_pPRELES(speciesID)
 
-# Get pCROBAS parameter
+# Set pCROBAS kRein parameter
 pCROB_copy <- get_pCROBAS(speciesIDs = c(speciesID), pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
 
+# Set pCROBAS thetaMax parameter
+pCROB_copy[31, speciesID] <- thetaMax
 
 # Create multiInitVar
 multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 100) # CHECK AGE

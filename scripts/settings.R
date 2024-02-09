@@ -34,9 +34,10 @@ layerID <- 1
 
 # pCROBAS multipliers
 pCROBAS_multipliers <- c('1'=1.3, '2'=1.3, '3'=0.6, '12'=1)
+thetaMax <- 0.1 # CHECK THIS
 
 # SiteType estimates either by user, or by quantile
-estimatedID <- 2
+estimatedID <- 1
 estimated_user <- c(3.5,4.5,6,7)
 estimatedNames <- c("User", "Quantile")
 tabXNames <- c("layer","layerAggr")
