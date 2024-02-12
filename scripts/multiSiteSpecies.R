@@ -30,7 +30,7 @@ pCROB_copy <- get_pCROBAS(speciesIDs = c(speciesID), pCROBAS_multipliers = pCROB
 pCROB_copy[31, speciesID] <- thetaMax
 
 # Create multiInitVar
-multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 100) # CHECK AGE
+multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = speciesID, initAge = 12) # CHECK AGE
 
 
 print(paste0("Initialising model with site type estimated by soil N..."))

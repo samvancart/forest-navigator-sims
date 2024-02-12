@@ -135,24 +135,32 @@ old_climateID <- get_line(lines, "climateID")
 
 # # Change ID
 # change_ID(1, "climateID", old_climateID)
-
-
+# 
+# 
 # lines <- get_file_lines(settings_file)
 # old_climateID <- get_line(lines, "climateID")
 # change_ID(2, "climateID", old_climateID)
 
-# # Get species outputs for all climate and management scenarios
+# Get species outputs for all climate and management scenarios
+for(i in 1:3){
+  lines <- get_file_lines(settings_file)
+  old_climateID <- get_line(lines, "climateID")
+  change_ID(i, "climateID", old_climateID)
+  for(j in 0:1){
+    lines <- get_file_lines(settings_file)
+    old_managementID <- get_line(lines, "managementID")
+    old_sID <- get_line(lines, "speciesID")
+    change_ID(j, "managementID", old_managementID)
+    run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
+  }
+}
+
+# # Run outputs for all climates with current managementID
 # for(i in 1:3){
 #   lines <- get_file_lines(settings_file)
 #   old_climateID <- get_line(lines, "climateID")
 #   change_ID(i, "climateID", old_climateID)
-#   for(j in 0:1){
-#     lines <- get_file_lines(settings_file)
-#     old_managementID <- get_line(lines, "managementID")
-#     old_sID <- get_line(lines, "speciesID")
-#     change_ID(j, "managementID", old_managementID)
-#     run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
-#   }
+#   run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
 # }
 
 

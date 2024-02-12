@@ -25,7 +25,7 @@ library(parallelly)
 
 
 ### Variables ###
-speciesID <- 1
+speciesID <- 12
 speciesDict <- c('1' = 'Pine', '2' = 'Spruce', '3' = 'Birch', '12' = 'Beech')
 speciesNames <- c('Pine','Spruce', 'Birch', 'Beech')
 speciesCodes <- c('pinsy', 'picab', 'betpe', 'fagsy')
@@ -34,7 +34,7 @@ layerID <- 1
 
 # pCROBAS multipliers
 pCROBAS_multipliers <- c('1'=1.3, '2'=1.3, '3'=0.6, '12'=1)
-thetaMax <- 0.1 # CHECK THIS
+thetaMax <- 0.03 # CHECK THIS
 
 # SiteType estimates either by user, or by quantile
 estimatedID <- 1
@@ -44,7 +44,7 @@ tabXNames <- c("layer","layerAggr")
 tabXID <- 1
 
 # # Management 
-managementID <- 0
+managementID <- 1
 managementNames <- c("noManagement", "managed")
 
 # Output variable names from comparison protocol
@@ -66,7 +66,7 @@ prebas_future_GFDL_ESM4_SSP370 <- paste0("data/climate/provided/GFDL-ESM4_SSP370
 prebas_future_UKESM1_0_LL_ssp370 <- paste0("data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv")
 prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
 
-climateID <- 1
+climateID <- 3
 climate_paths <- c(prebas_gitlab_path, prebas_future_GFDL_ESM4_SSP370, prebas_future_UKESM1_0_LL_ssp370)
 climateNames <- c("historical", "GFDL-ESM4_SSP370", "UKESM1-0-LL_ssp370")
 

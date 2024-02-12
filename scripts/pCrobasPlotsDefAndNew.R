@@ -66,7 +66,7 @@ age_yieldTab <- c(45,90,120)
 d_yieldTab <- c(13,29,43)
 
 ## All
-pdf_path <- paste0(plot_path,"All_nfi_thetaMax.pdf")
+pdf_path <- paste0(plot_path,"All_nfi_thetaMax_", thetaMax,".pdf")
 pdf(pdf_path, width = 14, height = 9)
 
 
