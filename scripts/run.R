@@ -110,6 +110,7 @@ managed_vector <- c(1)
 historical_climate_vector <-c(1)
 GFDL_ESM4_SSP370_climate_vector <-c(2)
 UKESM1_0_LL_ssp370_climate_vector <-c(3)
+historical_detrend_climate_vector <- c(4)
 
 # 1. Get file lines
 lines <- get_file_lines(settings_file)
@@ -142,7 +143,7 @@ old_climateID <- get_line(lines, "climateID")
 # change_ID(2, "climateID", old_climateID)
 
 # Get species outputs for all climate and management scenarios
-for(i in 1:3){
+for(i in 4:4){
   lines <- get_file_lines(settings_file)
   old_climateID <- get_line(lines, "climateID")
   change_ID(i, "climateID", old_climateID)

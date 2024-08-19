@@ -8,6 +8,46 @@ climate_name <- "GFDL-ESM4_SSP370"
 climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
 data <- fread(climate_path)
 
+
+
+
+######### -------------- DETREND DATA -------------- #########
+
+# Get prebas sites from detrend data
+climate_name <- "historical_detrend_climate_data"
+# climate_name <- "ICHEC-EC-EARTH_rcp85_3models_new"
+climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
+# detrend_data <- fread(climate_path)
+data <- fread(climate_path)
+data <- data[Latitude>=53]
+length(unique(data$PlgID))
+(max(data$time)-min(data$time))/365
+colnames(data)
+
+# # TO SF
+# # Unique coords
+# coords_dt <- data[!duplicated(data$PlgID), c("Latitude", "Longitude", "PlgID")]
+# data_sf <- st_as_sf(coords_dt, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
+# st_write(data_sf, "data/sf/historical_detrend_coords.shp")
+# coords_dt[!which(coords_dt$Latitude<53)]
+
+
+# detrend_prebas_sites <- detrend_data[(PlgID %in% data[,PlgID])]
+# unique(detrend_prebas_sites$PlgID)
+# unique(data$PlgID)
+# unique(detrend_data$PlgID)
+# 
+# length(unique(data$PlgID))
+# length(unique(detrend_prebas_sites$PlgID))
+# length(which(unique(data$PlgID) %in% unique(detrend_data$PlgID)))
+# which(unique(data$PlgID) %in% unique(detrend_data$PlgID))
+
+######### -------------- END DETREND DATA -------------- #########
+
+unique(ref_data$siteID)
+unique(data[PlgID %in% ref_data$siteID]$PlgID)
+
+
 # Get climate reference data
 ref_data <- fread(prebas_gitlab_path)
 
@@ -17,8 +57,35 @@ co2_path <- paste0("data/climate/provided/", co2_name, ".csv")
 co2_data <- fread(co2_path)
 
 
+
+######### -------------- TEST -------------- #########
+
 # Drop unnecessary cols
-data <- data[, c(1,4,5,6,7,10,11)]
+keep_cols <- c("PlgID", "time", "pr", "rsds", "tas", "hurs", "vpd")
+keep_cols_idxs <- which(colnames(data) %in% keep_cols)
+data <- data[, ..keep_cols_idxs]
+data <- data[PlgID %in% ref_data$siteID]
+
+unique(ref_data$climID)
+climID_dt <- ref_data[,c("siteID", "climID")]
+colnames(climID_dt)[[1]] <- "PlgID"
+climID_dt <- climID_dt[!duplicated(climID_dt)]
+
+data_climID <- left_join(data, climID_dt, by = "PlgID")
+colnames(data_climID) <- c("time", "siteID", "precip", "qq", "tair", "vpd", "climID")
+
+data <- data_climID
+
+unique(data_climID$PlgID)
+ref_data[siteID==7480366]
+
+
+######### -------------- END TEST -------------- #########
+
+
+
+# # Drop unnecessary cols
+# data <- data[, c(1,4,5,6,7,10,11)]
 
 # Assign climate IDs
 data[, climID := .GRP, by = PlgID]
@@ -53,6 +120,9 @@ data <- data[co2_data]
 
 # Remove year helper column
 data[, year := NULL]
+
+# Remove NAs (WHEN DATA YEARS DIFFER FROM CO2 TABLE YEARS)
+data <- data[complete.cases(data)]
 
 # Filter prebas columns
 data_prebas <- data[,c("time", "siteID", "climID", "par", "tair", "vpd", "precip", "co2")]

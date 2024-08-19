@@ -62,6 +62,35 @@ get_prebas_tran_2 <- function(dt, var, id = "siteID") {
 
 
 
+#' Dynamic dcast Function
+#'
+#' This function reshapes a data.table so that the specified `id_col` becomes the row identifier,
+#' the `time_col` becomes the column identifier, and the `value_col` contains the values.
+#'
+#' @param dt A data.table containing the data to be reshaped.
+#' @param id_col A character string specifying the column to be used as row identifiers.
+#' @param time_col A character string specifying the column to be used as column identifiers.
+#' @param value_col A character string specifying the column containing the values to be reshaped.
+#' @return A reshaped data.table.
+#' @examples
+#' library(data.table)
+#' climate_data <- data.table(
+#'   siteID = c(1, 1, 2, 2),
+#'   day = c('2024-08-01', '2024-08-02', '2024-08-01', '2024-08-02'),
+#'   variable = c(25.3, 26.1, 24.8, 25.5)
+#' )
+#' reshaped_data <- dynamic_dcast(climate_data, "siteID", "day", "variable")
+#' print(reshaped_data)
+#' @export
+dynamic_dcast <- function(dt, id_col, time_col, value_col) {
+  formula <- as.formula(paste(id_col, "~", time_col))
+  dcast_dt <- dcast(dt, formula, value.var = value_col)
+  return(dcast_dt)
+}
+
+
+
+
 #' Create multiInitVar for initialising multisite prebas with one species
 #'
 #' @param data Type of data to initialise array with (default NA)

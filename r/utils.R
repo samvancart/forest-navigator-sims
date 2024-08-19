@@ -245,3 +245,50 @@ extract_forest_classes_10km <- function(sf, cores, fromRow=1, toRow=nrow(sf), li
   return(forest_classes)
 }
 
+
+#' See if a specific variable exists and contains a directory path and return the path if it does. 
+#' If the variable doesn't exist then a default path is returned. If the variable exists but
+#' the directory path doesn't yet then the path is created.
+#'
+#' @param pathVarName character A string representing the variable name
+#' @param defaultDir character The default directory path
+#' @param subDir character The subdirectory that will be added
+#'
+#' @return character The path
+#' @export
+#'
+#' @examples
+get_or_create_path <- function(pathVarName, defaultDir, subDir="") {
+  if(!exists(pathVarName)) {
+    path = defaultDir
+  } else {
+    mainDir <- eval(parse(text=pathVarName))
+    path <- file.path(mainDir, subDir)
+    print(paste0("Creating ", pathVarName, " in ", path))
+    dir.create(path = path, recursive = T, showWarnings = F)
+    path <- mainDir
+  }
+  return(path)
+}
+
+
+
+#' Load R Data File
+#'
+#' This function loads an R data file into a new environment and returns the object.
+#'
+#' @param RDataFile The path to the R data file to be loaded.
+#'
+#' @return Returns the object loaded from the RDataFile.
+#'
+#' @examples
+#' # Assuming 'data.RData' contains an object named 'my_data'
+#' my_data <- loadRDataFile('data.RData')
+#'
+#' @export
+loadRDataFile <- function(RDataFile) {
+  temp_env <- new.env()
+  obj <- get(load(RDataFile), temp_env)
+  return(obj)
+}
+

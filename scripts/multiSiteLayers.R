@@ -55,6 +55,12 @@ siteInfo[,9] <- nSpecies
 maxNlayers <- max(nLayers)
 
 
+# # DATA TABLE multiInitVar
+# dt_nSites <- as.data.table(df_nSites)
+# dt_nSites[, miv_layerID := seq(.N), by = c("groupID")]
+# nLayers2 <- dt_nSites[, max(miv_layerID), by = c("groupID")]$V1
+
+
 multiInitVar <- array(0, dim=c(nSites,7,maxNlayers))
 multiInitVar[,6:7,NA] # Redundant?
 system.time(
@@ -80,11 +86,11 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   siteInfo = as.matrix(siteInfo),
   multiInitVar = multiInitVar,
   pPRELES = pPRELES,
-  PAR = PARtran,
-  VPD = VPDtran, # Check VPD or VPDtran_kpa
-  CO2= CO2tran,
-  Precip=Preciptran,
-  TAir=TAirtran,
+  PAR = parTran,
+  VPD = vpdTran, # Check VPD or VPDtran_kpa
+  CO2= co2Tran,
+  Precip=precipTran,
+  TAir=tairTran,
   defaultThin=managementID,
   ClCut=managementID)
 

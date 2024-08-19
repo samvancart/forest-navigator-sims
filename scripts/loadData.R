@@ -1,6 +1,6 @@
 source('scripts/settings.R')
 source('./r/multiSite.R')
-
+source('./r/utils.R')
 
 ### Load data ###
 
@@ -8,8 +8,6 @@ source('./r/multiSite.R')
 soilData <- fread(soilData_path)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(estimated_user, estimated_quantile)
-
-
 
 # climate
 
@@ -31,8 +29,8 @@ estimatedList <- list(estimated_user, estimated_quantile)
 #   stop(paste0("'",data_from,"'"," is not a valid climate data source! Modify variable 'data_from' in settings.R."))
 # 
 # }
-# 
-# 
+
+
 # print("Creating tran files...")
 # PARtran <- get_prebas_tran_2(df, "par")
 # VPDtran <- get_prebas_tran_2(df, "vpd")
@@ -42,17 +40,44 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # print("Done.")
 
 
+
+
+# Load tran binaries
+
+path_tran <- paste0(tranPath, climateNames[climateID])
+tran_files <- list.files(path_tran, full.names = T)
+
+print(paste0("Loading tran files from ", path_tran))
+
+# Load if not loaded
+invisible(lapply(tran_files, function(x){
+  varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
+  if(!exists(varName)) {
+    print(paste0("Loading ", varName))
+    load(file = x, envir = .GlobalEnv)
+  } else {
+    print(paste0(varName, " already loaded."))
+  }
+}))
+
+print("Done.")
+
+
 print("Creating siteInfo...")
 
 # siteInfo
 
 # Number of sites in this case matches the number of climIDs
-nSites <- nrow(PARtran)
+nSites <- nrow(parTran)
 
 # Number of simulation years
-nYears <- floor(ncol(PARtran)/365)
+nYears <- floor(ncol(parTran)/365)
 
 # Soil parameters
+
+# Filter siteIDs
+soilData <- soilData[siteID %in% parTran[,1]]
+
 
 ### SOIL DEPTH WAS 1000. CHECK THIS!!! 
 soilDepth <- soilData[,"soil depth"] * 10
