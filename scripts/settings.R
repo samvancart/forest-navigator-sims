@@ -68,7 +68,7 @@ prebas_future_UKESM1_0_LL_ssp370 <- paste0("data/climate/provided/UKESM1-0-LL_ss
 prebas_historical_detrend <- paste0("data/climate/provided/historical_detrend_climate_data_prebas.csv")
 prebas_eobs_path <- paste0("data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv")
 
-climateID <- 4
+climateID <- 1
 climate_paths <- c(prebas_gitlab_path, prebas_future_GFDL_ESM4_SSP370, prebas_future_UKESM1_0_LL_ssp370, prebas_historical_detrend)
 climateNames <- c("historical", "GFDL-ESM4_SSP370", "UKESM1-0-LL_ssp370", "historical_detrend")
 

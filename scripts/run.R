@@ -143,7 +143,7 @@ old_climateID <- get_line(lines, "climateID")
 # change_ID(2, "climateID", old_climateID)
 
 # Get species outputs for all climate and management scenarios
-for(i in 4:4){
+for(i in c(1,4)){
   lines <- get_file_lines(settings_file)
   old_climateID <- get_line(lines, "climateID")
   change_ID(i, "climateID", old_climateID)
@@ -154,6 +154,8 @@ for(i in 4:4){
     change_ID(j, "managementID", old_managementID)
     run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
   }
+  # Remove tran files
+  rm(parTran,tairTran,precipTran,vpdTran,co2Tran)
 }
 
 # # Run outputs for all climates with current managementID

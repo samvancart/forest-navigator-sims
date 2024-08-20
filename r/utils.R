@@ -292,3 +292,24 @@ loadRDataFile <- function(RDataFile) {
   return(obj)
 }
 
+
+#' Get Functions in Environment
+#'
+#' This function retrieves the names of all functions in a specified environment.
+#'
+#' @param env The environment from which to retrieve function names. Defaults to the global environment (`.GlobalEnv`).
+#' @return A character vector containing the names of all functions in the specified environment.
+#' @examples
+#' # Get functions in the global environment
+#' get_functions_in_env()
+#'
+#' # Get functions in a specific environment
+#' my_env <- new.env()
+#' assign("my_function", function() {}, envir = my_env)
+#' get_functions_in_env(env = my_env)
+get_functions_in_env <- function(env = .GlobalEnv) {
+  all_objects <- ls(envir = env)
+  functions <- all_objects[sapply(all_objects, function(x) is.function(get(x, envir = env)))]
+  return(functions)
+}
+

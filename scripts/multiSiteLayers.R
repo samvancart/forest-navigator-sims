@@ -19,24 +19,24 @@ print(paste0("Management: ", managementNames[managementID+1]))
 
 # NFI DATA
 nfi_path <- nfi_sweden_paths[layerID]
-df <- fread(nfi_path)
+dt <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))
 
 
 # Choose sites
-df_nSites <- get_df_nSites(df, nSites)
+dt_nSites <- dt[groupID %in% unique(groupID)[1:nSites]]
 # df_nSites <- df
-nSites <- length(unique(df_nSites$groupID))
+nSites <- length(unique(dt_nSites$groupID))
 
 
-nLayers <- (df_nSites %>% count(groupID))$n
-nSpecies <- (df_nSites %>% count(speciesID,groupID) %>% count(groupID))$n
+nLayers <- dt_nSites[, .N, by = groupID]$N
+nSpecies <- dt_nSites[, .N, by = c("speciesID","groupID")][, .N, by = groupID]$N
  
 ### CHECK IF MODIFICATIONS TO PRELES AND CROBAS ARE NECESSARY ###
 
 # Get pPRELES parameter (different for speciesID 12)
-# pPRELES <- get_pPRELES(speciesID)
+pPRELES <- get_pPRELES(speciesID)
 
 
 
@@ -61,19 +61,29 @@ maxNlayers <- max(nLayers)
 # nLayers2 <- dt_nSites[, max(miv_layerID), by = c("groupID")]$V1
 
 
-multiInitVar <- array(0, dim=c(nSites,7,maxNlayers))
+
+# Initialize the multiInitVar array
+multiInitVar <- array(0, dim=c(nSites, 7, maxNlayers))
+
 multiInitVar[,6:7,NA] # Redundant?
-system.time(
-  for(i in 1:nSites){
-    filtered <- df_nSites %>% filter(groupID==i)
-    multiInitVar[i,1,1:nLayers[i]] <- filtered$speciesID # vector of species ID taken from data
-    multiInitVar[i,2,1:nLayers[i]] <- filtered$Age # age by tree from NFI
-    multiInitVar[i,3,1:nLayers[i]] <- filtered$Height # height from NFI data
-    multiInitVar[i,4,1:nLayers[i]] <- filtered$Dbh # dbh from NFI data
-    multiInitVar[i,5,1:nLayers[i]] <- filtered$basal_area # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
-    multiInitVar[i,6,1:nLayers[i]] <- NA
+
+system.time({
+# Split the data.table by groupID
+  split_data <- split(dt_nSites, by = "groupID")
+
+# Apply the process_subset function to each subset
+  results <- lapply(seq_along(split_data), function(i) process_subset(split_data[[i]], i))
+  for (i in seq_along(results)) {
+    multiInitVar[i, 1, 1:nLayers[i]] <- results[[i]]$speciesID # vector of species ID taken from data
+    multiInitVar[i, 2, 1:nLayers[i]] <- results[[i]]$Age # age by tree from NFI
+    multiInitVar[i, 3, 1:nLayers[i]] <- results[[i]]$Height # height from NFI data
+    multiInitVar[i, 4, 1:nLayers[i]] <- results[[i]]$Dbh # dbh from NFI data
+    multiInitVar[i, 5, 1:nLayers[i]] <- results[[i]]$basal_area # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
+    multiInitVar[i, 6, 1:nLayers[i]] <- results[[i]]$NA_values
   }
-)
+})
+
+
 
 
 
