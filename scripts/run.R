@@ -154,7 +154,7 @@ for(i in c(1,4)){
     change_ID(j, "managementID", old_managementID)
     run_ID(species_vector, "speciesID", old_sID, multi_and_outputs_species)
   }
-  # Remove tran files
+  # Remove tran files from global environment
   rm(parTran,tairTran,precipTran,vpdTran,co2Tran)
 }
 

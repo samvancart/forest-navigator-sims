@@ -1,0 +1,89 @@
+variables:
+  speciesID: 2
+  layerID: 2
+  estimatedID: 1
+  tabXID: 1
+  managementID: 0
+  climateID: 1
+  speciesDict:
+    '1': Pine
+    '2': Spruce
+    '3': Birch
+    '12': Beech
+  speciesNames:
+  - Pine
+  - Spruce
+  - Birch
+  - Beech
+  speciesCodes:
+  - pinsy
+  - picab
+  - betpe
+  - fagsy
+  layerNames:
+  - Trees
+  - Clusters
+  pCROBAS_multipliers:
+    '1': 1.3
+    '2': 1.3
+    '3': 0.6
+    '12': 1
+  thetaMax: 0.03
+  estimated_user:
+  - 3.5
+  - 4.5
+  - 6
+  - 7
+  estimatedNames:
+  - User
+  - Quantile
+  tabXNames:
+  - layer
+  - layerAggr
+  managementNames:
+  - noManagement
+  - managed
+  outputNames:
+  - hei
+  - dg
+  - ba
+  - dens
+  - npp
+  - et
+  - vol
+  - mort
+  - inc
+  data_from: gitlab
+paths:
+  soilData_path: data/soil/grd5_soil_data_prebas.csv
+  climate:
+    tranPath: data/climate/tran/
+    historical_climate_data_gitlab_path: data/climate/provided/historical_climate_data.csv
+    prebas_gitlab_path: data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
+    prebas_future_GFDL_ESM4_SSP370: data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
+    prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
+    prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
+    prebas_eobs_path: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
+  climate_paths:
+  - data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
+  - data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
+  - data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
+  - data/climate/provided/historical_detrend_climate_data_prebas.csv
+  climateNames:
+  - historical
+  - GFDL-ESM4_SSP370
+  - UKESM1-0-LL_ssp370
+  - historical_detrend
+  nfi_sweden_path: data/nfi/sweden/
+  nfi_sweden_paths:
+  - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
+  - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
+  rdata_path: data/rdata/
+  netcdf:
+    chelsa_file: chelsa_1979_2016_all_vars
+    chelsa_path: data/netcdf/combined/all/chelsa_1979_2016_all_vars.nc
+    eobs_file: eobs_1979_2022_all_vars
+    eobs_path: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
+    eobs_var: hu
+    eobs_folder: data/netcdf/eobs_vars/hu/
+  sites_path: data/climate/provided/prebas_sites_coords.csv

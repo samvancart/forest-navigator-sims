@@ -313,3 +313,85 @@ get_functions_in_env <- function(env = .GlobalEnv) {
   return(functions)
 }
 
+
+#' Modify YAML Settings Vector
+#'
+#' This function modifies specific settings in a YAML configuration file based on a provided named vector.
+#'
+#' @param config_path The file path to the YAML configuration file.
+#' @param settings_vector A named vector containing key-value pairs where the key is the setting name
+#' and the value is the new setting value.
+#'
+#' @return None
+#'
+#' @examples
+#' settings <- c(setting1 = "value1", setting2 = "value2")
+#' modify_yaml_settings_vector("path/to/config.yaml", settings)
+#'
+#' @export
+#'
+#' @importFrom yaml yaml.load_file write_yaml
+modify_yaml_settings_vector <- function(config_path, settings_vector) {
+  
+  # Ensure that settings_vector is a named vector
+  if (is.null(names(settings_vector))) {
+    stop("settings_vector must be a named vector.")
+  }
+  
+  # Read existing YAML configuration
+  config <- yaml::yaml.load_file(config_path)
+  
+  # Modify specific settings based on provided key-value pairs in the named vector
+  for (key in names(settings_vector)) {
+    value <- settings_vector[[key]]
+    print(paste("Modifying key:", key, "with value:", value))
+    result <- modify_recursive(config, key, value)
+    config <- result$config
+    key_found <- result$key_found
+    if (key_found) {
+      print(paste("Key", key, "found and updated."))
+    } else {
+      warning(paste("Key", key, "not found in the configuration."))
+    }
+  }
+  
+  # Write the updated YAML back to the file
+  yaml::write_yaml(config, config_path)
+}
+
+
+
+#' Modify Configuration Recursively
+#'
+#' This helper function recursively modifies a configuration list by updating the value of a specified key.
+#'
+#' @param config A list representing the configuration settings.
+#' @param key A character string specifying the key to be modified.
+#' @param value The new value to be assigned to the specified key.
+#'
+#' @return A list containing the updated configuration and a logical value indicating whether the key was found.
+#'
+#' @examples
+#' config <- list(setting1 = "value1", nested = list(setting2 = "value2"))
+#' result <- modify_recursive(config, "setting2", "new_value")
+#' print(result$config)
+#' print(result$key_found)
+#'
+#' @export
+modify_recursive <- function(config, key, value) {
+  key_found <- FALSE
+  for (name in names(config)) {
+    if (name == key) {
+      config[[name]] <- value
+      key_found <- TRUE
+      break
+    } else if (is.list(config[[name]])) {
+      result <- modify_recursive(config[[name]], key, value)
+      config[[name]] <- result$config
+      key_found <- key_found || result$key_found
+      if(key_found) break
+    }
+  }
+  return(list(config = config, key_found = key_found))
+}
+
