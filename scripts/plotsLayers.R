@@ -5,21 +5,21 @@ source('./r/plots.R')
 # Plot tree and cluster layers side by side
 
 # Run multiSiteLayers and then either
-#   1.  plot_tables.R -> VAR_tabX_id = 1
+#   1.  plot_tables.R -> config$VAR_tabX_id = 1
 # or
-#   2.  layerAggr.R -> VAR_tabX_id = 2
+#   2.  layerAggr.R -> config$VAR_tabX_id = 2
 
 # Run with desired params from run.R 
 
-print(paste0("Running plotsLayers.R for ", VAR_tabX_names[VAR_tabX_id]))
+print(paste0("Running plotsLayers.R for ", config$VAR_tabX_names[config$VAR_tabX_id]))
 
 # Load tabX trees
-fileName <- (paste0(PATH_rdata, "tabX_", VAR_tabX_names[VAR_tabX_id], "_", VAR_layer_names[1],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "tabX_", config$VAR_tabX_names[config$VAR_tabX_id], "_", config$VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(PATH_rdata, "tabX_", VAR_tabX_names[VAR_tabX_id], "_",VAR_layer_names[2],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "tabX_", config$VAR_tabX_names[config$VAR_tabX_id], "_",config$VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -27,7 +27,7 @@ tabX_clusters <- tabX
 nSites <- max(as.integer(levels(tabX_clusters$site)))
 
 # Load multiOut for varNames
-fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "multiOut_",config$VAR_layer_names[1],".rdata"))
 load(fileName)
 # Set varNames
 varNames <- as.vector(unlist(dimnames(multiOut)[3]))
@@ -45,20 +45,20 @@ plotsVars_trees <- list(list())
 plotsVars_clusters <- list(list())
 
 # Subfolder for plots
-sub_folder <- paste0("/",VAR_tabX_names[VAR_tabX_id],"/")
+sub_folder <- paste0("/",config$VAR_tabX_names[config$VAR_tabX_id],"/")
 
 print("Creating plots...")
 
 # Plot
-# CHECK VARIABLE 'VAR_data_from' IN settings.R
+# CHECK VARIABLE 'config$VAR_data_from' IN settings.R
 for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
-    plotsVars_trees <- get_plotsVars(plotsVars_trees,variableX,siteX,tabX_trees,1, VAR_data_from)
-    plotsVars_clusters <- get_plotsVars(plotsVars_clusters,variableX,siteX,tabX_clusters,2, VAR_data_from)
+    plotsVars_trees <- get_plotsVars(plotsVars_trees,variableX,siteX,tabX_trees,1, config$VAR_data_from)
+    plotsVars_clusters <- get_plotsVars(plotsVars_clusters,variableX,siteX,tabX_clusters,2, config$VAR_data_from)
     
   }
-  # CHECK VARIABLE 'VAR_data_from' IN settings.R
-  plot_path <- get_by_site_plot_path("side_by_side",siteX, VAR_data_from, sub_folder = sub_folder)
+  # CHECK VARIABLE 'config$VAR_data_from' IN settings.R
+  plot_path <- get_by_site_plot_path("side_by_side",siteX, config$VAR_data_from, sub_folder = sub_folder)
   pdf(plot_path, width=14, height=7)
   for(variableX in varNames[varXs]){
     grid.arrange(plotsVars_trees[[variableX]],plotsVars_clusters[[variableX]],ncol=2)

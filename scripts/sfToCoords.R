@@ -14,7 +14,7 @@ shape_file <- st_read(shape_file_path)
 
 
 # Get nfi data
-nfi_df <- fread(VAR_nfi_sweden_paths[1])
+nfi_df <- fread(config$VAR_nfi_sweden_paths[1])
 merge_by <- "Inspire"
 
 

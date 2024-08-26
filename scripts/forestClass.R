@@ -5,11 +5,11 @@ source('./r/utils.R')
 # Get CORINE forest classes for nfi df based on species proportion of basal area in each site
 
 
-path <- paste0(PATH_nfi_sweden,"sorted_group_species_cIDs_speciesID11to4_basal_area_lonLats.csv")
+path <- paste0(config$PATH_nfi_sweden,"sorted_group_species_cIDs_speciesID11to4_basal_area_lonLats.csv")
 nfi_df <- fread(path)
 
 # Get species codes df
-species_codes_path <- paste0(PATH_nfi_sweden, "speciesCodesSweden.csv")
+species_codes_path <- paste0(config$PATH_nfi_sweden, "speciesCodesSweden.csv")
 species_codes_df <- fread(species_codes_path)
 
 # Column name in nfi df with speciesID to be used

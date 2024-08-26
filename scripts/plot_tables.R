@@ -35,7 +35,7 @@ format_table <- function(tabX) {
 
 
 # NFI DATA
-nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
+nfi_path <- config$VAR_nfi_sweden_paths[config$VAR_layer_id]
 df <- fread(nfi_path)
 
 # Choose sites
@@ -48,16 +48,16 @@ nLayers <- (df_nSites %>% count(groupID))$n
 
 
 
-fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[VAR_layer_id],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "multiOut_",config$VAR_layer_names[config$VAR_layer_id],".rdata"))
 load(fileName)
 
 print(fileName)
 print(nLayers)
 
-species <- VAR_species_names[VAR_species_id]
+species <- config$VAR_species_names[config$VAR_species_id]
 speciesNames <- colnames(pCROB)
 
-estimatedName <- VAR_estimated_names[VAR_estimated_id]
+estimatedName <- config$VAR_estimated_names[config$VAR_estimated_id]
 
 # Define variables
 varXs <- c(11:14,17,18,30,43)
@@ -102,6 +102,6 @@ print(unique(species21$species))
 
 
 # Write rdata
-fileName <- paste0(PATH_rdata, "tabX_layer_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(config$PATH_rdata, "tabX_layer_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))

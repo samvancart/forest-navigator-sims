@@ -13,11 +13,11 @@ source('./r/utils.R')
 
 # Get nfi data
 nfi_filename <- "forest_classes_originalSpeciesID.csv"
-path <- paste0(PATH_nfi_sweden, nfi_filename)
+path <- paste0(config$PATH_nfi_sweden, nfi_filename)
 nfi_df <- fread(path)
 
 # Get species codes df
-species_codes_path <- paste0(PATH_nfi_sweden, "speciesCodesSweden.csv")
+species_codes_path <- paste0(config$PATH_nfi_sweden, "speciesCodesSweden.csv")
 species_codes_df <- fread(species_codes_path)
 
 # Column name in nfi df with speciesID to be used

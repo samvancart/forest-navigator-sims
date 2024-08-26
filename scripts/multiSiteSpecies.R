@@ -13,24 +13,24 @@ source('./r/multiSite.R')
 ### SiteInfo created in loadData.R ###
 
 print(paste0("Running multiSiteSpecies.R for species ",
-             get_speciesName(VAR_species_id, VAR_species_dict), " and site type estimated by ", VAR_estimated_names[VAR_estimated_id]))
-print(paste0("Management: ", VAR_management_names[VAR_management_id+1]))
-print(paste0("Climate: ", VAR_climate_names[VAR_climate_id]))
+             get_speciesName(config$VAR_species_id, config$VAR_species_dict), " and site type estimated by ", config$VAR_estimated_names[config$VAR_estimated_id]))
+print(paste0("Management: ", config$VAR_management_names[config$VAR_management_id+1]))
+print(paste0("Climate: ", config$VAR_climate_names[config$VAR_climate_id]))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
 
 # Get pPRELES parameter (different for speciesID 12)
-pPRELES <- get_pPRELES(VAR_species_id)
+pPRELES <- get_pPRELES(config$VAR_species_id)
 
 # Set pCROBAS kRein parameter
-pCROB_copy <- get_pCROBAS(speciesIDs = c(VAR_species_id), pCROBAS_multipliers = VAR_pCROBAS_multipliers, pCROB = pCROB)
+pCROB_copy <- get_pCROBAS(speciesIDs = c(config$VAR_species_id), pCROBAS_multipliers = config$VAR_pCROBAS_multipliers, pCROB = pCROB)
 
-# Set pCROBAS VAR_theta_max parameter
-pCROB_copy[31, speciesID] <- VAR_theta_max
+# Set pCROBAS config$VAR_theta_max parameter
+pCROB_copy[31, speciesID] <- config$VAR_theta_max
 
 # Create multiInitVar
-multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = VAR_species_id, initAge = 12) # CHECK AGE
+multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = config$VAR_species_id, initAge = 12) # CHECK AGE
 
 
 print(paste0("Initialising model with site type estimated by soil N..."))
@@ -46,8 +46,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                             CO2= co2Tran,
                             Precip=precipTran,
                             TAir=tairTran,
-                            defaultThin=VAR_management_id, 
-                            ClCut=VAR_management_id)
+                            defaultThin=config$VAR_management_id, 
+                            ClCut=config$VAR_management_id)
 print("Done.")
 print("Initialising model with site type 1...")
 # setting site type to 1
@@ -62,8 +62,8 @@ initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= co2Tran,
                                 Precip=precipTran,
                                 TAir=tairTran,
-                                defaultThin=VAR_management_id, 
-                                ClCut=VAR_management_id)
+                                defaultThin=config$VAR_management_id, 
+                                ClCut=config$VAR_management_id)
 
 print("Done.")
 print("Initialising model with site type 5...")
@@ -79,12 +79,12 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= co2Tran,
                                 Precip=precipTran,
                                 TAir=tairTran,
-                                defaultThin=VAR_management_id,
-                                ClCut=VAR_management_id)
+                                defaultThin=config$VAR_management_id,
+                                ClCut=config$VAR_management_id)
 print("Done.")
 
 # # Save initPrebas
-# filename <- paste0(PATH_rdata, "initPrebas_", VAR_species_names[VAR_species_id], ".rdata")
+# filename <- paste0(config$PATH_rdata, "initPrebas_", config$VAR_species_names[config$VAR_species_id], ".rdata")
 # save(initPrebas,initPrebas_st1,initPrebas_st5, file=filename)
 
 # run multisite model
@@ -97,7 +97,7 @@ multiOut<-modOut$multiOut
 multiOut_st1<-modOut_st1$multiOut
 multiOut_st5<-modOut_st5$multiOut
 
-fileName <- paste0(PATH_rdata, "multiOut_spID", VAR_species_id, ".rdata")
+fileName <- paste0(config$PATH_rdata, "multiOut_spID", config$VAR_species_id, ".rdata")
 
 save(multiOut,multiOut_st1,multiOut_st5, file=fileName)
 print(paste0("multiOut saved to ", fileName))

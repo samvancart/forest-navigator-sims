@@ -49,7 +49,7 @@ unique(data[PlgID %in% ref_data$siteID]$PlgID)
 
 
 # Get climate reference data
-ref_data <- fread(PATH_prebas_gitlab)
+ref_data <- fread(config$PATH_prebas_gitlab)
 
 # Get co2 data
 co2_name <- "co2_ssp370_annual_2015_2100"

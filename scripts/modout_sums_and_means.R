@@ -5,9 +5,9 @@
 
 source('scripts/settings.R')
 
-print(paste0("Running modout_sums_and_means.R for layer ", VAR_layer_names[VAR_layer_id]))
+print(paste0("Running modout_sums_and_means.R for layer ", config$VAR_layer_names[config$VAR_layer_id]))
 
-fileName <- (paste0(PATH_rdata, "modOut_",VAR_layer_names[VAR_layer_id],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "modOut_",config$VAR_layer_names[config$VAR_layer_id],".rdata"))
 load(fileName)
 
 
@@ -15,7 +15,7 @@ load(fileName)
 varNames <- as.vector(unlist(dimnames(modOut$multiOut)[3]))
 
 # NFI DATA
-nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
+nfi_path <- config$VAR_nfi_sweden_paths[config$VAR_layer_id]
 df <- fread(nfi_path)
 
 # Choose sites
@@ -71,14 +71,14 @@ tabX <- data.table()
 for (i in 1:length(li)) {
   tabXx <- data.table(melt(li[[i]]))
   tabXx$variable <- names_li[i]
-  tabXx$LayerType <- VAR_layer_id
-  tabXx$LayerName <- VAR_layer_names[VAR_layer_id]
+  tabXx$LayerType <- config$VAR_layer_id
+  tabXx$LayerName <- config$VAR_layer_names[config$VAR_layer_id]
   tabX <- rbind(tabXx,tabX)
 }
 
 
 # Write rdata
-fileName <- paste0(PATH_rdata, "tabX_sums_means_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(config$PATH_rdata, "tabX_sums_means_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))
 

@@ -33,7 +33,7 @@ plot_initPrebas <- function(def_multiOut, new_multiOut, varXs, species, yieldTab
 }
 
 # NFI DATA
-nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
+nfi_path <- config$VAR_nfi_sweden_paths[config$VAR_layer_id]
 df <- fread(nfi_path)
 dt <- as.data.table(df)
 
@@ -45,7 +45,7 @@ y_units <- c("11"="m", "12"="cm", "13"="m²/ha", "17"="N")
 plot_path <- "data/plots/pCrobasDefNew/"
 
 
-fileName <- paste0(PATH_rdata, "initPrebas_Beech.rdata")
+fileName <- paste0(config$PATH_rdata, "initPrebas_Beech.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -55,7 +55,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$multiInitVar[,1,] <- 12  ###update species ID
-initPrebas$pCROBAS[31, 12] <- VAR_theta_max # ThetaMax
+initPrebas$pCROBAS[31, 12] <- config$VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==4] # fagus=4 in NFI
@@ -66,7 +66,7 @@ age_yieldTab <- c(45,90,120)
 d_yieldTab <- c(13,29,43)
 
 ## All
-pdf_path <- paste0(plot_path,"All_nfi_thetaMax_", VAR_theta_max,".pdf")
+pdf_path <- paste0(plot_path,"All_nfi_thetaMax_", config$VAR_theta_max,".pdf")
 pdf(pdf_path, width = 14, height = 9)
 
 
@@ -86,7 +86,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs,
 ####Spruce analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(PATH_rdata, "initPrebas_Spruce.rdata")
+fileName <- paste0(config$PATH_rdata, "initPrebas_Spruce.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -96,7 +96,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,2] <- initPrebas$pCROBAS[17,2] * 1.3
-initPrebas$pCROBAS[31,2] <- VAR_theta_max # ThetaMax
+initPrebas$pCROBAS[31,2] <- config$VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==2] # fagus=4 in NFI
@@ -113,7 +113,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Spruce', y_units = y
 ####Pine analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(PATH_rdata, "initPrebas_Pine.rdata")
+fileName <- paste0(config$PATH_rdata, "initPrebas_Pine.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -123,7 +123,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,1] <- initPrebas$pCROBAS[17,1] * 1.3
-initPrebas$pCROBAS[31, 1] <- VAR_theta_max # ThetaMax
+initPrebas$pCROBAS[31, 1] <- config$VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==1] # fagus=4 in NFI
@@ -141,7 +141,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Pine', y_units = y_u
 ####Birch analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(PATH_rdata, "initPrebas_Birch.rdata")
+fileName <- paste0(config$PATH_rdata, "initPrebas_Birch.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -151,7 +151,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,3] <- initPrebas$pCROBAS[17,3] * 0.6
-initPrebas$pCROBAS[31,3] <- VAR_theta_max # ThetaMax
+initPrebas$pCROBAS[31,3] <- config$VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==3] # fagus=4 in NFI

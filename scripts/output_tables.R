@@ -6,12 +6,12 @@ source('./r/utils.R')
 
 
 # Load multiout for species
-fileName <- paste0(PATH_rdata, "multiOut_spID",VAR_species_id,".rdata")
+fileName <- paste0(config$PATH_rdata, "multiOut_spID",config$VAR_species_id,".rdata")
 load(fileName)
 
-climateScenario <- tolower(VAR_climate_names[VAR_climate_id])
-species <- get_speciesName(VAR_species_id, VAR_species_dict)
-managementName <- VAR_management_names[VAR_management_id+1]
+climateScenario <- tolower(config$VAR_climate_names[config$VAR_climate_id])
+species <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
+managementName <- config$VAR_management_names[config$VAR_management_id+1]
 
 # Specify output variables
 varXs <- c(11:13,17,18,22,30,42,43)
@@ -26,7 +26,7 @@ tabXst <- multiOut[,,varXs,1,1]
 namesVars <- as.vector(unlist(dimnames(tabXst)[3]))
 
 # Get original siteIDs from climate data
-climateData <- fread(VAR_climate_paths[VAR_climate_id])
+climateData <- fread(config$VAR_climate_paths[config$VAR_climate_id])
 clim_sites <- unique(climateData$siteID)
 
 nSites <- length(clim_sites)

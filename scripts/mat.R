@@ -6,10 +6,10 @@ source('./r/utils.R')
 
 
 # Get nfi data
-nfi_df <- fread(paste0(PATH_nfi_sweden,"mix_types.csv"))
+nfi_df <- fread(paste0(config$PATH_nfi_sweden,"mix_types.csv"))
 
 # Get climate data
-climate_df <- fread(PATH_prebas_gitlab)
+climate_df <- fread(config$PATH_prebas_gitlab)
 
 # Get nSites
 nSites <- length(unique(climate_df$climID))

@@ -14,11 +14,11 @@ source('./r/multiSite.R')
 ### SiteInfo created in loadData.R ###
 ### nSites from loadData.R ###
 
-print(paste0("Running multiSiteLayers.R for layer ", VAR_layer_names[VAR_layer_id]))
-print(paste0("Management: ", VAR_management_names[VAR_management_id+1]))
+print(paste0("Running multiSiteLayers.R for layer ", config$VAR_layer_names[config$VAR_layer_id]))
+print(paste0("Management: ", config$VAR_management_names[config$VAR_management_id+1]))
 
 # NFI DATA
-nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
+nfi_path <- config$VAR_nfi_sweden_paths[config$VAR_layer_id]
 dt <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))
@@ -36,15 +36,15 @@ nSpecies <- dt_nSites[, .N, by = c("speciesID","groupID")][, .N, by = groupID]$N
 ### CHECK IF MODIFICATIONS TO PRELES AND CROBAS ARE NECESSARY ###
 
 # Get pPRELES parameter (different for speciesID 12)
-pPRELES <- get_pPRELES(VAR_species_id)
+pPRELES <- get_pPRELES(config$VAR_species_id)
 
 
 
-speciesIDs = as.numeric(names(VAR_species_dict))
+speciesIDs = as.numeric(names(config$VAR_species_dict))
 # speciesIDs = c(1,2,15,3)
 # speciesIDs <- unique(df_nSites$speciesID)
 
-pCROB_copy <- get_pCROBAS(speciesIDs = speciesIDs, pCROBAS_multipliers = VAR_pCROBAS_multipliers, pCROB = pCROB)
+pCROB_copy <- get_pCROBAS(speciesIDs = speciesIDs, pCROBAS_multipliers = config$VAR_pCROBAS_multipliers, pCROB = pCROB)
 pCROB[17,]
 pCROB_copy[17,]
 
@@ -101,8 +101,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   CO2= co2Tran,
   Precip=precipTran,
   TAir=tairTran,
-  defaultThin=VAR_management_id,
-  ClCut=VAR_management_id)
+  defaultThin=config$VAR_management_id,
+  ClCut=config$VAR_management_id)
 
 print("Done.")
 
@@ -153,7 +153,7 @@ print("Done.")
 
 
 # Save as rdata
-fileName <- paste0(PATH_rdata, "initPrebas_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(config$PATH_rdata, "initPrebas_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 save(initPrebas, file=fileName)
 print(paste0("initPrebas saved to ",fileName))
 
@@ -162,7 +162,7 @@ print(paste0("initPrebas saved to ",fileName))
 modOut <- multiPrebas(initPrebas)
 
 # Save as rdata
-fileName <- paste0(PATH_rdata, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(config$PATH_rdata, "modOut_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 save(modOut, file=fileName)
 print(paste0("modOut saved to ",fileName))
 
@@ -170,7 +170,7 @@ print(paste0("modOut saved to ",fileName))
 multiOut<-modOut$multiOut
 
 # Save as rdata
-fileName <- paste0(PATH_rdata, "multiOut_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(config$PATH_rdata, "multiOut_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 save(multiOut, file=fileName)
 print(paste0("multiOut saved to ", fileName))
 
@@ -180,7 +180,7 @@ print(paste0("multiOut saved to ", fileName))
 
 
 # modOut_original <- multiPrebas(initPrebas)
-# mod_path <- paste0(PATH_rdata, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
+# mod_path <- paste0(config$PATH_rdata, "modOut_", config$VAR_layer_names[config$VAR_layer_id],".rdata")
 # load(file=mod_path)
 # 
 # modOut_original$siteInfo

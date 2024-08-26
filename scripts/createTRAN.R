@@ -7,12 +7,12 @@ source('./r/utils.R')
 
 
 # Climate scenario name
-climateScenario <- tolower(VAR_climate_names[VAR_climate_id])
+climateScenario <- tolower(config$VAR_climate_names[config$VAR_climate_id])
 
 print(paste0("Climate scenario is: ", climateScenario))
 
 # Load climate data
-climateData <- fread(VAR_climate_paths[VAR_climate_id])
+climateData <- fread(config$VAR_climate_paths[config$VAR_climate_id])
 
 # Add day column
 climateData[, day := .GRP, by = c("time")]
@@ -26,8 +26,8 @@ tranMatrices <- lapply(tranVars, function(x) as.matrix(dynamic_dcast(climateData
 # Add names to list
 names(tranMatrices) <- paste0(tranVars,"Tran")
 
-# Create PATH_tran if it doesn't exist
-path_tran <- get_or_create_path(pathVarName = "PATH_tran", defaultDir = PATH_tran, subDir = climateScenario)
+# Create config$PATH_tran if it doesn't exist
+path_tran <- get_or_create_path(pathVarName = "config$PATH_tran", defaultDir = config$PATH_tran, subDir = climateScenario)
 
 # Create save path
 savePath <- paste0(path_tran, climateScenario)

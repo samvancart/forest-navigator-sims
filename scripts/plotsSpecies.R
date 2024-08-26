@@ -16,14 +16,14 @@ melt_lc <- function(lc,runID,siteType){
 
 
 
-fileName <- paste0(PATH_rdata, "multiOut_spID",VAR_species_id,".rdata")
+fileName <- paste0(config$PATH_rdata, "multiOut_spID",config$VAR_species_id,".rdata")
 load(fileName)
 
 # Settings variables
-species <- get_speciesName(VAR_species_id, VAR_species_dict)
-estimatedName <- VAR_estimated_names[VAR_estimated_id]
-# estimated <- estimatedList[[VAR_estimated_id]]
-managementName <- VAR_management_names[VAR_management_id+1]
+species <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
+estimatedName <- config$VAR_estimated_names[config$VAR_estimated_id]
+# estimated <- estimatedList[[config$VAR_estimated_id]]
+managementName <- config$VAR_management_names[config$VAR_management_id+1]
 
 
 # Define variables
@@ -71,14 +71,14 @@ tabX$runID <- as.factor(tabX$runID)
 plotsVars <- list()
 
 
-# Plot with shadow. # CHECK VARIABLE 'VAR_data_from' IN settings.R
+# Plot with shadow. # CHECK VARIABLE 'config$VAR_data_from' IN settings.R
 for(variableX in varNames[varXs]){
-  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,VAR_data_from)
+  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,config$VAR_data_from)
 }
 
 
 # plots to pdf
-plot_path <- get_by_species_plot_path(species, estimatedName, VAR_data_from, managementName)
+plot_path <- get_by_species_plot_path(species, estimatedName, config$VAR_data_from, managementName)
 
 pdf(plot_path)
 for(variableX in varNames[varXs]){

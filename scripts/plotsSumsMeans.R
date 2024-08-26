@@ -8,12 +8,12 @@ source('./r/plots.R')
 print(paste0("Running plotsSumsMeans.R"))
 
 # Load tabX trees
-fileName <- (paste0(PATH_rdata, "tabX_sums_means_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "tabX_sums_means_",config$VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(PATH_rdata, "tabX_sums_means_",VAR_layer_names[2],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "tabX_sums_means_",config$VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -25,7 +25,7 @@ nSites <- length(unique(tabX_clusters$site))
 # nSites <- max(as.integer(levels(tabX_clusters$site)))
 
 # Load multiOut for varNames
-fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(config$PATH_rdata, "multiOut_",config$VAR_layer_names[1],".rdata"))
 
 # Set varNames
 varNames <- as.vector(unlist(dimnames(multiOut)[3]))
@@ -48,14 +48,14 @@ plotsVars <- list(list())
 
 print("Creating plots...")
 # Plot
-# CHECK VAR_data_from IN SETTINGS
+# CHECK config$VAR_data_from IN SETTINGS
 for (siteX in 1:nSites) {
   for(variableX in varNames[varXs]){
-    plotsVars <- get_sums_means_plotsVars(plotsVars,variableX,siteX,tabX, VAR_data_from)
+    plotsVars <- get_sums_means_plotsVars(plotsVars,variableX,siteX,tabX, config$VAR_data_from)
 
   }
-  # CHECK VAR_data_from IN SETTINGS
-  plot_path <- get_by_site_plot_path("sums_means",siteX, VAR_data_from)
+  # CHECK config$VAR_data_from IN SETTINGS
+  plot_path <- get_by_site_plot_path("sums_means",siteX, config$VAR_data_from)
   pdf(plot_path)
   
   for(variableX in varNames[varXs]){

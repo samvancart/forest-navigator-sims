@@ -5,9 +5,9 @@ source('./r/utils.R')
 ### Load data ###
 
 # soil
-soilData <- fread(PATH_soil_data)
+soilData <- fread(config$PATH_soil_data)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
-estimatedList <- list(VAR_estimated_user, estimated_quantile)
+estimatedList <- list(config$VAR_estimated_user, estimated_quantile)
 
 # climate
 
@@ -15,18 +15,18 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
 ## Reading tran csv files is very slow so instead read df and create tran tables.
 
-# if(VAR_data_from == "gitlab") {
-#   print(paste0("Climate data is from ", VAR_data_from))
+# if(config$VAR_data_from == "gitlab") {
+#   print(paste0("Climate data is from ", config$VAR_data_from))
 #   # Get gitlab df
-#   df <- fread(VAR_climate_paths[VAR_climate_id], header = T)
-#   print(paste0("Loaded ", VAR_climate_names[VAR_climate_id], " climate scenario."))
-# } else if(VAR_data_from=="eobs") {
-#   print(paste0("Climate data is from ", VAR_data_from))
+#   df <- fread(config$VAR_climate_paths[config$VAR_climate_id], header = T)
+#   print(paste0("Loaded ", config$VAR_climate_names[config$VAR_climate_id], " climate scenario."))
+# } else if(config$VAR_data_from=="eobs") {
+#   print(paste0("Climate data is from ", config$VAR_data_from))
 #   # Get eobs df
-#   df <- fread(PATH_prebas_eobs, header = T)
+#   df <- fread(config$PATH_prebas_eobs, header = T)
 # } else {
 #   df <- NULL
-#   stop(paste0("'",VAR_data_from,"'"," is not a valid climate data source! Modify variable 'VAR_data_from' in settings.R."))
+#   stop(paste0("'",config$VAR_data_from,"'"," is not a valid climate data source! Modify variable 'config$VAR_data_from' in settings.R."))
 # 
 # }
 
@@ -43,7 +43,7 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
 # Load tran binaries
 
-path_tran <- paste0(PATH_tran, VAR_climate_names[VAR_climate_id])
+path_tran <- paste0(config$PATH_tran, config$VAR_climate_names[config$VAR_climate_id])
 tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))
@@ -89,7 +89,7 @@ siteID <- soilData[, "siteID"]
 climID <- soilData[, "climID"]
 
 # SiteType estimated
-estimated <- estimatedList[[VAR_estimated_id]]
+estimated <- estimatedList[[config$VAR_estimated_id]]
 soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
 
 # SiteInfo params

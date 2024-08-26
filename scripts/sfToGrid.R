@@ -23,7 +23,7 @@ shape_file <- st_read(shape_file_path)
 
 
 # Get nfi data
-nfi_df <- fread(paste0(PATH_nfi_sweden,"mix_types_originalSpeciesID.csv"))
+nfi_df <- fread(paste0(config$PATH_nfi_sweden,"mix_types_originalSpeciesID.csv"))
 
 nfi_df[Inspire=="4675_3690"]
 

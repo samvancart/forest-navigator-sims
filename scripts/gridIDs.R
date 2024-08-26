@@ -13,7 +13,7 @@ file1_path <- paste0(path1, file1_name)
 se_1km <- st_read(file1_path)
 
 # Get nfi data
-nfi_df <- fread(paste0(PATH_nfi_sweden,"mix_types.csv"))
+nfi_df <- fread(paste0(config$PATH_nfi_sweden,"mix_types.csv"))
 
 # Get cellcodes from nfi data
 cellcode <- unique(paste0("1kmE",gsub("_","N",nfi_df$Inspire)))
