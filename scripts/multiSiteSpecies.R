@@ -13,9 +13,9 @@ source('./r/multiSite.R')
 ### SiteInfo created in loadData.R ###
 
 print(paste0("Running multiSiteSpecies.R for species ",
-             get_speciesName(VAR_species_id, speciesDict), " and site type estimated by ", estimatedNames[estimatedID]))
-print(paste0("Management: ", managementNames[managementID+1]))
-print(paste0("Climate: ", climateNames[climateID]))
+             get_speciesName(VAR_species_id, speciesDict), " and site type estimated by ", estimatedNames[VAR_estimated_id]))
+print(paste0("Management: ", managementNames[VAR_management_id+1]))
+print(paste0("Climate: ", climateNames[VAR_climate_id]))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
@@ -46,8 +46,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                             CO2= co2Tran,
                             Precip=precipTran,
                             TAir=tairTran,
-                            defaultThin=managementID, 
-                            ClCut=managementID)
+                            defaultThin=VAR_management_id, 
+                            ClCut=VAR_management_id)
 print("Done.")
 print("Initialising model with site type 1...")
 # setting site type to 1
@@ -62,8 +62,8 @@ initPrebas_st1 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= co2Tran,
                                 Precip=precipTran,
                                 TAir=tairTran,
-                                defaultThin=managementID, 
-                                ClCut=managementID)
+                                defaultThin=VAR_management_id, 
+                                ClCut=VAR_management_id)
 
 print("Done.")
 print("Initialising model with site type 5...")
@@ -79,8 +79,8 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
                                 CO2= co2Tran,
                                 Precip=precipTran,
                                 TAir=tairTran,
-                                defaultThin=managementID,
-                                ClCut=managementID)
+                                defaultThin=VAR_management_id,
+                                ClCut=VAR_management_id)
 print("Done.")
 
 # # Save initPrebas

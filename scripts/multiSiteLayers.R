@@ -14,11 +14,11 @@ source('./r/multiSite.R')
 ### SiteInfo created in loadData.R ###
 ### nSites from loadData.R ###
 
-print(paste0("Running multiSiteLayers.R for layer ", layerNames[layerID]))
-print(paste0("Management: ", managementNames[managementID+1]))
+print(paste0("Running multiSiteLayers.R for layer ", layerNames[VAR_layer_id]))
+print(paste0("Management: ", managementNames[VAR_management_id+1]))
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[layerID]
+nfi_path <- nfi_sweden_paths[VAR_layer_id]
 dt <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))
@@ -101,8 +101,8 @@ initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
   CO2= co2Tran,
   Precip=precipTran,
   TAir=tairTran,
-  defaultThin=managementID,
-  ClCut=managementID)
+  defaultThin=VAR_management_id,
+  ClCut=VAR_management_id)
 
 print("Done.")
 
@@ -153,7 +153,7 @@ print("Done.")
 
 
 # Save as rdata
-fileName <- paste0(rdata_path, "initPrebas_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "initPrebas_", layerNames[VAR_layer_id],".rdata")
 save(initPrebas, file=fileName)
 print(paste0("initPrebas saved to ",fileName))
 
@@ -162,7 +162,7 @@ print(paste0("initPrebas saved to ",fileName))
 modOut <- multiPrebas(initPrebas)
 
 # Save as rdata
-fileName <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "modOut_", layerNames[VAR_layer_id],".rdata")
 save(modOut, file=fileName)
 print(paste0("modOut saved to ",fileName))
 
@@ -170,7 +170,7 @@ print(paste0("modOut saved to ",fileName))
 multiOut<-modOut$multiOut
 
 # Save as rdata
-fileName <- paste0(rdata_path, "multiOut_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "multiOut_", layerNames[VAR_layer_id],".rdata")
 save(multiOut, file=fileName)
 print(paste0("multiOut saved to ", fileName))
 
@@ -180,7 +180,7 @@ print(paste0("multiOut saved to ", fileName))
 
 
 # modOut_original <- multiPrebas(initPrebas)
-# mod_path <- paste0(rdata_path, "modOut_", layerNames[layerID],".rdata")
+# mod_path <- paste0(rdata_path, "modOut_", layerNames[VAR_layer_id],".rdata")
 # load(file=mod_path)
 # 
 # modOut_original$siteInfo

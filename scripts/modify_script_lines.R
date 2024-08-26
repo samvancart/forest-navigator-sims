@@ -1,7 +1,7 @@
 source("r/utils.R")
 
 library(yaml)
-
+library(stringr)
 
 
 # Path to config file
@@ -45,12 +45,6 @@ update_script_from_config <- function(file_path, config) {
 
 
 
-scripts <- list.files("scripts", full.names = T)
-modified_lines_vector <- update_script_from_config(scripts[15], config)
-length(unique(unlist(modified_lines_vector)))
-
-
-library(stringr)
 
 count_occurences_of_pattern_in_script <- function(file_path, pattern) {
   script <- readLines(file_path)
@@ -64,32 +58,50 @@ count_occurences_of_pattern_in_script <- function(file_path, pattern) {
                 line_counts = line_counts))
 }
 
-replace_in_script <- function(file_path, pattern, replacement) {
+replace_in_script <- function(file_path, pattern, replacement, test=F) {
   # Read the script from the file
   script <- readLines(file_path)
   
   # Replace all occurrences of the pattern with the replacement
-  script <- gsub(pattern, replacement, script)
+  mod_script <- gsub(pattern, replacement, script)
   
   # Write the modified script back to the file
-  print(paste0("Modifying ", script, "..."))
-  writeLines(script, file_path)
-  # print(script)
+  
+  if(!setequal(script, mod_script)) {
+    if(!test) {
+      print(paste0("Modifying ", file_path, "..."))
+      writeLines(mod_script, file_path)
+    } else {
+      print(paste0("TEST: Modifying ", file_path, "..."))
+    }
+
+  }
+  
+  
+ 
 }
 
 
-
-script <- scripts[16]
-str <- "SPECIES_ID"
-pattern <- paste0("\\b", str, "\\b")
-replacement_pattern <- "VAR_species_id"
-
+scripts <- list.files("scripts", full.names = T)
 filtered_scripts <- scripts[!scripts %in% c("scripts/run.R", "scripts/settings.R", "scripts/modify_script_lines.R")]
 
+# MODIFY
+modified_lines_vector <- update_script_from_config(scripts[15], config)
+length(unique(unlist(modified_lines_vector)))
+
+
+script <- scripts[16]
+str <- "climateID"
+pattern <- paste0("\\b", str, "\\b")
+replacement_pattern <- "VAR_climate_id"
+
+
 # REPLACE
-# lapply(filtered_scripts, function(x) replace_in_script(x, pattern, replacement_pattern))
+invisible(lapply(filtered_scripts, function(x) replace_in_script(x, pattern, replacement_pattern, T)))
 
 # replace_in_script(script, pattern, "VAR_species_id")
+
+
 
 
 # COUNTS

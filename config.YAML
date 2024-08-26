@@ -1,10 +1,10 @@
 # VARIABLES
 VAR_species_id: 2
-layerID: 2
-estimatedID: 1
-tabXID: 1
-managementID: 0
-climateID: 1
+VAR_layer_id: 2
+VAR_estimated_id: 1
+VAR_tabX_id: 1
+VAR_management_id: 0
+VAR_climate_id: 1
 speciesDict:
   '1': Pine
   '2': Spruce

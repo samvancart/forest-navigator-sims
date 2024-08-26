@@ -21,9 +21,9 @@ load(fileName)
 
 # Settings variables
 species <- get_speciesName(VAR_species_id, speciesDict)
-estimatedName <- estimatedNames[estimatedID]
-# estimated <- estimatedList[[estimatedID]]
-managementName <- managementNames[managementID+1]
+estimatedName <- estimatedNames[VAR_estimated_id]
+# estimated <- estimatedList[[VAR_estimated_id]]
+managementName <- managementNames[VAR_management_id+1]
 
 
 # Define variables

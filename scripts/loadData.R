@@ -18,8 +18,8 @@ estimatedList <- list(estimated_user, estimated_quantile)
 # if(data_from == "gitlab") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get gitlab df
-#   df <- fread(climate_paths[climateID], header = T)
-#   print(paste0("Loaded ", climateNames[climateID], " climate scenario."))
+#   df <- fread(climate_paths[VAR_climate_id], header = T)
+#   print(paste0("Loaded ", climateNames[VAR_climate_id], " climate scenario."))
 # } else if(data_from=="eobs") {
 #   print(paste0("Climate data is from ", data_from))
 #   # Get eobs df
@@ -43,7 +43,7 @@ estimatedList <- list(estimated_user, estimated_quantile)
 
 # Load tran binaries
 
-path_tran <- paste0(tranPath, climateNames[climateID])
+path_tran <- paste0(tranPath, climateNames[VAR_climate_id])
 tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))
@@ -89,7 +89,7 @@ siteID <- soilData[, "siteID"]
 climID <- soilData[, "climID"]
 
 # SiteType estimated
-estimated <- estimatedList[[estimatedID]]
+estimated <- estimatedList[[VAR_estimated_id]]
 soilData$siteType_N <- cut(soilData$N,breaks = c(0,estimated,max(soilData$N+10)),labels = F)
 
 # SiteInfo params

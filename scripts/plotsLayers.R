@@ -5,21 +5,21 @@ source('./r/plots.R')
 # Plot tree and cluster layers side by side
 
 # Run multiSiteLayers and then either
-#   1.  plot_tables.R -> tabXID = 1
+#   1.  plot_tables.R -> VAR_tabX_id = 1
 # or
-#   2.  layerAggr.R -> tabXID = 2
+#   2.  layerAggr.R -> VAR_tabX_id = 2
 
 # Run with desired params from run.R 
 
-print(paste0("Running plotsLayers.R for ", tabXNames[tabXID]))
+print(paste0("Running plotsLayers.R for ", tabXNames[VAR_tabX_id]))
 
 # Load tabX trees
-fileName <- (paste0(rdata_path, "tabX_", tabXNames[tabXID], "_", layerNames[1],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_", tabXNames[VAR_tabX_id], "_", layerNames[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(rdata_path, "tabX_", tabXNames[tabXID], "_",layerNames[2],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_", tabXNames[VAR_tabX_id], "_",layerNames[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -45,7 +45,7 @@ plotsVars_trees <- list(list())
 plotsVars_clusters <- list(list())
 
 # Subfolder for plots
-sub_folder <- paste0("/",tabXNames[tabXID],"/")
+sub_folder <- paste0("/",tabXNames[VAR_tabX_id],"/")
 
 print("Creating plots...")
 

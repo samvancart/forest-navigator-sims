@@ -15,13 +15,13 @@ source('./r/utils.R')
 
 # Note: Running for clustered data should produce a table which has "Lc" column added but is otherwise unchanged
 
-print(paste0("Running layerAggr.R for layer ", layerNames[layerID]))
+print(paste0("Running layerAggr.R for layer ", layerNames[VAR_layer_id]))
 
 # Define variables
 varXs <- c(11:14,17,18,30,43)
 
 # Load tabX
-fileName <- (paste0(rdata_path, "modOut_",layerNames[layerID],".rdata"))
+fileName <- (paste0(rdata_path, "modOut_",layerNames[VAR_layer_id],".rdata"))
 load(fileName)
 tabX <- data.table(melt(modOut$multiOut[,,varXs,,1]))
 
@@ -29,7 +29,7 @@ tabX <- data.table(melt(modOut$multiOut[,,varXs,,1]))
 speciesNames <- colnames(pCROB)
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[layerID]
+nfi_path <- nfi_sweden_paths[VAR_layer_id]
 df <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))
@@ -147,7 +147,7 @@ tabX$year <- as.integer(tabX$year)
 tabX$variable <- as.character(tabX$variable)
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_layerAggr_", layerNames[layerID],".rdata")
+fileName <- paste0(rdata_path, "tabX_layerAggr_", layerNames[VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))
 

@@ -7,12 +7,12 @@ source('./r/utils.R')
 
 
 # Climate scenario name
-climateScenario <- tolower(climateNames[climateID])
+climateScenario <- tolower(climateNames[VAR_climate_id])
 
 print(paste0("Climate scenario is: ", climateScenario))
 
 # Load climate data
-climateData <- fread(climate_paths[climateID])
+climateData <- fread(climate_paths[VAR_climate_id])
 
 # Add day column
 climateData[, day := .GRP, by = c("time")]
