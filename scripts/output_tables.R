@@ -6,11 +6,11 @@ source('./r/utils.R')
 
 
 # Load multiout for species
-fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
+fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 climateScenario <- tolower(climateNames[climateID])
-species <- get_speciesName(speciesID, speciesDict)
+species <- get_speciesName(VAR_species_id, speciesDict)
 managementName <- managementNames[managementID+1]
 
 # Specify output variables

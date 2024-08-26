@@ -54,7 +54,7 @@ load(fileName)
 print(fileName)
 print(nLayers)
 
-# species <- speciesNames[speciesID]
+# species <- speciesNames[VAR_species_id]
 speciesNames <- colnames(pCROB)
 
 estimatedName <- estimatedNames[estimatedID]

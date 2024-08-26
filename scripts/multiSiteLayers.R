@@ -36,7 +36,7 @@ nSpecies <- dt_nSites[, .N, by = c("speciesID","groupID")][, .N, by = groupID]$N
 ### CHECK IF MODIFICATIONS TO PRELES AND CROBAS ARE NECESSARY ###
 
 # Get pPRELES parameter (different for speciesID 12)
-pPRELES <- get_pPRELES(speciesID)
+pPRELES <- get_pPRELES(VAR_species_id)
 
 
 

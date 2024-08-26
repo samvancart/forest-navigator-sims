@@ -16,11 +16,11 @@ melt_lc <- function(lc,runID,siteType){
 
 
 
-fileName <- paste0(rdata_path, "multiOut_spID",speciesID,".rdata")
+fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 # Settings variables
-species <- get_speciesName(speciesID, speciesDict)
+species <- get_speciesName(VAR_species_id, speciesDict)
 estimatedName <- estimatedNames[estimatedID]
 # estimated <- estimatedList[[estimatedID]]
 managementName <- managementNames[managementID+1]
