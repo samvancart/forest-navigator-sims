@@ -15,7 +15,7 @@ load(fileName)
 varNames <- as.vector(unlist(dimnames(modOut$multiOut)[3]))
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[VAR_layer_id]
+nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
 df <- fread(nfi_path)
 
 # Choose sites

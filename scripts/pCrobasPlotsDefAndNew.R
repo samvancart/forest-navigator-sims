@@ -33,7 +33,7 @@ plot_initPrebas <- function(def_multiOut, new_multiOut, varXs, species, yieldTab
 }
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[VAR_layer_id]
+nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
 df <- fread(nfi_path)
 dt <- as.data.table(df)
 

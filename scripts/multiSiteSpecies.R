@@ -15,7 +15,7 @@ source('./r/multiSite.R')
 print(paste0("Running multiSiteSpecies.R for species ",
              get_speciesName(VAR_species_id, VAR_species_dict), " and site type estimated by ", VAR_estimated_names[VAR_estimated_id]))
 print(paste0("Management: ", VAR_management_names[VAR_management_id+1]))
-print(paste0("Climate: ", climateNames[VAR_climate_id]))
+print(paste0("Climate: ", VAR_climate_names[VAR_climate_id]))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1

@@ -54,7 +54,19 @@ VAR_output_names:
 - mort
 - inc
 VAR_data_from: gitlab
-
+VAR_climate_paths:
+- data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
+- data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
+- data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
+- data/climate/provided/historical_detrend_climate_data_prebas.csv
+VAR_climate_names:
+- historical
+- GFDL-ESM4_SSP370
+- UKESM1-0-LL_ssp370
+- historical_detrend
+VAR_nfi_sweden_paths:
+- data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
+- data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
   
 
 # PATHS
@@ -68,22 +80,9 @@ prebas_future_GFDL_ESM4_SSP370: data/climate/provided/GFDL-ESM4_SSP370_prebas.cs
 prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
 prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
 prebas_eobs_path: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
-climate_paths:
-- data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
-- data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
-- data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
-- data/climate/provided/historical_detrend_climate_data_prebas.csv
-climateNames:
-- historical
-- GFDL-ESM4_SSP370
-- UKESM1-0-LL_ssp370
-- historical_detrend
 
 # Nfi
 nfi_sweden_path: data/nfi/sweden/
-nfi_sweden_paths:
-- data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
-- data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
 
 # Rdata
 rdata_path: data/rdata/

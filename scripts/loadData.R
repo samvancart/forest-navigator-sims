@@ -18,8 +18,8 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 # if(VAR_data_from == "gitlab") {
 #   print(paste0("Climate data is from ", VAR_data_from))
 #   # Get gitlab df
-#   df <- fread(climate_paths[VAR_climate_id], header = T)
-#   print(paste0("Loaded ", climateNames[VAR_climate_id], " climate scenario."))
+#   df <- fread(VAR_climate_paths[VAR_climate_id], header = T)
+#   print(paste0("Loaded ", VAR_climate_names[VAR_climate_id], " climate scenario."))
 # } else if(VAR_data_from=="eobs") {
 #   print(paste0("Climate data is from ", VAR_data_from))
 #   # Get eobs df
@@ -43,7 +43,7 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
 # Load tran binaries
 
-path_tran <- paste0(tranPath, climateNames[VAR_climate_id])
+path_tran <- paste0(tranPath, VAR_climate_names[VAR_climate_id])
 tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))

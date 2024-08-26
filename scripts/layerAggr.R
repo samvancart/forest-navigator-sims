@@ -29,7 +29,7 @@ tabX <- data.table(melt(modOut$multiOut[,,varXs,,1]))
 speciesNames <- colnames(pCROB)
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[VAR_layer_id]
+nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
 df <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))

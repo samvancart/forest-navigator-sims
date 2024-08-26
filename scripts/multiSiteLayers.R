@@ -18,7 +18,7 @@ print(paste0("Running multiSiteLayers.R for layer ", VAR_layer_names[VAR_layer_i
 print(paste0("Management: ", VAR_management_names[VAR_management_id+1]))
 
 # NFI DATA
-nfi_path <- nfi_sweden_paths[VAR_layer_id]
+nfi_path <- VAR_nfi_sweden_paths[VAR_layer_id]
 dt <- fread(nfi_path)
 
 print(paste0("NFI path is ", nfi_path))

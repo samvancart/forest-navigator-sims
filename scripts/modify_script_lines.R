@@ -91,20 +91,16 @@ length(unique(unlist(modified_lines_vector)))
 
 
 script <- scripts[16]
-str <- "pCROBAS_multipliers"
+str <- "nfi_sweden_paths"
 pattern <- paste0("\\b", str, "\\b")
-replacement_pattern <- "VAR_pCROBAS_multipliers"
+replacement_pattern <- "VAR_nfi_sweden_paths"
 
 
 
-old_strs <- camelCaseNames <- c("speciesDict", "speciesCodes", "layerNames",
-                            "thetaMax", "estimated_user", "estimatedNames", "tabXNames", "managementNames", 
-                            "outputNames", "data_from")
+old_strs <- camelCaseNames <- c("climate_paths","climateNames","nfi_sweden_paths")
 patterns <- unlist(lapply(old_strs, function(str) paste0("\\b", str, "\\b")))
 
-replacements <- c("VAR_species_dict", "VAR_species_codes", "VAR_layer_names",
-                  "VAR_theta_max","VAR_estimated_user", "VAR_estimated_names", "VAR_tabX_names", "VAR_management_names", 
-                  "VAR_output_names", "VAR_data_from")
+replacements <- c("VAR_climate_paths","VAR_climate_names","VAR_nfi_sweden_paths")
 
 
 
