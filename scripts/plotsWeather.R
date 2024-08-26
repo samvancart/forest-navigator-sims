@@ -42,12 +42,12 @@ plotsVars <- list(list())
 print(paste0("Creating plots..."))
 
 # Plot
-# CHECK VARIABLE 'data_from' IN settings.R
+# CHECK VARIABLE 'VAR_data_from' IN settings.R
 for (siteX in 1:nSites) {
   for(variableX in varNames){
-    plotsVars <- get_weather_plotsVars(plotsVars,variableX,siteX,tabX, data_from)
+    plotsVars <- get_weather_plotsVars(plotsVars,variableX,siteX,tabX, VAR_data_from)
   }
-  plot_path <- get_by_site_plot_path("weather_inputs",siteX, data_from)
+  plot_path <- get_by_site_plot_path("weather_inputs",siteX, VAR_data_from)
   pdf(plot_path, width=14, height=7)
 
   for(variableX in varNames){

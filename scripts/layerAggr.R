@@ -15,13 +15,13 @@ source('./r/utils.R')
 
 # Note: Running for clustered data should produce a table which has "Lc" column added but is otherwise unchanged
 
-print(paste0("Running layerAggr.R for layer ", layerNames[VAR_layer_id]))
+print(paste0("Running layerAggr.R for layer ", VAR_layer_names[VAR_layer_id]))
 
 # Define variables
 varXs <- c(11:14,17,18,30,43)
 
 # Load tabX
-fileName <- (paste0(rdata_path, "modOut_",layerNames[VAR_layer_id],".rdata"))
+fileName <- (paste0(rdata_path, "modOut_",VAR_layer_names[VAR_layer_id],".rdata"))
 load(fileName)
 tabX <- data.table(melt(modOut$multiOut[,,varXs,,1]))
 
@@ -147,7 +147,7 @@ tabX$year <- as.integer(tabX$year)
 tabX$variable <- as.character(tabX$variable)
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_layerAggr_", layerNames[VAR_layer_id],".rdata")
+fileName <- paste0(rdata_path, "tabX_layerAggr_", VAR_layer_names[VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))
 

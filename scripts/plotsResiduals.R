@@ -12,12 +12,12 @@ source('./r/residuals.R')
 print(paste0("Running plotsResiduals.R"))
 
 # Load tabX trees
-fileName <- (paste0(rdata_path, "tabX_layerAggr_", layerNames[1],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_layerAggr_", VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(rdata_path, "tabX_layerAggr_", layerNames[2],".rdata"))
+fileName <- (paste0(rdata_path, "tabX_layerAggr_", VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -28,7 +28,7 @@ tabX <- prepare_tabX(tabX_trees,tabX_clusters,old_val = "value")
 tabX <- to_factor(tabX, c("layer"))
 
 # Load multiOut for varNames
-fileName <- (paste0(rdata_path, "multiOut_",layerNames[1],".rdata"))
+fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[1],".rdata"))
 load(fileName)
 
 # Set varNames
@@ -68,7 +68,7 @@ plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/species/"),
                varNames = varNames, varXs = varXs, shape = NULL, point_col="species", box_col = "species", fill=NULL)
 
 # Plot combined
-species_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/species/", data_from, "/combined/")
+species_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/species/", VAR_data_from, "/combined/")
 plot_combined_residuals(tabX = tabX, plot_path = species_plot_path, col = "species", fill = "species")
 
 
@@ -88,7 +88,7 @@ plot_residuals(tabX = tabX, sub_folder =  paste0("/residuals/site/"),
                varNames = varNames, varXs = varXs, shape = NULL, point_col=NULL, box_col = NULL, fill=NULL)
 
 # Plot combined
-site_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/site/", data_from, "/combined/")
+site_plot_path <-paste0("data/plots/by_site/side_by_side/residuals/site/", VAR_data_from, "/combined/")
 plot_combined_residuals(tabX = tabX, plot_path = site_plot_path, formula = NULL, col = NULL, fill = NULL)
 
 

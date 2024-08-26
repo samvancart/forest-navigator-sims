@@ -69,10 +69,10 @@ replace_in_script <- function(file_path, pattern, replacement, test=F) {
   
   if(!setequal(script, mod_script)) {
     if(!test) {
-      print(paste0("Modifying ", file_path, "..."))
+      print(paste0("Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
       writeLines(mod_script, file_path)
     } else {
-      print(paste0("TEST: Modifying ", file_path, "..."))
+      print(paste0("TEST: Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
     }
 
   }
@@ -91,12 +91,32 @@ length(unique(unlist(modified_lines_vector)))
 
 
 script <- scripts[16]
-str <- "climateID"
+str <- "pCROBAS_multipliers"
 pattern <- paste0("\\b", str, "\\b")
-replacement_pattern <- "VAR_climate_id"
+replacement_pattern <- "VAR_pCROBAS_multipliers"
+
+
+
+old_strs <- camelCaseNames <- c("speciesDict", "speciesCodes", "layerNames",
+                            "thetaMax", "estimated_user", "estimatedNames", "tabXNames", "managementNames", 
+                            "outputNames", "data_from")
+patterns <- unlist(lapply(old_strs, function(str) paste0("\\b", str, "\\b")))
+
+replacements <- c("VAR_species_dict", "VAR_species_codes", "VAR_layer_names",
+                  "VAR_theta_max","VAR_estimated_user", "VAR_estimated_names", "VAR_tabX_names", "VAR_management_names", 
+                  "VAR_output_names", "VAR_data_from")
+
+
+
 
 
 # REPLACE
+invisible(lapply(filtered_scripts, function(script){
+  lapply(seq_along(patterns), function(i) {
+    replace_in_script(script, patterns[i], replacements[i], T)
+  })
+}))
+
 invisible(lapply(filtered_scripts, function(x) replace_in_script(x, pattern, replacement_pattern, T)))
 
 # replace_in_script(script, pattern, "VAR_species_id")

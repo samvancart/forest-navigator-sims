@@ -48,16 +48,16 @@ nLayers <- (df_nSites %>% count(groupID))$n
 
 
 
-fileName <- (paste0(rdata_path, "multiOut_",layerNames[VAR_layer_id],".rdata"))
+fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[VAR_layer_id],".rdata"))
 load(fileName)
 
 print(fileName)
 print(nLayers)
 
-# species <- speciesNames[VAR_species_id]
+species <- VAR_species_names[VAR_species_id]
 speciesNames <- colnames(pCROB)
 
-estimatedName <- estimatedNames[VAR_estimated_id]
+estimatedName <- VAR_estimated_names[VAR_estimated_id]
 
 # Define variables
 varXs <- c(11:14,17,18,30,43)
@@ -102,6 +102,6 @@ print(unique(species21$species))
 
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_layer_", layerNames[VAR_layer_id],".rdata")
+fileName <- paste0(rdata_path, "tabX_layer_", VAR_layer_names[VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))

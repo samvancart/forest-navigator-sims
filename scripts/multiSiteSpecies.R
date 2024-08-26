@@ -13,8 +13,8 @@ source('./r/multiSite.R')
 ### SiteInfo created in loadData.R ###
 
 print(paste0("Running multiSiteSpecies.R for species ",
-             get_speciesName(VAR_species_id, speciesDict), " and site type estimated by ", estimatedNames[VAR_estimated_id]))
-print(paste0("Management: ", managementNames[VAR_management_id+1]))
+             get_speciesName(VAR_species_id, VAR_species_dict), " and site type estimated by ", VAR_estimated_names[VAR_estimated_id]))
+print(paste0("Management: ", VAR_management_names[VAR_management_id+1]))
 print(paste0("Climate: ", climateNames[VAR_climate_id]))
 
 # Number of layers and species
@@ -24,10 +24,10 @@ nLayers <- nSpecies <- 1
 pPRELES <- get_pPRELES(VAR_species_id)
 
 # Set pCROBAS kRein parameter
-pCROB_copy <- get_pCROBAS(speciesIDs = c(VAR_species_id), pCROBAS_multipliers = pCROBAS_multipliers, pCROB = pCROB)
+pCROB_copy <- get_pCROBAS(speciesIDs = c(VAR_species_id), pCROBAS_multipliers = VAR_pCROBAS_multipliers, pCROB = pCROB)
 
-# Set pCROBAS thetaMax parameter
-pCROB_copy[31, speciesID] <- thetaMax
+# Set pCROBAS VAR_theta_max parameter
+pCROB_copy[31, speciesID] <- VAR_theta_max
 
 # Create multiInitVar
 multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = VAR_species_id, initAge = 12) # CHECK AGE
@@ -84,7 +84,7 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
 print("Done.")
 
 # # Save initPrebas
-# filename <- paste0(rdata_path, "initPrebas_", speciesNames[VAR_species_id], ".rdata")
+# filename <- paste0(rdata_path, "initPrebas_", VAR_species_names[VAR_species_id], ".rdata")
 # save(initPrebas,initPrebas_st1,initPrebas_st5, file=filename)
 
 # run multisite model

@@ -55,7 +55,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$multiInitVar[,1,] <- 12  ###update species ID
-initPrebas$pCROBAS[31, 12] <- thetaMax # ThetaMax
+initPrebas$pCROBAS[31, 12] <- VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==4] # fagus=4 in NFI
@@ -66,7 +66,7 @@ age_yieldTab <- c(45,90,120)
 d_yieldTab <- c(13,29,43)
 
 ## All
-pdf_path <- paste0(plot_path,"All_nfi_thetaMax_", thetaMax,".pdf")
+pdf_path <- paste0(plot_path,"All_nfi_thetaMax_", VAR_theta_max,".pdf")
 pdf(pdf_path, width = 14, height = 9)
 
 
@@ -96,7 +96,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,2] <- initPrebas$pCROBAS[17,2] * 1.3
-initPrebas$pCROBAS[31,2] <- thetaMax # ThetaMax
+initPrebas$pCROBAS[31,2] <- VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==2] # fagus=4 in NFI
@@ -123,7 +123,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,1] <- initPrebas$pCROBAS[17,1] * 1.3
-initPrebas$pCROBAS[31, 1] <- thetaMax # ThetaMax
+initPrebas$pCROBAS[31, 1] <- VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==1] # fagus=4 in NFI
@@ -151,7 +151,7 @@ initPrebas$multiInitVar[,2,] <- 12 ### update age
 run_def <- multiPrebas(initPrebas)  ###run with fagus romanian calibration
 
 initPrebas$pCROBAS[17,3] <- initPrebas$pCROBAS[17,3] * 0.6
-initPrebas$pCROBAS[31,3] <- thetaMax # ThetaMax
+initPrebas$pCROBAS[31,3] <- VAR_theta_max # ThetaMax
 run_new <- multiPrebas(initPrebas) ####run with fagus boreal calibration
 
 nfi_dt <- dt[speciesID==3] # fagus=4 in NFI

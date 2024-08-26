@@ -10,8 +10,8 @@ fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 climateScenario <- tolower(climateNames[VAR_climate_id])
-species <- get_speciesName(VAR_species_id, speciesDict)
-managementName <- managementNames[VAR_management_id+1]
+species <- get_speciesName(VAR_species_id, VAR_species_dict)
+managementName <- VAR_management_names[VAR_management_id+1]
 
 # Specify output variables
 varXs <- c(11:13,17,18,22,30,42,43)

@@ -20,10 +20,10 @@ fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 # Settings variables
-species <- get_speciesName(VAR_species_id, speciesDict)
-estimatedName <- estimatedNames[VAR_estimated_id]
+species <- get_speciesName(VAR_species_id, VAR_species_dict)
+estimatedName <- VAR_estimated_names[VAR_estimated_id]
 # estimated <- estimatedList[[VAR_estimated_id]]
-managementName <- managementNames[VAR_management_id+1]
+managementName <- VAR_management_names[VAR_management_id+1]
 
 
 # Define variables
@@ -71,14 +71,14 @@ tabX$runID <- as.factor(tabX$runID)
 plotsVars <- list()
 
 
-# Plot with shadow. # CHECK VARIABLE 'data_from' IN settings.R
+# Plot with shadow. # CHECK VARIABLE 'VAR_data_from' IN settings.R
 for(variableX in varNames[varXs]){
-  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,data_from)
+  plotsVars <- get_shadow_plotsVars(plotsVars,variableX,tabX,VAR_data_from)
 }
 
 
 # plots to pdf
-plot_path <- get_by_species_plot_path(species, estimatedName, data_from, managementName)
+plot_path <- get_by_species_plot_path(species, estimatedName, VAR_data_from, managementName)
 
 pdf(plot_path)
 for(variableX in varNames[varXs]){

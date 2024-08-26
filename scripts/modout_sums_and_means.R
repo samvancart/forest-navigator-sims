@@ -5,9 +5,9 @@
 
 source('scripts/settings.R')
 
-print(paste0("Running modout_sums_and_means.R for layer ", layerNames[VAR_layer_id]))
+print(paste0("Running modout_sums_and_means.R for layer ", VAR_layer_names[VAR_layer_id]))
 
-fileName <- (paste0(rdata_path, "modOut_",layerNames[VAR_layer_id],".rdata"))
+fileName <- (paste0(rdata_path, "modOut_",VAR_layer_names[VAR_layer_id],".rdata"))
 load(fileName)
 
 
@@ -72,13 +72,13 @@ for (i in 1:length(li)) {
   tabXx <- data.table(melt(li[[i]]))
   tabXx$variable <- names_li[i]
   tabXx$LayerType <- VAR_layer_id
-  tabXx$LayerName <- layerNames[VAR_layer_id]
+  tabXx$LayerName <- VAR_layer_names[VAR_layer_id]
   tabX <- rbind(tabXx,tabX)
 }
 
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_sums_means_", layerNames[VAR_layer_id],".rdata")
+fileName <- paste0(rdata_path, "tabX_sums_means_", VAR_layer_names[VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))
 

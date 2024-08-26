@@ -7,7 +7,7 @@ source('./r/utils.R')
 # soil
 soilData <- fread(soilData_path)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
-estimatedList <- list(estimated_user, estimated_quantile)
+estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
 # climate
 
@@ -15,18 +15,18 @@ estimatedList <- list(estimated_user, estimated_quantile)
 
 ## Reading tran csv files is very slow so instead read df and create tran tables.
 
-# if(data_from == "gitlab") {
-#   print(paste0("Climate data is from ", data_from))
+# if(VAR_data_from == "gitlab") {
+#   print(paste0("Climate data is from ", VAR_data_from))
 #   # Get gitlab df
 #   df <- fread(climate_paths[VAR_climate_id], header = T)
 #   print(paste0("Loaded ", climateNames[VAR_climate_id], " climate scenario."))
-# } else if(data_from=="eobs") {
-#   print(paste0("Climate data is from ", data_from))
+# } else if(VAR_data_from=="eobs") {
+#   print(paste0("Climate data is from ", VAR_data_from))
 #   # Get eobs df
 #   df <- fread(prebas_eobs_path, header = T)
 # } else {
 #   df <- NULL
-#   stop(paste0("'",data_from,"'"," is not a valid climate data source! Modify variable 'data_from' in settings.R."))
+#   stop(paste0("'",VAR_data_from,"'"," is not a valid climate data source! Modify variable 'VAR_data_from' in settings.R."))
 # 
 # }
 
