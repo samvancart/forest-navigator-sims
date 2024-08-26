@@ -84,7 +84,7 @@ initPrebas_st5 <- InitMultiSite(nYearsMS = rep(nYears,nSites),
 print("Done.")
 
 # # Save initPrebas
-# filename <- paste0(rdata_path, "initPrebas_", VAR_species_names[VAR_species_id], ".rdata")
+# filename <- paste0(PATH_rdata, "initPrebas_", VAR_species_names[VAR_species_id], ".rdata")
 # save(initPrebas,initPrebas_st1,initPrebas_st5, file=filename)
 
 # run multisite model
@@ -97,7 +97,7 @@ multiOut<-modOut$multiOut
 multiOut_st1<-modOut_st1$multiOut
 multiOut_st5<-modOut_st5$multiOut
 
-fileName <- paste0(rdata_path, "multiOut_spID", VAR_species_id, ".rdata")
+fileName <- paste0(PATH_rdata, "multiOut_spID", VAR_species_id, ".rdata")
 
 save(multiOut,multiOut_st1,multiOut_st5, file=fileName)
 print(paste0("multiOut saved to ", fileName))

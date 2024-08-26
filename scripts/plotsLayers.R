@@ -14,12 +14,12 @@ source('./r/plots.R')
 print(paste0("Running plotsLayers.R for ", VAR_tabX_names[VAR_tabX_id]))
 
 # Load tabX trees
-fileName <- (paste0(rdata_path, "tabX_", VAR_tabX_names[VAR_tabX_id], "_", VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_", VAR_tabX_names[VAR_tabX_id], "_", VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(rdata_path, "tabX_", VAR_tabX_names[VAR_tabX_id], "_",VAR_layer_names[2],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_", VAR_tabX_names[VAR_tabX_id], "_",VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -27,7 +27,7 @@ tabX_clusters <- tabX
 nSites <- max(as.integer(levels(tabX_clusters$site)))
 
 # Load multiOut for varNames
-fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[1],".rdata"))
 load(fileName)
 # Set varNames
 varNames <- as.vector(unlist(dimnames(multiOut)[3]))

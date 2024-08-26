@@ -45,7 +45,7 @@ y_units <- c("11"="m", "12"="cm", "13"="m²/ha", "17"="N")
 plot_path <- "data/plots/pCrobasDefNew/"
 
 
-fileName <- paste0(rdata_path, "initPrebas_Beech.rdata")
+fileName <- paste0(PATH_rdata, "initPrebas_Beech.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -86,7 +86,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs,
 ####Spruce analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(rdata_path, "initPrebas_Spruce.rdata")
+fileName <- paste0(PATH_rdata, "initPrebas_Spruce.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -113,7 +113,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Spruce', y_units = y
 ####Pine analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(rdata_path, "initPrebas_Pine.rdata")
+fileName <- paste0(PATH_rdata, "initPrebas_Pine.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites
@@ -141,7 +141,7 @@ plot_initPrebas(run_def$multiOut, run_new$multiOut, varXs, 'Pine', y_units = y_u
 ####Birch analysis
 # rm(list=ls()); gc()
 
-fileName <- paste0(rdata_path, "initPrebas_Birch.rdata")
+fileName <- paste0(PATH_rdata, "initPrebas_Birch.rdata")
 load(fileName)
 
 nSites <- initPrebas$nSites

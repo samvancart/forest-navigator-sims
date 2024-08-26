@@ -97,10 +97,46 @@ replacement_pattern <- "VAR_nfi_sweden_paths"
 
 
 
-old_strs <- camelCaseNames <- c("climate_paths","climateNames","nfi_sweden_paths")
+old_strs <- c(
+  "soilData_path",
+  "tranPath",
+  "historical_climate_data_gitlab_path",
+  "prebas_gitlab_path",
+  "prebas_future_GFDL_ESM4_SSP370",
+  "prebas_future_UKESM1_0_LL_ssp370",
+  "prebas_historical_detrend",
+  "prebas_eobs_path",
+  "nfi_sweden_path",
+  "rdata_path",
+  "chelsa_file",
+  "chelsa_path",
+  "eobs_file",
+  "eobs_path",
+  "eobs_var",
+  "eobs_folder",
+  "sites_path"
+)
 patterns <- unlist(lapply(old_strs, function(str) paste0("\\b", str, "\\b")))
 
-replacements <- c("VAR_climate_paths","VAR_climate_names","VAR_nfi_sweden_paths")
+replacements <- c(
+  "PATH_soil_data",
+  "PATH_tran",
+  "PATH_historical_climate_data_gitlab",
+  "PATH_prebas_gitlab",
+  "PATH_prebas_future_GFDL_ESM4_SSP370",
+  "PATH_prebas_future_UKESM1_0_LL_ssp370",
+  "PATH_prebas_historical_detrend",
+  "PATH_prebas_eobs",
+  "PATH_nfi_sweden",
+  "PATH_rdata",
+  "PATH_chelsa_file_nc",
+  "PATH_chelsa_nc",
+  "PATH_eobs_file_nc",
+  "PATH_eobs_nc",
+  "PATH_eobs_var_nc",
+  "PATH_eobs_folder_nc",
+  "PATH_sites"
+)
 
 
 
@@ -109,7 +145,7 @@ replacements <- c("VAR_climate_paths","VAR_climate_names","VAR_nfi_sweden_paths"
 # REPLACE
 invisible(lapply(filtered_scripts, function(script){
   lapply(seq_along(patterns), function(i) {
-    replace_in_script(script, patterns[i], replacements[i], T)
+    replace_in_script(script, patterns[i], replacements[i], F)
   })
 }))
 

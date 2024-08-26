@@ -12,12 +12,12 @@ source('./r/residuals.R')
 print(paste0("Running plotsResiduals.R"))
 
 # Load tabX trees
-fileName <- (paste0(rdata_path, "tabX_layerAggr_", VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_layerAggr_", VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(rdata_path, "tabX_layerAggr_", VAR_layer_names[2],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_layerAggr_", VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -28,7 +28,7 @@ tabX <- prepare_tabX(tabX_trees,tabX_clusters,old_val = "value")
 tabX <- to_factor(tabX, c("layer"))
 
 # Load multiOut for varNames
-fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[1],".rdata"))
 load(fileName)
 
 # Set varNames

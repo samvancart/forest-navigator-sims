@@ -8,12 +8,12 @@ source('./r/plots.R')
 print(paste0("Running plotsSumsMeans.R"))
 
 # Load tabX trees
-fileName <- (paste0(rdata_path, "tabX_sums_means_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_sums_means_",VAR_layer_names[1],".rdata"))
 load(fileName)
 tabX_trees <- tabX
 
 # Load tabX clusters
-fileName <- (paste0(rdata_path, "tabX_sums_means_",VAR_layer_names[2],".rdata"))
+fileName <- (paste0(PATH_rdata, "tabX_sums_means_",VAR_layer_names[2],".rdata"))
 load(fileName)
 tabX_clusters <- tabX
 
@@ -25,7 +25,7 @@ nSites <- length(unique(tabX_clusters$site))
 # nSites <- max(as.integer(levels(tabX_clusters$site)))
 
 # Load multiOut for varNames
-fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[1],".rdata"))
+fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[1],".rdata"))
 
 # Set varNames
 varNames <- as.vector(unlist(dimnames(multiOut)[3]))

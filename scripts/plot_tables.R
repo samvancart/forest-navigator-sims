@@ -48,7 +48,7 @@ nLayers <- (df_nSites %>% count(groupID))$n
 
 
 
-fileName <- (paste0(rdata_path, "multiOut_",VAR_layer_names[VAR_layer_id],".rdata"))
+fileName <- (paste0(PATH_rdata, "multiOut_",VAR_layer_names[VAR_layer_id],".rdata"))
 load(fileName)
 
 print(fileName)
@@ -102,6 +102,6 @@ print(unique(species21$species))
 
 
 # Write rdata
-fileName <- paste0(rdata_path, "tabX_layer_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(PATH_rdata, "tabX_layer_", VAR_layer_names[VAR_layer_id],".rdata")
 save(tabX, file=fileName)
 print(paste0("tabX saved to ", fileName))

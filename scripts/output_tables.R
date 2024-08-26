@@ -6,7 +6,7 @@ source('./r/utils.R')
 
 
 # Load multiout for species
-fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
+fileName <- paste0(PATH_rdata, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 climateScenario <- tolower(VAR_climate_names[VAR_climate_id])

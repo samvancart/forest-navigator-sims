@@ -70,31 +70,32 @@ VAR_nfi_sweden_paths:
   
 
 # PATHS
-soilData_path: data/soil/grd5_soil_data_prebas.csv
+PATH_soil_data: data/soil/grd5_soil_data_prebas.csv
 
 # Climate
-tranPath: data/climate/tran/
-historical_climate_data_gitlab_path: data/climate/provided/historical_climate_data.csv
-prebas_gitlab_path: data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
-prebas_future_GFDL_ESM4_SSP370: data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
-prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
-prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
-prebas_eobs_path: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
+PATH_tran: data/climate/tran/
+PATH_historical_climate_data_gitlab: data/climate/provided/historical_climate_data.csv
+PATH_prebas_gitlab: data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
+PATH_prebas_future_GFDL_ESM4_SSP370: data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
+PATH_prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
+PATH_prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
+PATH_prebas_eobs: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
 
 # Nfi
-nfi_sweden_path: data/nfi/sweden/
+PATH_nfi_sweden: data/nfi/sweden/
 
 # Rdata
-rdata_path: data/rdata/
+PATH_rdata: data/rdata/
 
 # Netcdf
-chelsa_file: chelsa_1979_2016_all_vars
-chelsa_path: data/netcdf/combined/all/chelsa_1979_2016_all_vars.nc
-eobs_file: eobs_1979_2022_all_vars
-eobs_path: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
-eobs_var: hu
-eobs_folder: data/netcdf/eobs_vars/hu/
+PATH_chelsa_file_nc: chelsa_1979_2016_all_vars
+PATH_chelsa_nc: data/netcdf/combined/all/chelsa_1979_2016_all_vars.nc
+PATH_eobs_file_nc: eobs_1979_2022_all_vars
+PATH_eobs_nc: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
+PATH_eobs_var_nc: hu
+PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
 
 # Sites
-sites_path: data/climate/provided/prebas_sites_coords.csv
+PATH_sites: data/climate/provided/prebas_sites_coords.csv
+
 

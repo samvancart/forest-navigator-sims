@@ -5,7 +5,7 @@ source('./r/utils.R')
 ### Load data ###
 
 # soil
-soilData <- fread(soilData_path)
+soilData <- fread(PATH_soil_data)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
@@ -23,7 +23,7 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 # } else if(VAR_data_from=="eobs") {
 #   print(paste0("Climate data is from ", VAR_data_from))
 #   # Get eobs df
-#   df <- fread(prebas_eobs_path, header = T)
+#   df <- fread(PATH_prebas_eobs, header = T)
 # } else {
 #   df <- NULL
 #   stop(paste0("'",VAR_data_from,"'"," is not a valid climate data source! Modify variable 'VAR_data_from' in settings.R."))
@@ -43,7 +43,7 @@ estimatedList <- list(VAR_estimated_user, estimated_quantile)
 
 # Load tran binaries
 
-path_tran <- paste0(tranPath, VAR_climate_names[VAR_climate_id])
+path_tran <- paste0(PATH_tran, VAR_climate_names[VAR_climate_id])
 tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))

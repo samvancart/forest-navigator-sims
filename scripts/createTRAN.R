@@ -26,8 +26,8 @@ tranMatrices <- lapply(tranVars, function(x) as.matrix(dynamic_dcast(climateData
 # Add names to list
 names(tranMatrices) <- paste0(tranVars,"Tran")
 
-# Create tranPath if it doesn't exist
-path_tran <- get_or_create_path(pathVarName = "tranPath", defaultDir = tranPath, subDir = climateScenario)
+# Create PATH_tran if it doesn't exist
+path_tran <- get_or_create_path(pathVarName = "PATH_tran", defaultDir = PATH_tran, subDir = climateScenario)
 
 # Create save path
 savePath <- paste0(path_tran, climateScenario)

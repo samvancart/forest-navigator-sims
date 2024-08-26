@@ -153,7 +153,7 @@ print("Done.")
 
 
 # Save as rdata
-fileName <- paste0(rdata_path, "initPrebas_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(PATH_rdata, "initPrebas_", VAR_layer_names[VAR_layer_id],".rdata")
 save(initPrebas, file=fileName)
 print(paste0("initPrebas saved to ",fileName))
 
@@ -162,7 +162,7 @@ print(paste0("initPrebas saved to ",fileName))
 modOut <- multiPrebas(initPrebas)
 
 # Save as rdata
-fileName <- paste0(rdata_path, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(PATH_rdata, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
 save(modOut, file=fileName)
 print(paste0("modOut saved to ",fileName))
 
@@ -170,7 +170,7 @@ print(paste0("modOut saved to ",fileName))
 multiOut<-modOut$multiOut
 
 # Save as rdata
-fileName <- paste0(rdata_path, "multiOut_", VAR_layer_names[VAR_layer_id],".rdata")
+fileName <- paste0(PATH_rdata, "multiOut_", VAR_layer_names[VAR_layer_id],".rdata")
 save(multiOut, file=fileName)
 print(paste0("multiOut saved to ", fileName))
 
@@ -180,7 +180,7 @@ print(paste0("multiOut saved to ", fileName))
 
 
 # modOut_original <- multiPrebas(initPrebas)
-# mod_path <- paste0(rdata_path, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
+# mod_path <- paste0(PATH_rdata, "modOut_", VAR_layer_names[VAR_layer_id],".rdata")
 # load(file=mod_path)
 # 
 # modOut_original$siteInfo

@@ -16,7 +16,7 @@ melt_lc <- function(lc,runID,siteType){
 
 
 
-fileName <- paste0(rdata_path, "multiOut_spID",VAR_species_id,".rdata")
+fileName <- paste0(PATH_rdata, "multiOut_spID",VAR_species_id,".rdata")
 load(fileName)
 
 # Settings variables
