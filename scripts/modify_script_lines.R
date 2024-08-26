@@ -1,15 +1,4 @@
-source("r/utils.R")
-
-library(yaml)
-library(stringr)
-
-
-# Path to config file
-config_path <- paste0("config.yaml")
-
-# Load the configuration
-config <<- yaml.load_file(config_path)
-
+source('scripts/settings.R')
 
 
 count_occurences_of_pattern_in_script <- function(file_path, pattern) {

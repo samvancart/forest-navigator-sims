@@ -27,7 +27,7 @@ pPRELES <- get_pPRELES(config$VAR_species_id)
 pCROB_copy <- get_pCROBAS(speciesIDs = c(config$VAR_species_id), pCROBAS_multipliers = config$VAR_pCROBAS_multipliers, pCROB = pCROB)
 
 # Set pCROBAS config$VAR_theta_max parameter
-pCROB_copy[31, speciesID] <- config$VAR_theta_max
+pCROB_copy[31, config$VAR_species_id] <- config$VAR_theta_max
 
 # Create multiInitVar
 multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = config$VAR_species_id, initAge = 12) # CHECK AGE

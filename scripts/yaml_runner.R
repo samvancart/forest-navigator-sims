@@ -1,15 +1,15 @@
-source("r/utils.R")
+source('scripts/settings.R')
 
-library(yaml)
+# Create temp_env
+temp_env <- new.env()
 
+# Load functions into temp_env
+source("r/utils.R", temp_env)
 
-# Path to config file
-config_path <- paste0("config.yaml")
-
-# Load configuration file
-config <- yaml.load_file(config_path)
 
 # Modify with named vector
-ids <- c(config$VAR_climate_id= as.integer(1), config$VAR_species_id = as.integer(2), config$VAR_management_id = as.integer(0))
-modify_yaml_settings_vector(config_path, ids)
+ids <- c(VAR_climate_id = as.integer(3), VAR_species_id = as.integer(2), VAR_management_id = as.integer(0))
+temp_env$modify_yaml_settings_vector(config_path, ids)
 
+# Remove temp_env
+rm(temp_env)

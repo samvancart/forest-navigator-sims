@@ -1,10 +1,9 @@
-# VARIABLES
 VAR_species_id: 2
 VAR_layer_id: 2
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 1
+VAR_climate_id: 3
 VAR_species_dict:
   '1': Pine
   '2': Spruce
@@ -67,12 +66,7 @@ VAR_climate_names:
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
-  
-
-# PATHS
 PATH_soil_data: data/soil/grd5_soil_data_prebas.csv
-
-# Climate
 PATH_tran: data/climate/tran/
 PATH_historical_climate_data_gitlab: data/climate/provided/historical_climate_data.csv
 PATH_prebas_gitlab: data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
@@ -80,22 +74,12 @@ PATH_prebas_future_GFDL_ESM4_SSP370: data/climate/provided/GFDL-ESM4_SSP370_preb
 PATH_prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
 PATH_prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
 PATH_prebas_eobs: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
-
-# Nfi
 PATH_nfi_sweden: data/nfi/sweden/
-
-# Rdata
 PATH_rdata: data/rdata/
-
-# Netcdf
 PATH_chelsa_file_nc: chelsa_1979_2016_all_vars
 PATH_chelsa_nc: data/netcdf/combined/all/chelsa_1979_2016_all_vars.nc
 PATH_eobs_file_nc: eobs_1979_2022_all_vars
 PATH_eobs_nc: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
 PATH_eobs_var_nc: hu
 PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
-
-# Sites
 PATH_sites: data/climate/provided/prebas_sites_coords.csv
-
-
