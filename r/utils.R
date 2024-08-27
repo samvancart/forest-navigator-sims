@@ -395,3 +395,126 @@ modify_recursive <- function(config, key, value) {
   return(list(config = config, key_found = key_found))
 }
 
+
+#' Count Occurrences of a Pattern in a Script
+#'
+#' This function reads a script from a file and counts the occurrences of a specified pattern.
+#'
+#' @param file_path A character string specifying the path to the script file.
+#' @param pattern A character string specifying the pattern to search for in the script.
+#' @return A list containing the file path, counts of the pattern in each line, total count, lines with occurrences, and counts per line.
+#' @examples
+#' \dontrun{
+#' count_occurences_of_pattern_in_script("path/to/script.R", "pattern")
+#' }
+count_occurences_of_pattern_in_script <- function(file_path, pattern) {
+  script <- readLines(file_path)
+  counts <- str_count(script, pattern)
+  total <- sum(counts)
+  lines <- which(counts > 0)
+  line_counts <- counts[which(counts > 0)]
+  return(list(file_path = file_path, 
+              counts = counts, total = total, 
+              lines = lines, 
+              line_counts = line_counts))
+}
+
+#' Replace Pattern in a Script
+#'
+#' This function reads a script from a file and replaces all occurrences of a specified pattern with a replacement string.
+#'
+#' @param file_path A character string specifying the path to the script file.
+#' @param pattern A character string specifying the pattern to be replaced.
+#' @param replacement A character string specifying the replacement for the pattern.
+#' @param test A logical value indicating whether to perform a test run without modifying the file. Default is FALSE.
+#' @return None. The function modifies the script file in place if `test` is FALSE.
+#' @examples
+#' \dontrun{
+#' replace_in_script("path/to/script.R", "pattern", "replacement")
+#' replace_in_script("path/to/script.R", "pattern", "replacement", test = TRUE)
+#' }
+replace_in_script <- function(file_path, pattern, replacement, test = FALSE) {
+  script <- readLines(file_path)
+  mod_script <- gsub(pattern, replacement, script)
+  
+  if (!setequal(script, mod_script)) {
+    if (!test) {
+      print(paste0("Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
+      writeLines(mod_script, file_path)
+    } else {
+      print(paste0("TEST: Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
+    }
+  }
+}
+
+
+#' Generate a Data Table from Named Vectors and Source List
+#'
+#' This function creates a data table by expanding a grid of named vectors and 
+#' appending a source list to it.
+#'
+#' @param named_vector_list A list of named vectors to be expanded into a grid.
+#' @param source_list A list of sources to be appended to the data table.
+#'
+#' @return A data.table object containing the expanded grid and the source list.
+#' @export
+#'
+#' @examples
+#' named_vector_list <- list(a = 1:3, b = 4:5)
+#' source_list <- list("source1", "source2")
+#' get_run_table_dt(named_vector_list, source_list)
+get_run_table_dt <- function(named_vector_list, source_list) {
+  run_table_dt <- data.table(expand.grid(named_vector_list))
+  run_table_dt[, src := list(source_list)]
+  
+  return(run_table_dt)
+}
+
+
+#' Run YAML from Table
+#'
+#' This function executes scripts specified in a data table for each combination of IDs.
+#'
+#' @param run_table_dt A data.table containing the scripts to run and their associated IDs.
+#' @param config_path A character string specifying the path to the configuration file.
+#' @param src_name A character string specifying the column name for the source scripts. Default is "src".
+#'
+#' @details
+#' The function splits the input data table by rows and runs each script in the `src_name` column for each combination of IDs.
+#' It modifies the YAML settings based on the IDs before running the scripts.
+#' The column names representing the IDs must correspond to the ID names in the YAML file (eg. VAR_climate_id).
+#'
+#' @return This function returns `NULL` invisibly.
+#'
+#' @examples
+#' \dontrun{
+#' run_table_dt <- data.table::data.table(
+#'   id1 = c(1, 2),
+#'   id2 = c("A", "B"),
+#'   src = c("script1.R", "script2.R")
+#' )
+#' config_path <- "path/to/config.yaml"
+#' run_yaml_from_table(run_table_dt, config_path)
+#' }
+#'
+#' @export
+run_yaml_from_table <- function(run_table_dt, config_path, src_name = "src") {
+  # Get ids
+  id_names <- names(run_table_dt)[which(!names(run_table_dt) %in% src_name)]
+  
+  # Split by rows
+  rows_list <- split(run_table_dt, seq(nrow(run_table_dt)))
+  
+  # Run each script in src_list for each combination of ids
+  invisible(lapply(rows_list, function(row) {
+    ids <- unlist(row[, ..id_names])
+    modify_yaml_settings_vector(config_path, ids)
+    cat("\n")
+    
+    lapply(unlist(row[,c(..src_name)]), function(src){
+      source(src)
+    })
+    cat("\n")
+  }))
+}
+

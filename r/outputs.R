@@ -49,7 +49,8 @@ transpose_to_output_format <- function(tabX, var, col_vector, row_vector, col_na
 #'
 #' @examples
 write_outputs_protocolFormat <- function(table, varName, namesVars, species, model="PREBAS", climate="historical", 
-                                         region="norcen", managementName="managed", folder="comparison_protocol"){
+                                         region="norcen", managementName="managed", folder="comparison_protocol",
+                                         outputNames, speciesCodes, speciesNames){
   
   if(varName %in% namesVars) {
     varName <- outputNames[which(namesVars==varName)]

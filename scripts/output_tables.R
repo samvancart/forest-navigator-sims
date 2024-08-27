@@ -12,6 +12,9 @@ load(fileName)
 climateScenario <- tolower(config$VAR_climate_names[config$VAR_climate_id])
 species <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
 managementName <- config$VAR_management_names[config$VAR_management_id+1]
+outputNames <- config$VAR_output_names
+speciesCodes <- config$VAR_species_codes
+speciesNames <- config$VAR_species_names
 
 # Specify output variables
 varXs <- c(11:13,17,18,22,30,42,43)
@@ -41,7 +44,9 @@ years_vector <- seq.int(from = 1, to = nYears)
 for (i in 1:length(namesVars)) {
   table <- transpose_to_output_format(tabXst, i, clim_sites, years_vector)
   write_outputs_protocolFormat(table, namesVars[i], namesVars, species, 
-                               climate = climateScenario, managementName = managementName)
+                               climate = climateScenario, managementName = managementName,
+                               outputNames = outputNames, speciesCodes = speciesCodes,
+                               speciesNames = speciesNames)
 }
 
 

@@ -1,9 +1,9 @@
-VAR_species_id: 2
+VAR_species_id: 12
 VAR_layer_id: 2
 VAR_estimated_id: 1
 VAR_tabX_id: 1
-VAR_management_id: 0
-VAR_climate_id: 3
+VAR_management_id: 1
+VAR_climate_id: 4
 VAR_species_dict:
   '1': Pine
   '2': Spruce
@@ -83,3 +83,24 @@ PATH_eobs_nc: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
 PATH_eobs_var_nc: hu
 PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
 PATH_sites: data/climate/provided/prebas_sites_coords.csv
+SRC_multi_species: scripts/multiSiteSpecies.R
+SRC_multi_layers: scripts/multiSiteLayers.R
+SRC_multi_and_plots_species:
+- scripts/multiSiteSpecies.R
+- scripts/plotsSpecies.R
+SRC_multi_and_plots_layers:
+- scripts/multiSiteLayers.R
+- scripts/plotsLayers.R
+SRC_multi_and_outputs_species:
+- scripts/multiSiteSpecies.R
+- scripts/output_tables.R
+SRC_multi_and_outputs_layers:
+- scripts/multiSiteLayers.R
+- scripts/output_tables.R
+SRC_plot_tables: scripts/plot_tables.R
+SRC_cluster_weighted_means: scripts/cluster_weighted_means.R
+SRC_sums_means: scripts/modout_sums_and_means.R
+SRC_layer_aggr: scripts/layerAggr.R
+SRC_mock_run_scripts:
+- scripts/mock_run_script_1.R
+- scripts/mock_run_script_2.R

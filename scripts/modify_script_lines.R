@@ -1,41 +1,9 @@
 source('scripts/settings.R')
+source('./r/utils.R')
 
 
-count_occurences_of_pattern_in_script <- function(file_path, pattern) {
-  script <- readLines(file_path)
-  counts <- str_count(script, pattern)
-  total <- sum(counts)
-  lines <- which(counts>0)
-  line_counts <- counts[which(counts>0)]
-  return(list(file_path = file_path, 
-                counts = counts, total = total, 
-                lines = lines, 
-                line_counts = line_counts))
-}
 
 
-replace_in_script <- function(file_path, pattern, replacement, test=F) {
-  # Read the script from the file
-  script <- readLines(file_path)
-  
-  # Replace all occurrences of the pattern with the replacement
-  mod_script <- gsub(pattern, replacement, script)
-  
-  # Write the modified script back to the file
-  
-  if(!setequal(script, mod_script)) {
-    if(!test) {
-      print(paste0("Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
-      writeLines(mod_script, file_path)
-    } else {
-      print(paste0("TEST: Modifying ", file_path, ": Pattern is ", pattern, " and replacement is ", replacement))
-    }
-
-  }
-  
-  
- 
-}
 
 
 scripts <- list.files("scripts", full.names = T)
