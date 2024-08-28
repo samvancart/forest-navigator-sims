@@ -333,10 +333,9 @@ get_functions_in_env <- function(env = .GlobalEnv) {
 #' @importFrom yaml yaml.load_file write_yaml
 modify_yaml_settings_vector <- function(config_path, settings_vector) {
   
-  # Ensure that settings_vector is a named vector
-  if (is.null(names(settings_vector))) {
-    stop("settings_vector must be a named vector.")
-  }
+  # Validate inputs
+  checkmate::assert_file_exists(config_path, access = "r")
+  checkmate::assert_named(settings_vector, type = "named")
   
   # Read existing YAML configuration
   config <- yaml::yaml.load_file(config_path)
@@ -463,9 +462,14 @@ replace_in_script <- function(file_path, pattern, replacement, test = FALSE) {
 #' named_vector_list <- list(a = 1:3, b = 4:5)
 #' source_list <- list("source1", "source2")
 #' get_run_table_dt(named_vector_list, source_list)
-get_run_table_dt <- function(named_vector_list, source_list) {
+get_run_table_dt <- function(named_vector_list, source_vector) {
+  
+  # Validate inputs
+  assert_list(named_vector_list, types = "vector", any.missing = FALSE, min.len = 1)
+  assert_vector(source_vector, any.missing = FALSE, min.len = 1)
+  
   run_table_dt <- data.table(expand.grid(named_vector_list))
-  run_table_dt[, src := list(source_list)]
+  run_table_dt[, src := list(source_vector)]
   
   return(run_table_dt)
 }
@@ -499,6 +503,13 @@ get_run_table_dt <- function(named_vector_list, source_list) {
 #'
 #' @export
 run_yaml_from_table <- function(run_table_dt, config_path, src_name = "src") {
+  
+  # Validate inputs
+  assert_data_table(run_table_dt, min.rows = 1, min.cols = 1)
+  assert_file_exists(config_path)
+  assert_string(src_name)
+  assert_subset(src_name, names(run_table_dt))
+  
   # Get ids
   id_names <- names(run_table_dt)[which(!names(run_table_dt) %in% src_name)]
   
@@ -517,4 +528,41 @@ run_yaml_from_table <- function(run_table_dt, config_path, src_name = "src") {
     cat("\n")
   }))
 }
+
+#' Remove Selected Variables from Environment
+#'
+#' This function removes all variables from a specified environment except those specified to be kept.
+#'
+#' @param keep_vars A character vector of variable names to keep in the environment. Default is an empty vector.
+#' @param env The environment from which to remove variables. Default is the global environment.
+#'
+#' @return None. The function is called for its side effects.
+#' @examples
+#' # Create some variables in the global environment
+#' a <- 1
+#' b <- 2
+#' c <- 3
+#' 
+#' # Remove all variables except 'a'
+#' remove_selected_variables_from_env(keep_vars = c("a"))
+#' 
+#' # Check remaining variables
+#' ls()
+#' 
+#' @export
+remove_selected_variables_from_env <- function(keep_vars = c(), env = .GlobalEnv) {
+  
+  # Validate input
+  assert_character(keep_vars, any.missing = FALSE)
+  assert_environment(env)
+  
+  all_vars <- ls(envir = env)
+  rm(list = setdiff(all_vars, keep_vars), envir = env)
+  gc()
+}
+
+
+
+
+
 

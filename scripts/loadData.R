@@ -48,23 +48,23 @@ tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))
 
+# # Always load
+# invisible(lapply(tran_files, function(x){
+#   varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
+#   print(paste0("Loading ", varName))
+#   load(file = x, envir = .GlobalEnv)
+# }))
+
 # Load if not loaded
 invisible(lapply(tran_files, function(x){
   varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
-  print(paste0("Loading ", varName))
-  load(file = x, envir = .GlobalEnv)
+  if(config$VAR_load_tran_id == 0) {
+    print(paste0("Loading ", varName))
+    load(file = x, envir = .GlobalEnv)
+  } else {
+    print(paste0(varName, " already loaded."))
+  }
 }))
-
-# # Load if not loaded
-# invisible(lapply(tran_files, function(x){
-#   varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
-#   if(!exists(varName)) {
-#     print(paste0("Loading ", varName))
-#     load(file = x, envir = .GlobalEnv)
-#   } else {
-#     print(paste0(varName, " already loaded."))
-#   }
-# }))
 
 print("Done.")
 

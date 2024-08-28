@@ -2,7 +2,7 @@
 # This script runs a series of R scripts based on configurations specified in a data table.
 # The configuration must include IDs as a named list of integer vectors whose names 
 # correspond to the id variables found in the YAML
-# configuration file, as well as the source files to be run as a list, corresponding to those in the YAML.
+# configuration file, as well as the source files to be run as a vector, corresponding to those in the YAML.
 
 
 
@@ -17,7 +17,7 @@ local(envir = temp_env, {
   
   # Load functions into temp_env
   source("r/utils.R", temp_env)
-  
+
   # Variables for runner
   species_vector <- as.integer(names(config$VAR_species_dict))
   management_vector <- as.integer(c(0,1))
@@ -29,29 +29,28 @@ local(envir = temp_env, {
                                VAR_climate_id = climate_vector)
   
   # Create source_list
-  src_list <- config$SRC_mock_run_scripts
-  # src_list <- config$SRC_multi_and_outputs_species
+  # src_vector <- config$SRC_mock_run_scripts
+  src_vector <- config$SRC_multi_and_outputs_species
   
   # Create run table
-  run_table_dt <- get_run_table_dt(named_vector_list, src_list)
+  run_table_dt <- get_run_table_dt(named_vector_list, src_vector)
+  
+  # Load tran id
+  load_tran_id <- rep(as.integer(c(0,1,1,1,1,1,1,1)), nrow(run_table_dt)/8)
+  
+  # Add load tran column
+  run_table_dt[, VAR_load_tran_id := load_tran_id]
   
   # Run
   run_yaml_from_table(run_table_dt, config_path)
   
+  # Vars to keep
+  keep_vars <- c("config", "config_path")
+  
+  # Remove vars
+  remove_selected_variables_from_env(keep_vars)
+  
 })
-
-
-
-# Remove vars from global env
-global_vars <- ls()
-keep_vars <- c("config", "config_path", "temp_env")
-rm(list = setdiff(global_vars, keep_vars), "global_vars", "keep_vars")
-gc()
-
-
-
-# Remove temp_env
-rm(temp_env)
 
 
 
