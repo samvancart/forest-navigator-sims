@@ -563,6 +563,23 @@ remove_selected_variables_from_env <- function(keep_vars = c(), env = .GlobalEnv
 
 
 
-
+set_default_ids_in_yaml <- function(config_path, defaults = NULL) {
+  
+  if(is.null(defaults)) {
+    one <- as.integer(c(1))
+    zero <- as.integer(c(0))
+    defaults <- list(VAR_species_id = one, 
+                     VAR_management_id = zero, 
+                     VAR_climate_id = one,
+                     VAR_layer_id = one,
+                     VAR_estimated_id = one ,
+                     VAR_tabX_id = one,
+                     VAR_load_tran_id = zero)
+  } 
+  
+  
+  print(paste0("Setting defaults..."))
+  modify_yaml_settings_vector(config_path, defaults)
+}
 
 

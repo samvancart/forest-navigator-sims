@@ -3,9 +3,9 @@ source('scripts/loadData.R')
 source('./r/utils.R')
 source('./r/multiSite.R')
 
-# Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in settings.R.
+# Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in config.YAML.
 # Produces multiOut_spID<speciesID> rdata file.
-# Run for all species and both estimated N values from run.R.
+# Run for all species and both estimated N values from yaml_runner.R.
 
 
 ### Climate data loaded from loadData.R ###

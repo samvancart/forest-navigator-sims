@@ -2,62 +2,30 @@ source('scripts/settings.R')
 source('./r/multiSite.R')
 source('./r/utils.R')
 
-### Load data ###
+### LOAD DATA ###
+
+
+
 
 # soil
 soilData <- fread(config$PATH_soil_data)
 estimated_quantile <- quantile(soilData$N,c(0.15,0.40,0.9,0.98))
 estimatedList <- list(config$VAR_estimated_user, estimated_quantile)
 
-# climate
-
-# Get tran files
-
-## Reading tran csv files is very slow so instead read df and create tran tables.
-
-# if(config$VAR_data_from == "gitlab") {
-#   print(paste0("Climate data is from ", config$VAR_data_from))
-#   # Get gitlab df
-#   df <- fread(config$VAR_climate_paths[config$VAR_climate_id], header = T)
-#   print(paste0("Loaded ", config$VAR_climate_names[config$VAR_climate_id], " climate scenario."))
-# } else if(config$VAR_data_from=="eobs") {
-#   print(paste0("Climate data is from ", config$VAR_data_from))
-#   # Get eobs df
-#   df <- fread(config$PATH_prebas_eobs, header = T)
-# } else {
-#   df <- NULL
-#   stop(paste0("'",config$VAR_data_from,"'"," is not a valid climate data source! Modify variable 'config$VAR_data_from' in settings.R."))
-# 
-# }
 
 
-# print("Creating tran files...")
-# PARtran <- get_prebas_tran_2(df, "par")
-# VPDtran <- get_prebas_tran_2(df, "vpd")
-# CO2tran <- get_prebas_tran_2(df, "co2")
-# Preciptran <- get_prebas_tran_2(df, "precip")
-# TAirtran <- get_prebas_tran_2(df, "tair")
-# print("Done.")
-
-
+# CLIMATE
 
 # Load tran binaries
-
 path_tran <- paste0(config$PATH_tran, config$VAR_climate_names[config$VAR_climate_id])
 tran_files <- list.files(path_tran, full.names = T)
 
 print(paste0("Loading tran files from ", path_tran))
 
-# # Always load
-# invisible(lapply(tran_files, function(x){
-#   varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
-#   print(paste0("Loading ", varName))
-#   load(file = x, envir = .GlobalEnv)
-# }))
-
-# Load if not loaded
+# Load if not loaded (load when VAR_load_tran_id = 0)
 invisible(lapply(tran_files, function(x){
   varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
+  
   if(config$VAR_load_tran_id == 0) {
     print(paste0("Loading ", varName))
     load(file = x, envir = .GlobalEnv)
@@ -69,9 +37,11 @@ invisible(lapply(tran_files, function(x){
 print("Done.")
 
 
-print("Creating siteInfo...")
 
-# siteInfo
+
+# SITE INFO
+
+print("Creating siteInfo...")
 
 # Number of sites in this case matches the number of climIDs
 nSites <- nrow(parTran)

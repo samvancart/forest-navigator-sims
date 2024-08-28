@@ -4,12 +4,12 @@ source('./r/utils.R')
 source('./r/multiSite.R')
 
 
-# Run multisite prebas for different layers (trees or clusters) based on NFI data. LayerIds in settings.R.
+# Run multisite prebas for different layers (trees or clusters) based on NFI data. Layers and Ids defined in config.YAML.
 # Produces modOut_<layer name> and and multiOut_<layer name> rdata files.
-# Run for both layers from run.R.
+# Run for both layers from yaml_runner.R.
 
 
-### Climate data loaded from loadData.R ###
+### Climate data loaded from loadData.R ### Make sure tran files are loaded (VAR_load_tran_id = 0)
 ### Soil data loaded from loadData.R ###
 ### SiteInfo created in loadData.R ###
 ### nSites from loadData.R ###
@@ -167,7 +167,7 @@ save(modOut, file=fileName)
 print(paste0("modOut saved to ",fileName))
 
 # Get multiOut output
-multiOut<-modOut$multiOut
+multiOut <- modOut$multiOut
 
 # Save as rdata
 fileName <- paste0(config$PATH_rdata, "multiOut_", config$VAR_layer_names[config$VAR_layer_id],".rdata")

@@ -6,6 +6,7 @@
 
 
 
+
 # Load libs and config
 source('scripts/settings.R')
 
@@ -29,28 +30,40 @@ local(envir = temp_env, {
                                VAR_climate_id = climate_vector)
   
   # Create source_list
-  # src_vector <- config$SRC_mock_run_scripts
-  src_vector <- config$SRC_multi_and_outputs_species
+  src_vector <- config$SRC_mock_run_scripts
+  # src_vector <- config$SRC_multi_and_outputs_species
   
   # Create run table
   run_table_dt <- get_run_table_dt(named_vector_list, src_vector)
   
-  # Load tran id
-  load_tran_id <- rep(as.integer(c(0,1,1,1,1,1,1,1)), nrow(run_table_dt)/8)
+  # Load tran id vector
+  load_tran_id_vector <- as.integer(c(0,1,1,1,1,1,1,1))
   
-  # Add load tran column
-  run_table_dt[, VAR_load_tran_id := load_tran_id]
+  # Repeat by nRows
+  load_tran_id_vector_rep <- rep(load_tran_id_vector, nrow(run_table_dt)/length(load_tran_id_vector))
   
-  # Run
+  # Add load tran id column
+  run_table_dt[, VAR_load_tran_id := load_tran_id_vector_rep]
+  
+  # Run from table
   run_yaml_from_table(run_table_dt, config_path)
+  
+  # Set default ids
+  set_default_ids_in_yaml(config_path)
   
   # Vars to keep
   keep_vars <- c("config", "config_path")
+  
+  cat("\n")
+  print(paste0("Removing variables except: ", list(keep_vars)))
+  cat("\n")
   
   # Remove vars
   remove_selected_variables_from_env(keep_vars)
   
 })
+
+
 
 
 

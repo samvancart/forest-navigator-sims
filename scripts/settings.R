@@ -1,6 +1,7 @@
 
 ### Libraries ###
 
+library(checkmate)
 library(data.table)
 library(dplyr)
 library(doParallel)
@@ -25,7 +26,6 @@ library(stringr)
 library(withr)
 library(yaml)
 library(zoo)
-library(checkmate)
 
 
 
