@@ -1,3 +1,7 @@
+# Script for assigning CORINE forest types to 10-by-10 km grid cells as described in
+# section 3.1.3.1 of Initial forest states document.
+
+
 source('scripts/settings.R')
 source('./r/utils.R')
 source('./r/parallelProcess.R')

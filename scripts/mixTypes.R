@@ -1,3 +1,7 @@
+# Script to determine mixture types for NFI plots as described in
+# section 3.1.2 of Initial forest states document. 
+
+
 source('scripts/settings.R')
 source('./r/mixTypeRules.R')
 source('./r/utils.R')
@@ -17,7 +21,7 @@ path <- paste0(config$PATH_nfi_sweden, nfi_filename)
 nfi_df <- fread(path)
 
 # Get species codes df
-species_codes_path <- paste0(config$PATH_nfi_sweden, "speciesCodesSweden.csv")
+species_codes_path <- paste0(config$PATH_nfi_sweden, "species_codes_with_logical_forest_type.csv")
 species_codes_df <- fread(species_codes_path)
 
 # Column name in nfi df with speciesID to be used
@@ -85,8 +89,7 @@ shares <- shares[,sum(ba_share),by=c("groupID", useSpeciesID)]
 shares$V1 <- shares$V1*100
 
 # To long format
-shares_long = melt(shares, id.vars = c("groupID", useSpeciesID), measure.vars = c("V1"))
-shares_long <- shares_long %>% select(-variable)
+shares_long = melt.data.table(shares, id.vars = c("groupID", useSpeciesID), measure.vars = c("V1"))[, variable := NULL]
 
 # Long to wide 
 shares_wide <- reshape(shares_long, idvar = c("groupID"),
@@ -124,7 +127,7 @@ shares_wide$QU <- rowSums(shares_wide[, ..qu_cols])
 combined_cols <- append(append(soft_cols,ac_cols),qu_cols)
 
 # Drop unnecessary columuns
-shares_wide <- shares_wide %>% select(-all_of(append(combined_cols,drop_cols)))
+shares_wide[, c(combined_cols, drop_cols) := NULL]
 
 # Get rid of possible rounding errors in mixtype function
 shares_wide <- round(shares_wide,7)

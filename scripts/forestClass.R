@@ -1,3 +1,7 @@
+# Script to determine CORINE forest classes for NFI plots as described in
+# section 3.1.2 of Initial forest states document.
+
+
 source('scripts/settings.R')
 source('./r/utils.R')
 
@@ -9,7 +13,7 @@ path <- paste0(config$PATH_nfi_sweden,"sorted_group_species_cIDs_speciesID11to4_
 nfi_df <- fread(path)
 
 # Get species codes df
-species_codes_path <- paste0(config$PATH_nfi_sweden, "speciesCodesSweden.csv")
+species_codes_path <- paste0(config$PATH_nfi_sweden, "species_codes_with_logical_forest_type.csv")
 species_codes_df <- fread(species_codes_path)
 
 # Column name in nfi df with speciesID to be used
@@ -40,7 +44,7 @@ nfi_df[,BAtot := sum(basal_area),by=groupID]
 nfi_df[,ba_share := basal_area/BAtot]
 
 
-nfi_df[groupID==2]
+# nfi_df[groupID==2]
 
 # Get shares of tree species in site
 shares <- nfi_df %>%

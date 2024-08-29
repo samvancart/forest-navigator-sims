@@ -207,7 +207,7 @@ get_counts <- function(dt){
 # Assign forest class based on shares
 get_forest_class_10km <- function(dt, total_forest) {
   
-  if(total_forest==0) {return("no_forest")} 
+  if(total_forest==0) {return("no_forest")} # Document says "no forest pixel lies within the 8 km cell". Check if typo!
   
   bl <- sum(dt[V1==23]$n)
   con <- sum(dt[V1==24]$n)
