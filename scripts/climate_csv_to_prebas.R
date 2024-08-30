@@ -14,7 +14,7 @@ data <- fread(climate_path)
 ######### -------------- DETREND DATA -------------- #########
 
 # Get prebas sites from detrend data
-climate_name <- "historical_detrend_climate_data"
+climate_name <- "detrend_climate_data_comparison_prebas_folder"
 # climate_name <- "ICHEC-EC-EARTH_rcp85_3models_new"
 climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
 # detrend_data <- fread(climate_path)
@@ -23,6 +23,16 @@ data <- data[Latitude>=53]
 length(unique(data$PlgID))
 (max(data$time)-min(data$time))/365
 colnames(data)
+
+
+# Print all column ranges
+invisible(lapply(colnames(data), function(x){
+  message(paste0(x))
+  print(paste0(range(data[[x]])))
+}))
+
+
+
 
 # # TO SF
 # # Unique coords
@@ -44,18 +54,20 @@ colnames(data)
 
 ######### -------------- END DETREND DATA -------------- #########
 
-unique(ref_data$siteID)
-unique(data[PlgID %in% ref_data$siteID]$PlgID)
 
 
 # Get climate reference data
 ref_data <- fread(config$PATH_prebas_gitlab)
 
+
+# unique(ref_data$siteID)
+# unique(data[PlgID %in% ref_data$siteID]$PlgID)
+
+
 # Get co2 data
 co2_name <- "co2_ssp370_annual_2015_2100"
 co2_path <- paste0("data/climate/provided/", co2_name, ".csv")
 co2_data <- fread(co2_path)
-
 
 
 ######### -------------- TEST -------------- #########
@@ -65,6 +77,8 @@ keep_cols <- c("PlgID", "time", "pr", "rsds", "tas", "hurs", "vpd")
 keep_cols_idxs <- which(colnames(data) %in% keep_cols)
 data <- data[, ..keep_cols_idxs]
 data <- data[PlgID %in% ref_data$siteID]
+
+
 
 unique(ref_data$climID)
 climID_dt <- ref_data[,c("siteID", "climID")]
@@ -91,13 +105,17 @@ ref_data[siteID==7480366]
 data[, climID := .GRP, by = PlgID]
 
 # Change colnames
-colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "rh", "vpd", "climID")
+# colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "rh", "vpd", "climID")
+colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "vpd", "climID")
 
 # Filter using reference table
 data <- data[siteID %in% ref_data$siteID]
 
-# Vpd from hpa to kpa
-data[, vpd := vpd/10]
+# # Vpd from hpa to kpa
+# data[, vpd := vpd/10]
+
+# # Vpd from p to kpa
+data[, vpd := vpd/1000]
 
 # Get rss from qq
 data[, rss := qq*0.0864]
@@ -112,7 +130,8 @@ data[, precip := precip*86400]
 data[, tair := tair-273.15]
 
 # Assign year helper column to data
-data[, year := as.numeric(format(time, "%Y"))]
+# data[, year := as.numeric(format(time, "%Y"))]
+data[, year := year(time)]
 
 # Set key and left join co2
 setkey(data,"year")
@@ -132,7 +151,6 @@ data_prebas <- data[,c("time", "siteID", "climID", "par", "tair", "vpd", "precip
 prebas_climate_name <- paste0(climate_name, "_prebas")
 prebas_climate_path <- paste0("data/climate/provided/", prebas_climate_name, ".csv")
 fwrite(data_prebas, prebas_climate_path)
-
 
 
 

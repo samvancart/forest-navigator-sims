@@ -447,22 +447,53 @@ replace_in_script <- function(file_path, pattern, replacement, test = FALSE) {
 }
 
 
+#' Validate and Add Additional Named Vectors
+#'
+#' This helper function validates the additional named vectors and adds them to the data table.
+#'
+#' @param run_table_dt The data table to which additional named vectors will be added.
+#' @param additional_named_vector_list A list of additional named vectors to be added to the data table.
+#'
+#' @return The updated data.table object with additional named vectors.
+validate_and_add_vectors <- function(run_table_dt, additional_named_vector_list) {
+  assert_list(additional_named_vector_list, types = "vector", any.missing = FALSE, min.len = 1)
+  
+  # Ensure all vectors have the same length as the expanded grid (nrows in run_table)
+  grid_length <- nrow(run_table_dt)
+  lapply(seq_along(additional_named_vector_list), function(i) {
+    vec <- additional_named_vector_list[[i]]
+    vec_name <- names(additional_named_vector_list)[i]
+    assert(length(vec) == grid_length,
+           paste("Length of vector", vec_name, "must be", grid_length))
+  })
+  
+  # Add additional named vectors if provided
+  for (name in names(additional_named_vector_list)) {
+    run_table_dt[[name]] <- additional_named_vector_list[[name]]
+  }
+  
+  return(run_table_dt)
+}
+
 #' Generate a Data Table from Named Vectors and Source List
 #'
 #' This function creates a data table by expanding a grid of named vectors and 
-#' appending a source list to it.
+#' appending a source list to it. It also allows adding additional named vectors.
 #'
 #' @param named_vector_list A list of named vectors to be expanded into a grid.
 #' @param source_list A list of sources to be appended to the data table.
+#' @param additional_named_vector_list A list of additional named vectors to be added to the data table.
+#' Default is NULL.
 #'
-#' @return A data.table object containing the expanded grid and the source list.
+#' @return A data.table object containing the expanded grid, the source list, and additional named vectors.
 #' @export
 #'
 #' @examples
 #' named_vector_list <- list(a = 1:3, b = 4:5)
 #' source_list <- list("source1", "source2")
-#' get_run_table_dt(named_vector_list, source_list)
-get_run_table_dt <- function(named_vector_list, source_vector) {
+#' additional_named_vector_list <- list(c = 6:8)
+#' get_run_table_dt(named_vector_list, source_list, additional_named_vector_list)
+get_run_table_dt <- function(named_vector_list, source_vector, additional_named_vector_list = NULL) {
   
   # Validate inputs
   assert_list(named_vector_list, types = "vector", any.missing = FALSE, min.len = 1)
@@ -471,8 +502,13 @@ get_run_table_dt <- function(named_vector_list, source_vector) {
   run_table_dt <- data.table(expand.grid(named_vector_list))
   run_table_dt[, src := list(source_vector)]
   
+  if (!is.null(additional_named_vector_list)) {
+    run_table_dt <- validate_and_add_vectors(run_table_dt, additional_named_vector_list)
+  }
+  
   return(run_table_dt)
 }
+
 
 
 #' Run YAML from Table

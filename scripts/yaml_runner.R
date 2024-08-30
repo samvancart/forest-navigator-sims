@@ -1,8 +1,13 @@
 # Script for running other scripts. 
 # This script runs a series of R scripts based on configurations specified in a data table.
 # The configuration must include IDs as a named list of integer vectors whose names 
-# correspond to the id variables found in the YAML
-# configuration file, as well as the source files to be run as a vector, corresponding to those in the YAML.
+# correspond to the id variables found in the YAML configuration file, as well as 
+# the source files to be run as a vector, corresponding to those in the YAML.
+# It may also include a list of additional named vectors that are the same length
+# as the expanded grid that is created from the original named_vector list.
+
+# These parameters (the named vector lists and the run_table itself) 
+# should be created in define_vars_for_runner.R
 
 
 
@@ -16,37 +21,19 @@ temp_env <- new.env()
 # Run inside local block
 local(envir = temp_env, {
   
-  # Load functions into temp_env
-  source("r/utils.R", temp_env)
+  # LOAD
 
-  # Variables for runner
-  species_vector <- as.integer(names(config$VAR_species_dict))
-  management_vector <- as.integer(c(0,1))
-  climate_vector <- seq_along(config$VAR_climate_paths)
-  
-  # Create named_vector_list
-  named_vector_list <- list(VAR_species_id = species_vector, 
-                               VAR_management_id = management_vector, 
-                               VAR_climate_id = climate_vector)
-  
-  # Create source_list
-  src_vector <- config$SRC_mock_run_scripts
-  # src_vector <- config$SRC_multi_and_outputs_species
-  
-  # Create run table
-  run_table_dt <- get_run_table_dt(named_vector_list, src_vector)
-  
-  # Load tran id vector
-  load_tran_id_vector <- as.integer(c(0,1,1,1,1,1,1,1))
-  
-  # Repeat by nRows
-  load_tran_id_vector_rep <- rep(load_tran_id_vector, nrow(run_table_dt)/length(load_tran_id_vector))
-  
-  # Add load tran id column
-  run_table_dt[, VAR_load_tran_id := load_tran_id_vector_rep]
+  # Load vars into temp_env
+  source("scripts/define_vars_for_runner.R", temp_env)
+
+
+  # RUN
   
   # Run from table
   run_yaml_from_table(run_table_dt, config_path)
+  
+  
+  # CLEAN UP
   
   # Set default ids
   set_default_ids_in_yaml(config_path)
