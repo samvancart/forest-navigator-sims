@@ -4,7 +4,7 @@
 # correspond to the id variables found in the YAML configuration file, as well as 
 # the source files to be run as a vector, corresponding to those in the YAML.
 # It may also include a list of additional named vectors that are the same length
-# as the expanded grid that is created from the original named_vector list.
+# as the expanded grid (the run table) that is created from the original named_vector list.
 
 # These parameters (the named vector lists and the run_table itself) 
 # should be created in define_vars_for_runner.R

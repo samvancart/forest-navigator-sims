@@ -84,6 +84,7 @@ PATH_eobs_nc: data/netcdf/combined/all/eobs_1979_2022_all_vars.nc
 PATH_eobs_var_nc: hu
 PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
 PATH_sites: data/climate/provided/prebas_sites_coords.csv
+PATH_swe_sf: data/nfi/sweden/shape_files
 SRC_multi_species: scripts/multiSiteSpecies.R
 SRC_multi_layers: scripts/multiSiteLayers.R
 SRC_multi_and_plots_species:
