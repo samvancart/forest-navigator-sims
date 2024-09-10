@@ -1,27 +1,36 @@
 
 # Functions
 
-# Get variable values from netcdf by nearest neighbour coordinates.
-# Parameters:
-# netCdf_path (character) = Path to netcdf file.
-# req_coords (matrix array) = Requested coordinates in a table with columns lon and lat.
-# req_var (character vector) = Requested variable name(s) in netcdf file.
-# siteIDs (integer vector) OPTIONAL = Ids associated with requested coordinate pairs. Should match number of coordinate pairs. DEFAULT = NULL.
-# time_var (character) = Name of time dimension in netcdf file. DEFAULT = time.
-# lon_var (character) = Name of longitude dimension in netcdf file. DEFAULT = longitude. 
-# lat_var (character) = Name of latitude dimension in netcdf file. DEFAULT = latitude.
-# round_dec (integer) = Number of decimals to round coordinates by. DEFAULT = 3.
-# req_nc_coords (matrix array) OPTIONAL = Table of lon and lat coordinate pairs to get from netcdf. DEFAULT = NULL.
-# Returns:
-# tibble::as_tibble(data.table): Table with the requested data. 
-# Columns: 
-# siteID = Id for each requested coordinate pair.
-# time = Time in yyyy-mm-dd format.     
-# lon = Longitude.
-# lat = Latitude.
-# var = Columns with requested variable(s).
-
-
+#' Extract Data from NetCDF by Nearest Coordinates
+#'
+#' This function extracts data from a NetCDF file based on the nearest coordinates to the requested coordinates.
+#'
+#' @param netCdf_path Character. Path to the NetCDF file.
+#' @param req_coords Matrix. A matrix of requested coordinates with columns for longitude and latitude.
+#' @param req_var Character vector. Names of the variables to extract from the NetCDF file.
+#' @param siteIDs Character vector. Optional. Site IDs for the requested coordinates. If NULL, site IDs will be generated.
+#' @param time_var Character. Name of the time variable in the NetCDF file. Default is "time".
+#' @param lon_var Character. Name of the longitude variable in the NetCDF file. Default is "longitude".
+#' @param lat_var Character. Name of the latitude variable in the NetCDF file. Default is "latitude".
+#' @param round_dec Integer. Number of decimal places to round the coordinates. Default is 3.
+#' @param req_nc_coords Matrix. Optional. A matrix of coordinates in the NetCDF file. If NULL, coordinates will be determined based on the nearest neighbour.
+#'
+#' @return A tibble containing the extracted data with columns for site ID, time, longitude, latitude, and the requested variables.
+#' @import ncdf4
+#' @importFrom geosphere distHaversine
+#' @importFrom lubridate ymd
+#' @importFrom tibble as_tibble
+#' @importFrom dplyr mutate rowwise do
+#' @importFrom data.table data.table
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' netCdf_path <- "path/to/netcdf/file.nc"
+#' req_coords <- matrix(c(10, 20, 30, 40), ncol = 2)
+#' req_var <- c("temperature", "humidity")
+#' data <- get_netcdf_by_nearest_coords(netCdf_path, req_coords, req_var)
+#' }
 get_netcdf_by_nearest_coords <- function(netCdf_path, req_coords, req_var, siteIDs = NULL ,time_var = "time", 
                                          lon_var = "longitude", lat_var = "latitude", round_dec = 3, req_nc_coords = NULL) {
   # Open file

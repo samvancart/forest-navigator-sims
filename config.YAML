@@ -5,6 +5,7 @@ VAR_tabX_id: 1
 VAR_management_id: 0
 VAR_climate_id: 1
 VAR_load_tran_id: 0
+VAR_site_info_id: 1
 VAR_species_dict:
   '1': Pine
   '2': Spruce
@@ -53,6 +54,9 @@ VAR_output_names:
 - vol
 - mort
 - inc
+VAR_site_info_names:
+- grd5_soil_data_prebas
+- prebas_hwsd_data_DEF
 VAR_data_from: gitlab
 VAR_climate_paths:
 - data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
@@ -67,6 +71,7 @@ VAR_climate_names:
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
+PATH_site_info: data/site_info/
 PATH_soil_data: data/soil/grd5_soil_data_prebas.csv
 PATH_tran: data/climate/tran/
 PATH_historical_climate_data_gitlab: data/climate/provided/historical_climate_data.csv
