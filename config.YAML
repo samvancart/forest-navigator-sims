@@ -3,9 +3,10 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 1
+VAR_climate_id: 4
 VAR_load_tran_id: 0
-VAR_site_info_id: 1
+VAR_site_info_id: 2
+VAR_split_id: 3
 VAR_species_dict:
   '1': Pine
   '2': Spruce
@@ -62,7 +63,7 @@ VAR_climate_paths:
 - data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
 - data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
 - data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
-- data/climate/provided/historical_detrend_climate_data_prebas.csv
+- data/climate/provided/rdata/detrend_climate_data_comparison_prebas_folder_prebas.rdata
 VAR_climate_names:
 - historical
 - GFDL-ESM4_SSP370

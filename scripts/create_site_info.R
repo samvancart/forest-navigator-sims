@@ -8,6 +8,9 @@ soil_name <- "prebas_hwsd_data"
 soil_path <- paste0("data/soil/", soil_name, ".csv")
 soil_dt <- fread(soil_path)
 
+
+### -------- START hwsd only -------- ###
+
 # Assign climate IDs
 soil_dt[, climID := .GRP, by = PlgID] # Make sure these match the climate data
 
@@ -17,6 +20,9 @@ soil_dt <- soil_dt[!duplicated(soil_dt$PlgID)]
 # Rename PlgID to siteID
 setnames(soil_dt, "PlgID", "siteID")
 
+### -------- END hwsd only -------- ###
+
+
 
 # SITE INFO
 
@@ -25,8 +31,8 @@ print("Creating siteInfo...")
 # Number of sites
 nSites <- length(unique(soil_dt$siteID)) # What to do when PlgIDs are the same for different coords??
 
-# Number of simulation years
-nYears <- 2100-2015
+# # Number of simulation years
+# nYears <- 2100-2015
 
 # Soil parameters
 
@@ -57,7 +63,11 @@ nSpeciesCol <- rep(c(1), times=nSites)
 
 # Create siteInfo
 param_table <- cbind(siteID,climID,soil_dt$siteType_N,swInit,zeros,zeros,sInit,nLayersCol,nSpeciesCol,soilDepth,FC,WP)
-siteInfo <- build_siteInfo(param_table)
+siteInfo <- param_table
+
+colnames(siteInfo) <- c("siteID", "climID", "siteType", "SWinit", "CWinit",
+                        "SOGinit", "Sinit", "nLayers", "nSpecies", "soildepth",
+                        "effective field capacity", "permanent wilting point")
 
 print("Done.")
 

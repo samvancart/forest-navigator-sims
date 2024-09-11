@@ -45,7 +45,18 @@ run_table_dt <- get_run_table_dt(named_vector_list, src_vector, additional_named
 
 
 
+# DEFAULTS
 
+one <- as.integer(c(1))
+zero <- as.integer(c(0))
+defaults <- list(VAR_species_id = one, 
+                 VAR_management_id = zero, 
+                 VAR_climate_id = one,
+                 VAR_layer_id = one,
+                 VAR_estimated_id = one ,
+                 VAR_tabX_id = one,
+                 VAR_load_tran_id = zero,
+                 VAR_split_id = one)
 
 
 
