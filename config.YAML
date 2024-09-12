@@ -3,10 +3,10 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 4
+VAR_climate_id: 5
 VAR_load_tran_id: 0
 VAR_site_info_id: 2
-VAR_split_id: 3
+VAR_split_id: 1
 VAR_species_dict:
   '1': Pine
   '2': Spruce
@@ -59,16 +59,27 @@ VAR_site_info_names:
 - grd5_soil_data_prebas
 - prebas_hwsd_data_DEF
 VAR_data_from: gitlab
+VAR_RAW_climate_paths:
+- data/climate/provided/RAW_historical_climate_data.csv
+- data/climate/provided/RAW_GFDL-ESM4_SSP370.csv
+- data/climate/provided/RAW_UKESM1-0-LL_ssp370.csv
+- data/climate/provided/RAW_detrend_climate_data_comparison_prebas_folder.csv
+- data/climate/provided/RAW_ICHEC-EC-EARTH_rcp85_3models_new_Prebas.csv
+- data/climate/provided/RAW_MPI-M-MPI-ESM-LR_rcp85_3models_new_Prebas.csv
 VAR_climate_paths:
 - data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
 - data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
 - data/climate/provided/UKESM1-0-LL_ssp370_prebas.csv
-- data/climate/provided/rdata/detrend_climate_data_comparison_prebas_folder_prebas.rdata
+- data/climate/provided/rdata/CLEAN_detrend_climate_data_comparison_prebas_folder_splitID.rdata
+- data/climate/provided/rdata/CLEAN_ICHEC-EC-EARTH_rcp85_3models_new_Prebas_splitID.rdata
+- data/climate/provided/rdata/CLEAN_MPI-M-MPI-ESM-LR_rcp85_3models_new_Prebas_splitID.rdata
 VAR_climate_names:
 - historical
 - GFDL-ESM4_SSP370
 - UKESM1-0-LL_ssp370
 - historical_detrend
+- ICHEC-EC-EARTH_rcp85
+- MPI-M-MPI-ESM-LR_rcp85
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
@@ -112,3 +123,4 @@ SRC_layer_aggr: scripts/layerAggr.R
 SRC_mock_run_scripts:
 - scripts/mock_run_script_1.R
 - scripts/mock_run_script_2.R
+SRC_climate_csv_to_prebas: scripts/climate_csv_to_prebas.R

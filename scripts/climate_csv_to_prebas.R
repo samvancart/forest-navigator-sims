@@ -1,13 +1,38 @@
-source('scripts/settings.R')
+# This script is for transforming RAW_climate_data into CLEAN_climate_data.
+# It is designed for processing the comparison data on gitlab in the Comparison/PREBAS folder.
 
-# Climate scenario
-# climate_name <- "GFDL-ESM4_SSP370"
-# climate_name <- "UKESM1-0-LL_ssp370"
-climate_name <- "detrend_climate_data_comparison_prebas_folder"
+
+source('scripts/settings.R')
+source('./r/utils.R')
+
 
 # Get climate data
-climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
+climate_path <- paste0(config$VAR_RAW_climate_paths[config$VAR_climate_id])
+
+# Get climate name from path without "RAW"
+climate_name <- str_flatten(strsplit(sub(".*\\/([^\\/]+)\\..*", "\\1", climate_path), split="_")[[1]][-1], collapse = "_")
+
+print(paste0("Climate name is ", climate_name))
+
+# Load
 data <- fread(climate_path)
+
+# Count N of sites to find duplicates 
+count_dt <- data[, .N, by = PlgID]
+len_unique_site_counts <- length(unique(count_dt$N))
+
+# Remove duplicate sites if they exist
+if(len_unique_site_counts > 1) {
+  print(paste0("Duplicate sites found. Removing..."))
+  min_N <- count_dt[N!=min(N)]
+  
+  # Remove duplicate sites
+  data <- data[!PlgID %in% min_N$PlgID]
+  print(paste0("Removed sites: "))
+  print(paste0(min_N$PlgID))
+  
+}
+
 
 
 # Print all column ranges
@@ -17,13 +42,15 @@ invisible(lapply(colnames(data), function(x){
 }))
 
 
-# Get climate reference data
-ref_data <- fread(config$PATH_prebas_gitlab)
 
-
-# unique(ref_data$siteID)
-# unique(data[PlgID %in% ref_data$siteID]$PlgID)
-
+cat("\n")
+print(paste0("Number of rows is ", nrow(data)))
+print(paste0("Number of unique sites is ", length(unique(data$PlgID))))
+print(paste0("Number of unique Lat Lons is ", uniqueN(data[, .(Latitude, Longitude)])))
+cat("\n")
+print(paste0("Column names are:"))
+print(paste0(colnames(data)))
+cat("\n")
 
 # Get co2 data
 co2_name <- "co2_ssp370_annual_2015_2100"
@@ -31,8 +58,19 @@ co2_path <- paste0("data/climate/provided/", co2_name, ".csv")
 co2_data <- fread(co2_path)
 
 
+# Find the index of the column with IDate class
+logical_class_list <- lapply(names(data), function(x) class(data[[x]]) %in% c("IDate", "Date"))
+date_col_idx <- which(lapply(logical_class_list, function(x) x[[1]])==T)
+date_col <- names(data)[[date_col_idx]]
+
+# Rename the column to 'time'
+setnames(data, old = date_col, new = "time")
+
+print(paste0("Column names are:"))
+print(paste0(colnames(data)))
+cat("\n")
+
 # # Drop unnecessary cols
-# data <- data[, c(1,4,5,6,7,10,11)]
 keep_cols <- c("PlgID", "time", "pr", "rsds", "tas", "vpd", "climID")
 rm_cols <- colnames(data)[!colnames(data) %in% keep_cols]
 data[, (rm_cols) := NULL]
@@ -41,14 +79,8 @@ data[, (rm_cols) := NULL]
 data[, climID := .GRP, by = PlgID]
 
 # Change colnames
-# colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "rh", "vpd", "climID")
 colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "vpd", "climID")
 
-# Filter using reference table
-data <- data[siteID %in% ref_data$siteID]
-
-# # Vpd from hpa to kpa
-# data[, vpd := vpd/10]
 
 # # Vpd from p to kpa
 data[, vpd := vpd/1000]
@@ -83,101 +115,32 @@ data <- data[complete.cases(data)]
 data_prebas <- data[,c("time", "siteID", "climID", "par", "tair", "vpd", "precip", "co2")]
 
 
-# Write as csv
-prebas_climate_name <- paste0(climate_name, "_prebas")
-prebas_climate_path_csv <- paste0("data/climate/provided/", prebas_climate_name, ".csv")
-fwrite(data_prebas, prebas_climate_path_csv)
+# SPLIT IDs
+
+max_part_size <- 200     # Define rough size of a split part
+
+split_by <- c("siteID")     # Define constraint
+split_id_name <- "splitID"
+split_dt <- split_dt_equal_with_constraint(data_prebas, max_part_size, split_by, split_id_name = split_id_name) # Assign splitIDs
+
+# Name of file
+prebas_climate_name <- paste0("CLEAN_", climate_name, "_splitID")
+
+# # Write as csv
+# prebas_climate_path_csv <- paste0("data/climate/provided/", prebas_climate_name, ".csv")
+# fwrite(split_dt, prebas_climate_path_csv)
 
 # Write as rdata
 prebas_climate_path_rdata <- paste0("data/climate/provided/rdata/", prebas_climate_name, ".rdata")
-save(data_prebas, file = prebas_climate_path_rdata)
+
+cat("\n")
+print(paste0("Saving climate data into ", prebas_climate_path_rdata, "..."))
+save(split_dt, file = prebas_climate_path_rdata)
+print(paste0("Done."))
+cat("\n")
+
+# # Clean up if not using yaml.runner
+# keep_vars <- c("config", "config_path")
+# remove_selected_variables_from_env(keep_vars)
 
 
-
-
-
-
-
-
-
-
-######### -------------- DETREND DATA -------------- #########
-
-# # Get prebas sites from detrend data
-# climate_name <- "detrend_climate_data_comparison_prebas_folder"
-# # climate_name <- "ICHEC-EC-EARTH_rcp85_3models_new"
-# climate_path <- paste0("data/climate/provided/", climate_name, ".csv")
-# # detrend_data <- fread(climate_path)
-# data <- fread(climate_path)
-# data <- data[Latitude>=53]
-# length(unique(data$PlgID))
-# (max(data$time)-min(data$time))/365
-# colnames(data)
-# 
-# # PREBAS HWSD DATA
-soil_name <- "prebas_hwsd_data"
-soil_path <- paste0("data/soil/", soil_name, ".csv")
-data <- fread(soil_path)
-# 
-# data[PlgID %in% (data[duplicated(data$PlgID)]$PlgID)]
-# 
-# 
-# nrow(data)
-
-# # Print all column ranges
-# invisible(lapply(colnames(data), function(x){
-#   message(paste0(x))
-#   print(paste0(range(data[[x]])))
-# }))
-
-
-
-# # TO SF
-# # Unique coords
-# coords_dt <- data[!duplicated(data$PlgID), c("Latitude", "Longitude", "PlgID")]
-# data_sf <- st_as_sf(coords_dt, coords = c("Longitude", "Latitude"), crs = "EPSG:4326")
-# st_write(data_sf, "data/sf/historical_detrend_coords.shp")
-# coords_dt[!which(coords_dt$Latitude<53)]
-
-
-# detrend_prebas_sites <- detrend_data[(PlgID %in% data[,PlgID])]
-# unique(detrend_prebas_sites$PlgID)
-# unique(data$PlgID)
-# unique(detrend_data$PlgID)
-# 
-# length(unique(data$PlgID))
-# length(unique(detrend_prebas_sites$PlgID))
-# length(which(unique(data$PlgID) %in% unique(detrend_data$PlgID)))
-# which(unique(data$PlgID) %in% unique(detrend_data$PlgID))
-
-######### -------------- END DETREND DATA -------------- #########
-
-
-
-
-
-######### -------------- TEST -------------- #########
-
-# # Drop unnecessary cols
-# keep_cols <- c("PlgID", "time", "pr", "rsds", "tas", "hurs", "vpd")
-# keep_cols_idxs <- which(colnames(data) %in% keep_cols)
-# data <- data[, ..keep_cols_idxs]
-# data <- data[PlgID %in% ref_data$siteID]
-# 
-# 
-# 
-# unique(ref_data$climID)
-# climID_dt <- ref_data[,c("siteID", "climID")]
-# colnames(climID_dt)[[1]] <- "PlgID"
-# climID_dt <- climID_dt[!duplicated(climID_dt)]
-# 
-# data_climID <- left_join(data, climID_dt, by = "PlgID")
-# colnames(data_climID) <- c("time", "siteID", "precip", "qq", "tair", "vpd", "climID")
-# 
-# data <- data_climID
-# 
-# unique(data_climID$PlgID)
-# ref_data[siteID==7480366]
-
-
-######### -------------- END TEST -------------- #########
