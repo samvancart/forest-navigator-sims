@@ -3,7 +3,7 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 1
+VAR_climate_id: 4
 VAR_load_tran_id: 0
 VAR_site_info_id: 2
 VAR_split_id: 1
@@ -58,6 +58,7 @@ VAR_output_names:
 VAR_site_info_names:
 - grd5_soil_data_prebas
 - prebas_hwsd_data_DEF
+- prebas_hwsd_data_fc_wp_depth
 VAR_data_from: gitlab
 VAR_RAW_climate_paths:
 - data/climate/provided/RAW_historical_climate_data.csv
