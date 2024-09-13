@@ -3,7 +3,7 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 5
+VAR_climate_id: 1
 VAR_load_tran_id: 0
 VAR_site_info_id: 2
 VAR_split_id: 1
@@ -66,6 +66,8 @@ VAR_RAW_climate_paths:
 - data/climate/provided/RAW_detrend_climate_data_comparison_prebas_folder.csv
 - data/climate/provided/RAW_ICHEC-EC-EARTH_rcp85_3models_new_Prebas.csv
 - data/climate/provided/RAW_MPI-M-MPI-ESM-LR_rcp85_3models_new_Prebas.csv
+- data/climate/provided/RAW_MPI-M-MPI-ESM-LR_rcp45_3models_new_Prebas.csv
+- data/climate/provided/RAW_historic_3models_new_Prebas.csv
 VAR_climate_paths:
 - data/climate/provided/historical_only_prebas_picus_sites_vpd_corrected.csv
 - data/climate/provided/GFDL-ESM4_SSP370_prebas.csv
@@ -73,6 +75,8 @@ VAR_climate_paths:
 - data/climate/provided/rdata/CLEAN_detrend_climate_data_comparison_prebas_folder_splitID.rdata
 - data/climate/provided/rdata/CLEAN_ICHEC-EC-EARTH_rcp85_3models_new_Prebas_splitID.rdata
 - data/climate/provided/rdata/CLEAN_MPI-M-MPI-ESM-LR_rcp85_3models_new_Prebas_splitID.rdata
+- data/climate/provided/rdata/CLEAN_MPI-M-MPI-ESM-LR_rcp45_3models_new_Prebas_splitID.rdata
+- data/climate/provided/rdata/CLEAN_historic_3models_new_Prebas_splitID.rdata
 VAR_climate_names:
 - historical
 - GFDL-ESM4_SSP370
@@ -80,9 +84,12 @@ VAR_climate_names:
 - historical_detrend
 - ICHEC-EC-EARTH_rcp85
 - MPI-M-MPI-ESM-LR_rcp85
+- MPI-M-MPI-ESM-LR_rcp45
+- historic_3models
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
+PATH_co2: data/co2/
 PATH_site_info: data/site_info/
 PATH_soil_data: data/soil/grd5_soil_data_prebas.csv
 PATH_tran: data/climate/tran/
@@ -124,3 +131,4 @@ SRC_mock_run_scripts:
 - scripts/mock_run_script_1.R
 - scripts/mock_run_script_2.R
 SRC_climate_csv_to_prebas: scripts/climate_csv_to_prebas.R
+SRC_create_tran: scripts/create_tran.R

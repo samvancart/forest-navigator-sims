@@ -15,10 +15,18 @@ climate_name <- str_flatten(strsplit(sub(".*\\/([^\\/]+)\\..*", "\\1", climate_p
 print(paste0("Climate name is ", climate_name))
 
 # Load
-data <- fread(climate_path)
+climate_dt <- fread(climate_path)
+
+
+# Print all column ranges
+invisible(lapply(colnames(climate_dt), function(x){
+  message(paste0(x))
+  print(paste0(range(climate_dt[[x]])))
+}))
+
 
 # Count N of sites to find duplicates 
-count_dt <- data[, .N, by = PlgID]
+count_dt <- climate_dt[, .N, by = PlgID]
 len_unique_site_counts <- length(unique(count_dt$N))
 
 # Remove duplicate sites if they exist
@@ -27,7 +35,7 @@ if(len_unique_site_counts > 1) {
   min_N <- count_dt[N!=min(N)]
   
   # Remove duplicate sites
-  data <- data[!PlgID %in% min_N$PlgID]
+  climate_dt <- climate_dt[!PlgID %in% min_N$PlgID]
   print(paste0("Removed sites: "))
   print(paste0(min_N$PlgID))
   
@@ -35,84 +43,86 @@ if(len_unique_site_counts > 1) {
 
 
 
-# Print all column ranges
-invisible(lapply(colnames(data), function(x){
-  message(paste0(x))
-  print(paste0(range(data[[x]])))
-}))
-
-
-
 cat("\n")
-print(paste0("Number of rows is ", nrow(data)))
-print(paste0("Number of unique sites is ", length(unique(data$PlgID))))
-print(paste0("Number of unique Lat Lons is ", uniqueN(data[, .(Latitude, Longitude)])))
+print(paste0("Number of rows is ", nrow(climate_dt)))
+print(paste0("Number of unique sites is ", length(unique(climate_dt$PlgID))))
+print(paste0("Number of unique Lat Lons is ", uniqueN(climate_dt[, .(Latitude, Longitude)])))
 cat("\n")
 print(paste0("Column names are:"))
-print(paste0(colnames(data)))
+print(paste0(colnames(climate_dt)))
 cat("\n")
 
-# Get co2 data
-co2_name <- "co2_ssp370_annual_2015_2100"
-co2_path <- paste0("data/climate/provided/", co2_name, ".csv")
-co2_data <- fread(co2_path)
 
 
 # Find the index of the column with IDate class
-logical_class_list <- lapply(names(data), function(x) class(data[[x]]) %in% c("IDate", "Date"))
+logical_class_list <- lapply(names(climate_dt), function(x) class(climate_dt[[x]]) %in% c("IDate", "Date"))
 date_col_idx <- which(lapply(logical_class_list, function(x) x[[1]])==T)
-date_col <- names(data)[[date_col_idx]]
+date_col <- names(climate_dt)[[date_col_idx]]
 
 # Rename the column to 'time'
-setnames(data, old = date_col, new = "time")
+setnames(climate_dt, old = date_col, new = "time")
 
 print(paste0("Column names are:"))
-print(paste0(colnames(data)))
+print(paste0(colnames(climate_dt)))
 cat("\n")
+
+
+# Get co2 data
+co2_name <- "co2_annual_1850_2100_combined_historic_ssp370"
+co2_path <- paste0(config$PATH_co2, co2_name, ".csv")
+
+# Filter co2 years
+range_years <- format(range(unique(climate_dt$time)),"%Y")
+co2_data <- fread(co2_path)[year >= range_years[1] & year <= range_years[2]]
+
 
 # # Drop unnecessary cols
 keep_cols <- c("PlgID", "time", "pr", "rsds", "tas", "vpd", "climID")
-rm_cols <- colnames(data)[!colnames(data) %in% keep_cols]
-data[, (rm_cols) := NULL]
+rm_cols <- colnames(climate_dt)[!colnames(climate_dt) %in% keep_cols]
+climate_dt[, (rm_cols) := NULL]
 
-# Assign climate IDs
-data[, climID := .GRP, by = PlgID]
+# Get climate IDs from siteInfo
+soil_name <- "prebas_hwsd_data_fc_wp_depth"
+site_info_path <- paste0(config$PATH_site_info, soil_name, "_", config$VAR_estimated_names[config$VAR_estimated_id], ".rdata")
+siteInfo_ids <- load_data(site_info_path)[,c(1:2)]
 
 # Change colnames
-colnames(data) <- c("siteID", "time", "precip", "qq", "tair", "vpd", "climID")
+colnames(climate_dt) <- c("siteID", "time", "precip", "qq", "tair", "vpd")
 
+# Assign climate IDs from siteInfo
+climate_dt <- merge(climate_dt, siteInfo_ids, by = "siteID", all.x = TRUE)
 
 # # Vpd from p to kpa
-data[, vpd := vpd/1000]
+climate_dt[, vpd := vpd/1000]
 
 # Get rss from qq
-data[, rss := qq*0.0864]
+climate_dt[, rss := qq*0.0864]
 
 # Get par from rss
-data[, par := rss*0.44*4.56]
+climate_dt[, par := rss*0.44*4.56]
 
 # Convert precipitation from [kg.m-2.s-1] to mm/d (86400 seconds in day)
-data[, precip := precip*86400]
+climate_dt[, precip := precip*86400]
 
 # Convert tair from kelvin to celcius
-data[, tair := tair-273.15]
+climate_dt[, tair := tair-273.15]
 
 # Assign year helper column to data
 # data[, year := as.numeric(format(time, "%Y"))]
-data[, year := year(time)]
+climate_dt[, year := year(time)]
 
 # Set key and left join co2
-setkey(data,"year")
-data <- data[co2_data]
+setkey(climate_dt,"year")
+climate_dt <- climate_dt[co2_data]
 
 # Remove year helper column
-data[, year := NULL]
+climate_dt[, year := NULL]
 
 # Remove NAs (WHEN DATA YEARS DIFFER FROM CO2 TABLE YEARS)
-data <- data[complete.cases(data)]
+climate_dt <- climate_dt[complete.cases(climate_dt)]
 
 # Filter prebas columns
-data_prebas <- data[,c("time", "siteID", "climID", "par", "tair", "vpd", "precip", "co2")]
+climate_dt_prebas <- climate_dt[,c("time", "siteID", "climID", "par", "tair", "vpd", "precip", "co2")]
 
 
 # SPLIT IDs
@@ -121,7 +131,7 @@ max_part_size <- 200     # Define rough size of a split part
 
 split_by <- c("siteID")     # Define constraint
 split_id_name <- "splitID"
-split_dt <- split_dt_equal_with_constraint(data_prebas, max_part_size, split_by, split_id_name = split_id_name) # Assign splitIDs
+split_dt <- split_dt_equal_with_constraint(climate_dt_prebas, max_part_size, split_by, split_id_name = split_id_name) # Assign splitIDs
 
 # Name of file
 prebas_climate_name <- paste0("CLEAN_", climate_name, "_splitID")

@@ -20,37 +20,40 @@ source('scripts/settings.R')
 # Create temp_env
 temp_env <- new.env()
 
-# Run inside local block
 local(envir = temp_env, {
+  on.exit({
+    # CLEAN UP
+    
+    # Set default ids
+    set_default_ids_in_yaml(config_path, defaults)
+    
+    # Vars to keep
+    keep_vars <- c("config", "config_path")
+    
+    cat("\n")
+    print(paste0("Removing variables except: ", list(keep_vars)))
+    cat("\n")
+    
+    # Remove vars
+    remove_selected_variables_from_env(keep_vars)
+  }, add = TRUE)
   
-  # LOAD
-
-  # Load vars into temp_env
-  source("scripts/define_vars_for_runner.R", temp_env)
-
-
-  # RUN
-  
-  # Run from table
-  run_yaml_from_table(run_table_dt, config_path)
-  
-  
-  # CLEAN UP
-  
-  # Set default ids
-  set_default_ids_in_yaml(config_path, defaults)
-  
-  # Vars to keep
-  keep_vars <- c("config", "config_path")
-  
-  cat("\n")
-  print(paste0("Removing variables except: ", list(keep_vars)))
-  cat("\n")
-  
-  # Remove vars
-  remove_selected_variables_from_env(keep_vars)
-  
+  tryCatch({
+    # LOAD
+    
+    # Load vars into temp_env
+    source("scripts/define_vars_for_runner.R", temp_env)
+    
+    # RUN
+    
+    # Run from table
+    run_yaml_from_table(run_table_dt, config_path)
+    
+  }, error = function(e) {
+    message("An error occurred: ", e$message, "\n")
+  })
 })
+
 
 
 

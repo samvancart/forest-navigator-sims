@@ -4,7 +4,7 @@ source('scripts/settings.R')
 source('./r/multiSite.R')
 
 
-soil_name <- "prebas_hwsd_data"
+soil_name <- "prebas_hwsd_data_fc_wp_depth"
 soil_path <- paste0("data/soil/", soil_name, ".csv")
 soil_dt <- fread(soil_path)
 
@@ -37,10 +37,14 @@ nSites <- length(unique(soil_dt$siteID)) # What to do when PlgIDs are the same f
 # Soil parameters
 
 
-### DEFAULTS FOR TESTING
-soilDepth <- 413.0
-WP <-  0.118
-FC <- 0.450
+# ### DEFAULTS FOR TESTING
+# soilDepth <- 413.0
+# WP <-  0.118
+# FC <- 0.450
+
+soilDepth <- soil_dt$soil_depth
+WP <-  soil_dt$WP
+FC <- soil_dt$FC
 
 
 # Create siteInfo matrix
@@ -72,7 +76,8 @@ colnames(siteInfo) <- c("siteID", "climID", "siteType", "SWinit", "CWinit",
 print("Done.")
 
 # Path
-site_info_path <- paste0(config$PATH_site_info, soil_name, "_DEF_", config$VAR_estimated_names[config$VAR_estimated_id], ".rdata")
+site_info_path <- paste0(config$PATH_site_info, soil_name, "_", config$VAR_estimated_names[config$VAR_estimated_id], ".rdata")
+print(paste0("Saving site info into ", site_info_path))
 save(siteInfo, file = site_info_path)
 
 
