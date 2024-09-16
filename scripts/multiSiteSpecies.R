@@ -12,10 +12,17 @@ source('./r/multiSite.R')
 ### Soil data loaded from loadData.R ###
 ### SiteInfo created in loadData.R ###
 
-print(paste0("Running multiSiteSpecies.R for species ",
-             get_speciesName(config$VAR_species_id, config$VAR_species_dict), " and site type estimated by ", config$VAR_estimated_names[config$VAR_estimated_id]))
-print(paste0("Management: ", config$VAR_management_names[config$VAR_management_id+1]))
-print(paste0("Climate: ", config$VAR_climate_names[config$VAR_climate_id]))
+species_name <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
+estimated_name <- config$VAR_estimated_names[config$VAR_estimated_id]
+management_name <- config$VAR_management_names[config$VAR_management_id+1]
+climate_name <- config$VAR_climate_names[config$VAR_climate_id]
+split_id <- config$VAR_split_id
+
+
+print(paste0("Running multiSiteSpecies.R for species ", species_name, " and site type estimated by ", estimated_name))
+print(paste0("Management: ", management_name))
+print(paste0("Climate: ", climate_name))
+print(paste0("Split id: ", split_id))
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
@@ -76,11 +83,17 @@ multiOut<-modOut$multiOut
 multiOut_st1<-modOut_st1$multiOut
 multiOut_st5<-modOut_st5$multiOut
 
-# Save
-fileName <- paste0(config$PATH_rdata, "multiOut_spID", config$VAR_species_id, ".rdata")
 
-save(multiOut,multiOut_st1,multiOut_st5, file=fileName)
-print(paste0("multiOut saved to ", fileName))
+# File name and path
+file_name <- paste("multiOut", species_name, estimated_name, management_name, climate_name, split_id, sep = "_")
+extension <- "rdata"
+dir_path <- file.path(config$PATH_rdata, "multisite_species")
+
+full_path <- file.path(dir_path, paste(file_name, extension, sep = "."))
+
+# Write file
+save(multiOut,multiOut_st1,multiOut_st5, file = full_path)
+print(paste0("multiOut saved to ", file_name))
 
 
 

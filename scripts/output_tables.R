@@ -9,12 +9,14 @@ source('./r/utils.R')
 fileName <- paste0(config$PATH_rdata, "multiOut_spID",config$VAR_species_id,".rdata")
 load(fileName)
 
+# Define vars
 climateScenario <- tolower(config$VAR_climate_names[config$VAR_climate_id])
 species <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
 managementName <- config$VAR_management_names[config$VAR_management_id+1]
 outputNames <- config$VAR_output_names
 speciesCodes <- config$VAR_species_codes
 speciesNames <- config$VAR_species_names
+
 
 # Specify output variables
 varXs <- c(11:13,17,18,22,30,42,43)
@@ -42,13 +44,23 @@ years_vector <- seq.int(from = 1, to = nYears)
 
 # Transpose and write csv for all variables
 for (i in 1:length(namesVars)) {
-  table <- transpose_to_output_format(tabXst, i, clim_sites, years_vector)
-  write_outputs_protocolFormat(table, namesVars[i], namesVars, species, 
-                               climate = climateScenario, managementName = managementName,
-                               outputNames = outputNames, speciesCodes = speciesCodes,
-                               speciesNames = speciesNames)
+  
+  # Transpose output
+  output_mat <- transpose_to_output_format(tabXst, i, clim_sites, years_vector)
+  
+  # Get output path
+  path <- get_comparison_protocol_variable_output_path("data/outputs", namesVars[i], namesVars, species,
+                                                       climate = climateScenario, managementName = managementName,
+                                                       outputNames = outputNames, speciesCodes = speciesCodes,
+                                                       speciesNames = speciesNames)
+  
+  
+  
+  # Write file
+  print(paste0("Writing file ", path, "..."))
+  fwrite(output_mat, file = path)
+  
 }
-
 
 
 

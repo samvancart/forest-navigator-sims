@@ -3,7 +3,7 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 1
+VAR_climate_id: 5
 VAR_load_tran_id: 0
 VAR_site_info_id: 3
 VAR_split_id: 1
@@ -80,16 +80,17 @@ VAR_climate_paths:
 - data/climate/provided/rdata/CLEAN_historic_3models_new_Prebas_splitID.rdata
 VAR_climate_names:
 - historical
-- GFDL-ESM4_SSP370
+- GFDL-ESM4-SSP370
 - UKESM1-0-LL_ssp370
-- historical_detrend
-- ICHEC-EC-EARTH_rcp85
-- MPI-M-MPI-ESM-LR_rcp85
-- MPI-M-MPI-ESM-LR_rcp45
-- historic_3models
+- historical-detrend
+- ICHEC-EC-EARTH-rcp85
+- MPI-M-MPI-ESM-LR-rcp85
+- MPI-M-MPI-ESM-LR-rcp45
+- historic-3models
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
+PATH_output: data/output/
 PATH_co2: data/co2/
 PATH_site_info: data/site_info/
 PATH_soil_data: data/soil/grd5_soil_data_prebas.csv
