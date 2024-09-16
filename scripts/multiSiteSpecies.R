@@ -47,6 +47,7 @@ initMultiSite_params <- list(nYearsMS = rep(nYears,nSites),
                              ClCut=config$VAR_management_id)
 
 
+
 # Initialise model with different site types
 print(paste0("Initialising model with site type estimated by soil N..."))
 initPrebas <- do.call(InitMultiSite, initMultiSite_params)

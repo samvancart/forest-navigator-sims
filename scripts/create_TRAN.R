@@ -37,7 +37,7 @@ tranVars <- c("par", "vpd", "co2", "precip", "tair")
 # Create list of TRAN matrices
 tranMatrices <- lapply(tranVars, function(x) {
   formula <- as.formula(paste("siteID", "~", "day"))
-  dcast_dt <- dcast(split_dt, formula, value.var = x)
+  dcast_dt <- as.matrix(dcast(split_dt, formula, value.var = x))
 })
 
 # Add names to list

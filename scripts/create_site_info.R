@@ -42,9 +42,9 @@ nSites <- length(unique(soil_dt$siteID)) # What to do when PlgIDs are the same f
 # WP <-  0.118
 # FC <- 0.450
 
-soilDepth <- soil_dt$soil_depth
-WP <-  soil_dt$WP
-FC <- soil_dt$FC
+soilDepth <- soil_dt$soil_depth * 10
+WP <-  soil_dt$WP / soilDepth
+FC <- soil_dt$FC / soilDepth
 
 
 # Create siteInfo matrix

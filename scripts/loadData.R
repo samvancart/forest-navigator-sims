@@ -36,15 +36,6 @@ local(envir = load_data_env, {
   
   print("Loading siteInfo...")
   
-  # Sites to run
-  sites <- parTran[,1]
-  
-  # Number of sites in this case matches the number of climIDs
-  nSites <- nrow(parTran)
-  
-  # Number of simulation years
-  nYears <- floor(ncol(parTran)/365)
-  
   # SiteInfo name
   siteInfo_name <- config$VAR_site_info_names[config$VAR_site_info_id]
   
@@ -54,20 +45,31 @@ local(envir = load_data_env, {
   # siteInfo path
   siteInfo_path <- paste0(config$PATH_site_info, siteInfo_name, "_", estimated_name, ".rdata")
   
-  # Load siteInfo
-  siteInfo <- load_data_env$loadRDataFile(siteInfo_path)[siteID %in% sites]
-  
-  print("Done.")
-
 })
+
+# Sites to run
+sites <- parTran[,1]
+
+# Number of sites in this case matches the number of climIDs
+nSites <- nrow(parTran)
+
+# Number of simulation years
+nYears <- floor(ncol(parTran)/365)
+
+# Load siteInfo
+siteInfo <- load_data_env$loadRDataFile(load_data_env$siteInfo_path)[siteID %in% sites]
+
+# Add new climate ids
+siteInfo[, climID := .GRP, by = siteID]
+
+
+print("Done.")
 
 
 # CLEAN UP
 
 rm(load_data_env)
 gc()
-
-
 
 
 
