@@ -23,6 +23,7 @@ print(paste0("Running multiSiteSpecies.R for species ", species_name, " and site
 print(paste0("Management: ", management_name))
 print(paste0("Climate: ", climate_name))
 print(paste0("Split id: ", split_id))
+cat("\n")
 
 # Number of layers and species
 nLayers <- nSpecies <- 1
@@ -55,33 +56,47 @@ initMultiSite_params <- list(nYearsMS = rep(nYears,nSites),
 
 
 
-# Initialise model with different site types
-print(paste0("Initialising model with site type estimated by soil N..."))
-initPrebas <- do.call(InitMultiSite, initMultiSite_params)
+
+# print(paste0("Initialising model with site type estimated by soil N..."))
+# # Initialise model with different site types
+# initPrebas <- do.call(InitMultiSite, initMultiSite_params)
+# print("Done.")
+# 
+# print("Initialising model with site type 1...")
+# # setting site type to 1
+# initMultiSite_params$siteInfo[,3] = 1
+# initPrebas_st1 <- do.call(InitMultiSite, initMultiSite_params)
+# print("Done.")
+# 
+# print("Initialising model with site type 5...")
+# # setting site type to 5
+# initMultiSite_params$siteInfo[,3] = 5
+# initPrebas_st5 <- do.call(InitMultiSite, initMultiSite_params)
+# print("Done.")
+
+
+
+
+print(paste0("Initialising model..."))
+t <- system.time({
+  initPrebas <- do.call(InitMultiSite, initMultiSite_params)
+  initPrebas_st1 <- do.call(InitMultiSite, initMultiSite_params)
+  initPrebas_st5 <- do.call(InitMultiSite, initMultiSite_params)
+})
 print("Done.")
-
-print("Initialising model with site type 1...")
-# setting site type to 1
-initMultiSite_params$siteInfo[,3] = 1
-initPrebas_st1 <- do.call(InitMultiSite, initMultiSite_params)
-print("Done.")
-
-print("Initialising model with site type 5...")
-# setting site type to 5
-initMultiSite_params$siteInfo[,3] = 5
-initPrebas_st5 <- do.call(InitMultiSite, initMultiSite_params)
-print("Done.")
-
-
-# Run multisite model
-modOut <- multiPrebas(initPrebas)
-modOut_st1 <- multiPrebas(initPrebas_st1)
-modOut_st5 <- multiPrebas(initPrebas_st5)
-
-# Get output
-multiOut<-modOut$multiOut
-multiOut_st1<-modOut_st1$multiOut
-multiOut_st5<-modOut_st5$multiOut
+print(t)
+# 
+# 
+# 
+# # Run multisite model
+# modOut <- multiPrebas(initPrebas)
+# modOut_st1 <- multiPrebas(initPrebas_st1)
+# modOut_st5 <- multiPrebas(initPrebas_st5)
+# 
+# # Get output
+# multiOut<-modOut$multiOut
+# multiOut_st1<-modOut_st1$multiOut
+# multiOut_st5<-modOut_st5$multiOut
 
 
 # File name and path
@@ -91,11 +106,16 @@ dir_path <- file.path(config$PATH_rdata, "multisite_species")
 
 full_path <- file.path(dir_path, paste(file_name, extension, sep = "."))
 
-# Write file
-save(multiOut,multiOut_st1,multiOut_st5, file = full_path)
-print(paste0("multiOut saved to ", file_name))
+print(paste0("Full path: ", full_path))
+
+# # Write file
+# save(multiOut,multiOut_st1,multiOut_st5, file = full_path)
+# print(paste0("multiOut saved to ", file_name))
 
 
+# # Clean up if not using yaml.runner
+# keep_vars <- c("config", "config_path")
+# remove_selected_variables_from_env(keep_vars)
 
 
 

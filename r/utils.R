@@ -723,3 +723,26 @@ load_files <- function(files, load_id) {
 
 
 
+#' Wrap a Script into a Function with Parameters
+#'
+#' This function takes a script and a list of parameter names, and returns a new function that, when called, assigns the parameters to the global environment and evaluates the script.
+#'
+#' @param script A character string containing the R script to be wrapped.
+#' @param param_names A character vector of parameter names to be assigned in the global environment.
+#' @return A function that takes parameters specified in `param_names` and evaluates the `script`.
+#' @examples
+#' script <- "print(x + y)"
+#' param_names <- c("x", "y")
+#' wrapped <- wrap_script(script, param_names)
+#' wrapped(x = 1, y = 2) # Should print 3
+wrap_script <- function(script, param_names) {
+  # Create a function template
+  wrapped_function <- function(...) {
+    params <- list(...)
+    for (name in param_names) {
+      assign(name, params[[name]], envir = .GlobalEnv)
+    }
+    eval(parse(text = script))
+  }
+  return(wrapped_function)
+}

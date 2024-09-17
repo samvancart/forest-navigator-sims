@@ -13,7 +13,6 @@
 
 
 
-
 # Load libs and config
 source('scripts/settings.R')
 
