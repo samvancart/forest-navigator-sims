@@ -14,25 +14,34 @@ source('./r/utils.R')
 # Climate scenario name
 climateScenario <- tolower(config$VAR_climate_names[config$VAR_climate_id])
 
+print(paste0("Running create_tran.R"))
 print(paste0("Climate scenario is: ", climateScenario))
 print(paste0("VAR_climate_id is: ", config$VAR_climate_id))
 print(paste0("VAR_split_id is: ", config$VAR_split_id))
 cat("\n")
 
+print(paste0("Loading data..."))
 # Load climate data using custom function
 climate_dt <- load_data(config$VAR_climate_paths[config$VAR_climate_id])
 
 # Name of splitID column
 split_id_name <- "splitID"
 
+print(paste0("Splitting data..."))
 # Filter climate_dt based on splitID
 split_dt <- climate_dt[get(split_id_name) == config$VAR_split_id]
+
+rm(climate_dt)
+gc()
 
 # Add day column
 split_dt[, day := .GRP, by = c("time")]
 
 # Variables to create TRAN tables for
 tranVars <- c("par", "vpd", "co2", "precip", "tair")
+
+print(paste0("Creating tran matrices..."))
+cat("\n")
 
 # Create list of TRAN matrices
 tranMatrices <- lapply(tranVars, function(x) {

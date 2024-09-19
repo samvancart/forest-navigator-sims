@@ -3,7 +3,7 @@ VAR_layer_id: 1
 VAR_estimated_id: 1
 VAR_tabX_id: 1
 VAR_management_id: 0
-VAR_climate_id: 4
+VAR_climate_id: 1
 VAR_load_tran_id: 0
 VAR_site_info_id: 3
 VAR_split_id: 1
@@ -31,6 +31,11 @@ VAR_pCROBAS_multipliers:
   '3': 0.6
   '12': 1
 VAR_theta_max: 0.03
+VAR_initMultiSiteSpecies_Ac:
+  '1': 0.0004682
+  '2': 0.0004775
+  '3': 0.0001817
+  '12': 0.0002171
 VAR_estimated_user:
 - 3.5
 - 4.5
@@ -113,6 +118,7 @@ PATH_sites: data/climate/provided/prebas_sites_coords.csv
 PATH_swe_sf: data/nfi/sweden/shape_files
 SRC_multi_species: scripts/multiSiteSpecies.R
 SRC_multi_layers: scripts/multiSiteLayers.R
+SRC_outputs_species: scripts/output_tables.R
 SRC_multi_and_plots_species:
 - scripts/multiSiteSpecies.R
 - scripts/plotsSpecies.R
@@ -134,3 +140,5 @@ SRC_mock_run_scripts:
 - scripts/mock_run_script_2.R
 SRC_climate_csv_to_prebas: scripts/climate_csv_to_prebas.R
 SRC_create_tran: scripts/create_tran.R
+SRC_init_multi_species: scripts/multiSiteSpeciesInit.R
+SRC_multi_species_test: scripts/multiSiteSpeciesTest.R

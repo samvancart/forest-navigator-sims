@@ -723,26 +723,42 @@ load_files <- function(files, load_id) {
 
 
 
+
+
 #' Wrap a Script into a Function with Parameters
 #'
-#' This function takes a script and a list of parameter names, and returns a new function that, when called, assigns the parameters to the global environment and evaluates the script.
+#' This function takes a script and an optional list of parameter names, and returns a new function that, when called, assigns the parameters to the specified environment and evaluates the script.
 #'
-#' @param script A character string containing the R script to be wrapped.
-#' @param param_names A character vector of parameter names to be assigned in the global environment.
-#' @return A function that takes parameters specified in `param_names` and evaluates the `script`.
+#' @param script A character vector containing the R script to be wrapped.
+#' @param param_names An optional character vector of parameter names to be assigned in the specified environment. If not provided, the names of the parameters passed to the wrapped function will be used.
+#' @param envir The environment in which to assign the parameters. Defaults to the global environment.
+#' @return A function that takes parameters specified in `param_names` (if provided) or the names of the parameters passed to the function, and evaluates the `script` in the specified environment.
 #' @examples
 #' script <- "print(x + y)"
-#' param_names <- c("x", "y")
-#' wrapped <- wrap_script(script, param_names)
+#' wrapped <- wrap_script(script)
 #' wrapped(x = 1, y = 2) # Should print 3
-wrap_script <- function(script, param_names) {
+wrap_script <- function(script, param_names = NULL, envir = .GlobalEnv) {
+  # Input validation
+  assert_character(script)
+  if (!is.null(param_names)) {
+    assert_character(param_names, min.len = 1)
+  }
+  assert_environment(envir)
+  
   # Create a function template
   wrapped_function <- function(...) {
     params <- list(...)
-    for (name in param_names) {
-      assign(name, params[[name]], envir = .GlobalEnv)
+    if (is.null(param_names)) {
+      param_names <- names(params)
     }
-    eval(parse(text = script))
+    
+    for (name in param_names) {
+      assign(name, params[[name]], envir = envir)
+    }
+    eval(parse(text = script), envir = envir)
   }
   return(wrapped_function)
 }
+
+
+

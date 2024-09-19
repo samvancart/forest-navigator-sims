@@ -127,7 +127,7 @@ climate_dt_prebas <- climate_dt[,c("time", "siteID", "climID", "par", "tair", "v
 
 # SPLIT IDs
 
-max_part_size <- 200     # Define rough size of a split part
+max_part_size <- 700     # Define rough size of a split part
 
 split_by <- c("siteID")     # Define constraint
 split_id_name <- "splitID"

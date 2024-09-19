@@ -1,11 +1,10 @@
+# Initialise prebas and save to file
+
+
 source('scripts/settings.R')
 source('scripts/loadData.R')
 source('./r/utils.R')
 source('./r/multiSite.R')
-
-# Run multisite prebas for sitetypes 1, 5 and estimated site type (by N in soildata). Ids in config.YAML.
-# Produces multiOut_spID<speciesID> rdata file.
-# Run for all species and both estimated N values from yaml_runner.R.
 
 
 ### Climate data loaded from loadData.R ###
@@ -25,8 +24,6 @@ print(paste0("Climate: ", climate_name))
 print(paste0("Split id: ", split_id))
 cat("\n")
 
-# Number of layers and species
-nLayers <- nSpecies <- 1
 
 # Get pPRELES parameter (different for speciesID 12)
 pPRELES <- get_pPRELES(config$VAR_species_id)
@@ -37,33 +34,48 @@ pCROB_copy <- get_pCROBAS(speciesIDs = c(config$VAR_species_id), pCROBAS_multipl
 # Set pCROBAS config$VAR_theta_max parameter
 pCROB_copy[31, config$VAR_species_id] <- config$VAR_theta_max
 
-# Create multiInitVar
-multiInitVar <- get_multiInitVar_species(nRows = nSites, nLayers = nLayers, speciesID = config$VAR_species_id, initAge = 12) # CHECK AGE
-
 # Define parameters for initialisation
-initMultiSite_params <- list(nYearsMS = rep(nYears,nSites),
-                             siteInfo = siteInfo,
-                             multiInitVar = multiInitVar,
-                             pPRELES = pPRELES,
+initMultiSite_params <- list(pPRELES = pPRELES,
                              pCROBAS = pCROB_copy,
-                             PAR = parTran,
-                             VPD = vpdTran,
-                             CO2= co2Tran,
-                             Precip=precipTran,
-                             TAir=tairTran,
                              defaultThin=config$VAR_management_id, 
                              ClCut=config$VAR_management_id)
 
 
 
+# if(!exists("initPrebas")) { # For parallel processing
+if(config$VAR_load_tran_id == 0) {
+  
+  # Get initPrebas files
+  init_prebas_path <- file.path(config$PATH_rdata, "multisite_species")
+  init_prebas_files <- list.files(init_prebas_path, full.names = T)
+  
+  # Find by climate and split_id
+  pattern_init_prebas <- paste0("initPrebas.*_", config$VAR_climate_names[config$VAR_climate_id],
+                                "_", config$VAR_split_id, "\\.rdata$")
+  init_prebas_file <- grep(pattern_init_prebas, init_prebas_files, value = TRUE)
+    
+  print(paste0("Loading initPrebas from ", init_prebas_file, "..."))
+  initPrebas <- load_data(init_prebas_file)
+  print(paste0("Done."))
+  cat("\n")
+  
+}
 
-print(paste0("Initialising model..."))
-t <- system.time({
-  # Init model
-  initPrebas <- do.call(InitMultiSite, initMultiSite_params)
-})
-print(t)
+
+print(paste0("Modifying initPrebas..."))
+modify_params <- initMultiSite_params[c("pPRELES", "pCROBAS")]
+modify_params[["defaultThin"]] <- rep(initMultiSite_params[["defaultThin"]], length(initPrebas[["defaultThin"]]))
+modify_params[["ClCut"]] <- rep(initMultiSite_params[["ClCut"]], length(initPrebas[["ClCut"]]))
+multiInitVar <- initPrebas$multiInitVar
+multiInitVar[,1,] <- config$VAR_species_id
+multiInitVar[,7,] <- config$VAR_initMultiSiteSpecies_Ac[as.character(config$VAR_species_id)][[1]]
+modify_params[["multiInitVar"]] <- multiInitVar
+
+# Modify initPrebas
+initPrebas[names(modify_params)] <- map2(initPrebas[names(modify_params)], modify_params, ~ .y)
+
 print("Done.")
+cat("\n")
 
 
 # Run multisite model
@@ -73,7 +85,7 @@ print("Done.")
 
 # Get output
 print(paste0("Getting multiOut..."))
-multiOut<-modOut$multiOut
+multiOut <- modOut$multiOut
 print("Done.")
 
 cat("\n")
@@ -85,16 +97,12 @@ dir_path <- file.path(config$PATH_rdata, "multisite_species")
 
 full_path <- file.path(dir_path, paste(file_name, extension, sep = "."))
 
-print(paste0("Full path: ", full_path))
+# print(paste0("Full path: ", full_path))
 
-# # Write file
-# save(multiOut,multiOut_st1,multiOut_st5, file = full_path)
-# print(paste0("multiOut saved to ", full_path))
+# Write file
+save(multiOut, file = full_path)
+print(paste0("multiOut saved to ", full_path))
 
-
-# # Clean up if not using yaml.runner
-# keep_vars <- c("config", "config_path")
-# remove_selected_variables_from_env(keep_vars)
 
 
 
