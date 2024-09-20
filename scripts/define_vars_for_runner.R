@@ -12,7 +12,7 @@ species_vector <- as.integer(names(config$VAR_species_dict))
 management_vector <- as.integer(c(0,1))
 estimated_vector <- as.integer(c(1))
 # climate_vector <- seq_along(config$VAR_climate_paths)
-climate_vector <- as.integer(c(4,5,6,7,8))
+climate_vector <- as.integer(c(4))
 
 # # Get split ids from climate data files
 # split_ids_list <- invisible(lapply(climate_vector, function(x) {
@@ -48,7 +48,7 @@ named_vector_list <- list(VAR_species_id = species_vector,
 # src_vector <- config$SRC_create_tran
 # src_vector <- config$SRC_multi_species
 # src_vector <- config$SRC_init_multi_species
-# src_vector <- config$SRC_multi_species_test
+# src_vector <- config$SRC_multi_species_from_init
 src_vector <- config$SRC_outputs_species
 
 

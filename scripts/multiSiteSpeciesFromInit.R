@@ -2,7 +2,7 @@
 
 
 source('scripts/settings.R')
-source('scripts/loadData.R')
+# source('scripts/loadData.R')
 source('./r/utils.R')
 source('./r/multiSite.R')
 
@@ -18,7 +18,9 @@ climate_name <- config$VAR_climate_names[config$VAR_climate_id]
 split_id <- config$VAR_split_id
 
 
-print(paste0("Running multiSiteSpecies.R for species ", species_name, " and site type estimated by ", estimated_name))
+print(paste0("Running multiSiteSpeciesFromInit.R"))
+print(paste0("Species is ", species_name))
+print(paste0("Soil type estimated by ", estimated_name))
 print(paste0("Management: ", management_name))
 print(paste0("Climate: ", climate_name))
 print(paste0("Split id: ", split_id))
@@ -50,8 +52,7 @@ if(config$VAR_load_tran_id == 0) {
   init_prebas_files <- list.files(init_prebas_path, full.names = T)
   
   # Find by climate and split_id
-  pattern_init_prebas <- paste0("initPrebas.*_", config$VAR_climate_names[config$VAR_climate_id],
-                                "_", config$VAR_split_id, "\\.rdata$")
+  pattern_init_prebas <- paste0("initPrebas.*_", estimated_name, ".*_", climate_name, "_", split_id, "\\.rdata$")
   init_prebas_file <- grep(pattern_init_prebas, init_prebas_files, value = TRUE)
     
   print(paste0("Loading initPrebas from ", init_prebas_file, "..."))
@@ -71,7 +72,7 @@ multiInitVar[,1,] <- config$VAR_species_id
 multiInitVar[,7,] <- config$VAR_initMultiSiteSpecies_Ac[as.character(config$VAR_species_id)][[1]]
 modify_params[["multiInitVar"]] <- multiInitVar
 
-# Modify initPrebas
+# Modify initPrebas using purrr
 initPrebas[names(modify_params)] <- map2(initPrebas[names(modify_params)], modify_params, ~ .y)
 
 print("Done.")

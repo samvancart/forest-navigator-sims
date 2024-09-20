@@ -141,4 +141,4 @@ SRC_mock_run_scripts:
 SRC_climate_csv_to_prebas: scripts/climate_csv_to_prebas.R
 SRC_create_tran: scripts/create_tran.R
 SRC_init_multi_species: scripts/multiSiteSpeciesInit.R
-SRC_multi_species_test: scripts/multiSiteSpeciesTest.R
+SRC_multi_species_from_init: scripts/multiSiteSpeciesFromInit.R

@@ -1,4 +1,5 @@
-# Output variables to csv: Years as rows and sites as columns.
+# Script to produce comparison test output variables in protocol format.
+# Produces csv with years as rows and sites as columns.
 
 source('scripts/settings.R') 
 source('./r/outputs.R')
@@ -20,7 +21,7 @@ split_id <- config$VAR_split_id
 multiOut_path <- file.path(config$PATH_rdata, "multisite_species")
 multiOut_files <- list.files(multiOut_path, full.names = T)
 
-# Find by climate and split_id
+# Find by full file name
 pattern_multiOut <- paste0(paste("multiOut",
                                  species_name,
                                  estimated_name,
@@ -34,6 +35,7 @@ multiOut_file <- grep(pattern_multiOut, multiOut_files, value = TRUE)
 print(paste0("Loading MultiOut from ", multiOut_file, "..."))
 multiOut <- load_data(multiOut_file)
 print(paste0("Done."))
+cat("\n")
 
 
 
