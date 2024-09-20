@@ -292,6 +292,34 @@ loadRDataFile <- function(RDataFile) {
   return(obj)
 }
 
+#' Load data from a file
+#'
+#' This function loads data from a file. It supports CSV and RData file formats.
+#'
+#' @param file A string representing the path to the file.
+#' @return A data frame or an object loaded from an RData file.
+#' @examples
+#' \dontrun{
+#' data <- load_data("path/to/your/file.csv")
+#' data <- load_data("path/to/your/file.RData")
+#' }
+#' @export
+load_data <- function(file) {
+  # Input validation
+  assertCharacter(file, len = 1)
+  assertFileExists(file)
+  
+  file_extension <- tolower(tools::file_ext(file))
+  
+  if (file_extension == "csv") {
+    return(fread(file))
+  } else if (file_extension == "rdata") {
+    return(loadRDataFile(file))
+  } else {
+    stop("Unsupported file type")
+  }
+}
+
 
 #' Get Functions in Environment
 #'
@@ -602,20 +630,135 @@ remove_selected_variables_from_env <- function(keep_vars = c(), env = .GlobalEnv
 set_default_ids_in_yaml <- function(config_path, defaults = NULL) {
   
   if(is.null(defaults)) {
-    one <- as.integer(c(1))
-    zero <- as.integer(c(0))
-    defaults <- list(VAR_species_id = one, 
-                     VAR_management_id = zero, 
-                     VAR_climate_id = one,
-                     VAR_layer_id = one,
-                     VAR_estimated_id = one ,
-                     VAR_tabX_id = one,
-                     VAR_load_tran_id = zero)
-  } 
-  
-  
-  print(paste0("Setting defaults..."))
-  modify_yaml_settings_vector(config_path, defaults)
+    print(paste0("Defaults is NULL, no settings changed."))
+  } else {
+    
+    print(paste0("Setting defaults..."))
+    modify_yaml_settings_vector(config_path, defaults)
+  }
 }
+
+
+
+
+#' Split Data Table into Equal Parts with Constraint
+#'
+#' This function splits a data table into approximately equal parts based on a specified constraint.
+#'
+#' @param dt A data.table object to be split.
+#' @param max_part_size An integer specifying the maximum size of each part.
+#' @param split_by_constraint A character vector specifying the column(s) to split by.
+#' @param split_id_name A character string specifying the name of the split ID column. Default is "splitID".
+#' @return A data.table object with an additional column indicating the part each row belongs to.
+#' @import data.table
+#' @import checkmate
+#' @export
+#' @examples
+#' library(data.table)
+#' dt <- data.table(id = 1:100, value = rnorm(100))
+#' split_dt_equal_with_constraint(dt, max_part_size = 10, split_by_constraint = "id", split_id_name = "partID")
+split_dt_equal_with_constraint <- function(dt, max_part_size, split_by_constraint, split_id_name = "splitID") {
+  
+  # Input validation
+  assert_data_table(dt)
+  assert_integerish(max_part_size, lower = 1, len = 1)
+  assert_character(split_by_constraint, min.len = 1)
+  assert_names(names(dt), must.include = split_by_constraint)
+  assert_string(split_id_name)
+  
+  # Get dt of unique IDs
+  unique_ids <- unique(dt[, ..split_by_constraint])
+  
+  # Get number of IDs
+  n_ids <- nrow(unique_ids)
+  
+  # Number of parts to split dt into
+  n_split_parts <- ifelse(n_ids/max_part_size < 2, 1, floor(n_ids/max_part_size))
+  
+  print(paste0("Splitting ", n_ids, " unique id(s) into ", n_split_parts, " part(s)..."))
+  
+  # Assign splitIDs
+  if (n_split_parts == 1) {
+    unique_ids[, (split_id_name) := 1]
+  } else {
+    unique_ids[, (split_id_name) := cut(seq_len(.N), breaks = n_split_parts, labels = FALSE)]
+  }
+  
+  # Merge splitIDs into original dt
+  dt <- merge(dt, unique_ids, by = split_by_constraint)
+  
+  print(paste0("Done."))
+  
+  return(dt)
+}
+
+
+
+#' Load Files Function
+#'
+#' This function loads files based on the provided list and a load identifier.
+#'
+#' @param files A character vector of file paths to be loaded.
+#' @param load_id An integer indicating whether to load the files (0) or not (any other value).
+#' @return Invisible NULL.
+#' @import checkmate
+#' @export
+load_files <- function(files, load_id) {
+  # Input validation
+  assertCharacter(files, any.missing = FALSE, min.len = 1)
+  assertIntegerish(load_id, len = 1)
+  
+  invisible(lapply(files, function(x) {
+    varName <- sub(".*\\/([^\\/]+)\\..*", "\\1", x)
+    
+    if (load_id == 0) {
+      print(paste0("Loading ", varName))
+      load(file = x, envir = .GlobalEnv)
+    } else {
+      print(paste0(varName, " already loaded."))
+    }
+  }))
+}
+
+
+
+
+
+
+#' Wrap a Script into a Function with Parameters
+#'
+#' This function takes a script and an optional list of parameter names, and returns a new function that, when called, assigns the parameters to the specified environment and evaluates the script.
+#'
+#' @param script A character vector containing the R script to be wrapped.
+#' @param param_names An optional character vector of parameter names to be assigned in the specified environment. If not provided, the names of the parameters passed to the wrapped function will be used.
+#' @param envir The environment in which to assign the parameters. Defaults to the global environment.
+#' @return A function that takes parameters specified in `param_names` (if provided) or the names of the parameters passed to the function, and evaluates the `script` in the specified environment.
+#' @examples
+#' script <- "print(x + y)"
+#' wrapped <- wrap_script(script)
+#' wrapped(x = 1, y = 2) # Should print 3
+wrap_script <- function(script, param_names = NULL, envir = .GlobalEnv) {
+  # Input validation
+  assert_character(script)
+  if (!is.null(param_names)) {
+    assert_character(param_names, min.len = 1)
+  }
+  assert_environment(envir)
+  
+  # Create a function template
+  wrapped_function <- function(...) {
+    params <- list(...)
+    if (is.null(param_names)) {
+      param_names <- names(params)
+    }
+    
+    for (name in param_names) {
+      assign(name, params[[name]], envir = envir)
+    }
+    eval(parse(text = script), envir = envir)
+  }
+  return(wrapped_function)
+}
+
 
 

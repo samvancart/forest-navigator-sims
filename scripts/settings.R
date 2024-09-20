@@ -18,6 +18,7 @@ library(lubridate)
 library(ncdf4)
 library(parallel)
 library(parallelly)
+library(purrr)
 library(Rprebasso)
 library(reshape2)
 library(sf)
@@ -28,10 +29,12 @@ library(yaml)
 library(zoo)
 
 
-
-# Path to config file
-config_path <- paste0("config.yaml")
+if(!exists("config_path")) {
+  # Path to config file
+  config_path <- paste0("config.yaml")
+}
 
 # Load configuration file
 config <- yaml.load_file(config_path)
+
 
