@@ -7,6 +7,7 @@ VAR_climate_id: 1
 VAR_load_tran_id: 0
 VAR_site_info_id: 3
 VAR_split_id: 1
+VAR_primary_separator: _
 VAR_species_dict:
   '1': Pine
   '2': Spruce

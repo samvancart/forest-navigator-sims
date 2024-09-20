@@ -761,4 +761,87 @@ wrap_script <- function(script, param_names = NULL, envir = .GlobalEnv) {
 }
 
 
+#' Get File Path Vector
+#'
+#' This function returns a vector of file names from a specified directory.
+#' Optionally, it can filter the files based on a pattern.
+#'
+#' @param dir_path A character string specifying the directory path.
+#' @param pattern An optional character string specifying a regex pattern to filter files.
+#' @return A character vector of file names.
+#' @examples
+#' get_file_path_vector("path/to/directory")
+#' get_file_path_vector("path/to/directory", pattern = "\\.txt$")
+#' @export
+get_file_path_vector <- function(dir_path, pattern = NULL) {
+  # Load checkmate library
+  library(checkmate)
+  
+  # Input validation
+  assertDirectoryExists(dir_path, access = "r")
+  assertString(pattern, null.ok = TRUE)
+  
+  # List files in the directory
+  files <- list.files(dir_path, full.names = T)
+  
+  # Filter files based on pattern if provided
+  if (!is.null(pattern)) {
+    # Validate the pattern
+    tryCatch({
+      grep(pattern, "", value = TRUE)
+    }, error = function(e) {
+      stop("Invalid pattern provided.")
+    })
+    files <- grep(pattern, files, value = TRUE)
+  }
+  
+  # Check if no files are found
+  if (length(files) == 0) {
+    warning("No files found.")
+  }
+  
+  return(files)
+}
+
+
+#' Build a Filename
+#'
+#' This function constructs a filename from given variables, a separator, and an extension, and optionally prepends a base path.
+#'
+#' @param name_vars A character vector of name components.
+#' @param sep A character string to separate the name components. Default is "_".
+#' @param ext A character string for the file extension. Default is "rdata".
+#' @param base_path A character string for the base path. Default is NULL.
+#' @return A character string representing the constructed filename.
+#' @examples
+#' build_filename(c("data", "2024", "report"))
+#' build_filename(c("data", "2024", "report"), sep = "-", ext = "csv")
+#' build_filename(c("data", "2024", "report"), sep = "-", ext = ".csv")
+#' build_filename(c("data", "2024", "report"), base_path = "/path/to/directory")
+#' @export
+build_filename <- function(name_vars, sep = "_", ext = "rdata", base_path = NULL) {
+  # Input validation
+  checkmate::assert_character(name_vars, min.len = 1)
+  checkmate::assert_string(sep)
+  checkmate::assert_string(ext)
+  if (!is.null(base_path)) {
+    checkmate::assert_string(base_path)
+  }
+  
+  # Ensure the extension does not start with a dot
+  if (startsWith(ext, ".")) {
+    ext <- substr(ext, 2, nchar(ext))
+  }
+  
+  # Construct the filename
+  filename <- paste(name_vars, collapse = sep)
+  filename <- paste0(filename, ".", ext)
+  
+  # Prepend the base path if provided
+  if (!is.null(base_path)) {
+    filename <- file.path(base_path, filename)
+  }
+  
+  return(filename)
+}
 

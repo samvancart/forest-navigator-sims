@@ -2,14 +2,9 @@
 
 
 source('scripts/settings.R')
-# source('scripts/loadData.R')
 source('./r/utils.R')
 source('./r/multiSite.R')
 
-
-### Climate data loaded from loadData.R ###
-### Soil data loaded from loadData.R ###
-### SiteInfo created in loadData.R ###
 
 species_name <- get_speciesName(config$VAR_species_id, config$VAR_species_dict)
 estimated_name <- config$VAR_estimated_names[config$VAR_estimated_id]
