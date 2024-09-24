@@ -108,6 +108,7 @@ PATH_prebas_future_UKESM1_0_LL_ssp370: data/climate/provided/UKESM1-0-LL_ssp370_
 PATH_prebas_historical_detrend: data/climate/provided/historical_detrend_climate_data_prebas.csv
 PATH_prebas_eobs: data/climate/extracted/eobs/leap_years_sampled_eobs_prebas.csv
 PATH_nfi_sweden: data/nfi/sweden/
+PATH_nfi_finland: data/nfi/finland/
 PATH_rdata: data/rdata/
 PATH_chelsa_file_nc: chelsa_1979_2016_all_vars
 PATH_chelsa_nc: data/netcdf/combined/all/chelsa_1979_2016_all_vars.nc
