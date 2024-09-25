@@ -8,6 +8,15 @@ VAR_load_tran_id: 0
 VAR_site_info_id: 3
 VAR_split_id: 1
 VAR_primary_separator: _
+VAR_nfi_fin_vars_dict:
+  bm_kuusi_runkokuori: biomass_spruce
+  bm_lehtip_runkokuori: biomass_bl
+  bm_manty_runkokuori: biomass_pine
+  ika: age
+  kasvupaikka: fert
+  keskilapimitta: dbh
+  keskipituus: h
+  ppa: ba
 VAR_species_dict:
   '1': Pine
   '2': Spruce

@@ -7,6 +7,9 @@ source('scripts/settings.R')
 # Define year of measurements
 year <- 2021
 
+# Define file type for folder name
+file_type <- "tif"
+
 # Path to zipped folders
 zip_nfi_path <- paste(config$PATH_nfi_finland)
 zip_nfi_files <- list.files(zip_nfi_path, pattern = "*.zip", full.names = T, recursive = T)
@@ -29,11 +32,12 @@ invisible(lapply(zip_vars_files, function(file) {
   tile <- parts[length(parts)]
   
   # Path for unzipped files based on tile
-  unzip_tile_dir <- file.path(unzip_dir, year, tile)
+  unzip_tile_dir <- file.path(unzip_dir, year, tile, file_type)
   
   # Unzip into tile dir
   print(paste0("Unzipping ", file))
   unzip(file, exdir = unzip_tile_dir)
+  cat("\n")
   print(paste0("Unzipped file into ", unzip_tile_dir))
   
   # Remove zip file
