@@ -845,3 +845,55 @@ build_filename <- function(name_vars, sep = "_", ext = "rdata", base_path = NULL
   return(filename)
 }
 
+
+#' Sample rows until a cumulative sum threshold is reached
+#'
+#' @description This function shuffles a `data.table`, calculates the cumulative sum of a specified column, and selects rows until the cumulative sum reaches or exceeds a given threshold.
+#'
+#' @param dt A `data.table` to be sampled.
+#' @param value_col A character string specifying the column name on which the cumulative sum is calculated.
+#' @param threshold A numeric value representing the cumulative sum threshold.
+#' @param seed An integer value for setting the seed to ensure reproducibility. Defaults to `NULL`, meaning no seed is set.
+#'
+#' @return A `data.table` containing the sampled rows.
+#'
+#' @import data.table
+#' @import checkmate
+#' @export
+#' @examples
+#' library(data.table)
+#' dt <- data.table(id = 1:10, value = runif(10))
+#' result <- sample_until_global_threshold(dt, "value", 3)
+#' print(result)
+
+sample_until_global_threshold <- function(dt, value_col, threshold, seed = NULL) {
+  
+  # Input validations
+  checkmate::assert_data_table(dt)
+  checkmate::assert_string(value_col)
+  checkmate::assert_names(value_col, subset.of = colnames(dt))
+  checkmate::assert_number(threshold)
+  checkmate::assert_number(seed, null.ok = TRUE) # Allows seed to be NULL
+  
+  # Set seed for reproducibility if provided
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+  
+  # Shuffle the entire data.table
+  dt <- dt[sample(.N)]
+  
+  # Calculate cumulative sum across all rows
+  dt[, cum_sum := cumsum(get(value_col))]
+  
+  # Select rows until the cumulative sum reaches or exceeds the threshold
+  selected_dt <- dt[cum_sum <= threshold]
+  
+  return(selected_dt)
+}
+
+# Get proportions by group in dt
+get_grouped_proportions <- function(dt, group_col) {
+  group_col_name <- paste(group_col,"prop", sep = "_")
+  dt[, (group_col_name) := .N, by = group_col][, (group_col_name) := get(group_col_name)/.N]
+}

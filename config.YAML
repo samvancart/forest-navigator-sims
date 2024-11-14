@@ -127,6 +127,7 @@ PATH_eobs_var_nc: hu
 PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
 PATH_sites: data/climate/provided/prebas_sites_coords.csv
 PATH_swe_sf: data/nfi/sweden/shape_files
+PATH_tests: tests/
 SRC_multi_species: scripts/multiSiteSpecies.R
 SRC_multi_layers: scripts/multiSiteLayers.R
 SRC_outputs_species: scripts/output_tables.R
@@ -153,3 +154,6 @@ SRC_climate_csv_to_prebas: scripts/climate_csv_to_prebas.R
 SRC_create_tran: scripts/create_tran.R
 SRC_init_multi_species: scripts/multiSiteSpeciesInit.R
 SRC_multi_species_from_init: scripts/multiSiteSpeciesFromInit.R
+TEST_parallel_process: tests/test_parallel_process.R
+TEST_clusters_dt: tests/test_clusters_dt.R
+
