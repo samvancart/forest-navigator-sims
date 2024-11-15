@@ -3,43 +3,44 @@
 #' Optimal number of cluster centers
 #'
 #' @param dt A data.table object containing the data.
-#' @param kmax An integer specifying the maximum number of clusters.
 #' @return An integer indicating the optimal number of cluster centers.
-#' @importFrom checkmate assert_data_table assert_int
-get_centers <- function(dt, kmax) {
+#' @importFrom checkmate assert_data_table
+get_centers <- function(dt) {
+  
   # Input validations
   assert_data_table(dt)
-  assert_int(kmax, lower = 2)
   
   centers <- 1
   unique_rows <- unique(dt)
-
+  
+  if(nrow(unique_rows) < nrow(dt)) {
+    warning("dt contains duplicate rows.")
+  }
+  
+  kmax <- get_kmax(unique_rows)
   
   if (nrow(unique_rows) > 2) {
     optimal_num_clusters <- fviz_nbclust(unique_rows, kmeans, method = "silhouette", k.max = kmax)
     centers <- which.max(optimal_num_clusters$data$y)
   }
-  return(centers)
+  return(as.integer(centers))
 }
 
 
 #' Kmax for optimizing number of clusters
 #'
-#' @param dt A data.table object containing the data.
+#' @param dt A data.table object containing the data. Rows should be unique but no check is performed here!
 #' @return An integer indicating the maximum number of clusters.
 #' @importFrom checkmate assert_data_table
 get_kmax <- function(dt) {
+  
   # Input validations
   assert_data_table(dt)
   
-  unique_rows <- unique(dt)
+  max_rows <- nrow(dt)-1
+  kmax <- as.integer(max(2, max_rows))
   
-  if (nrow(unique_rows) > 2) {
-    kmax <- nrow(unique_rows) - 1
-  } else {
-    kmax <- 2
-  }
-  return(as.integer(kmax))
+  return(kmax)
 }
 
 
@@ -71,25 +72,30 @@ get_kmax <- function(dt) {
 #' print(result)
 #' @export
 perform_clustering_by_group <- function(dt, group_cols, value_cols, seed = NULL, ...) {
+  
   # Input validations
   assert_data_table(dt)
   assert_character(group_cols, min.len = 1)
   assert_character(value_cols, min.len = 1)
-  assert_int(seed, null.ok = T)
+  assert_int(seed, null.ok = TRUE)
   
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
+  # Original dt column order
+  col_order <- colnames(dt)
   
-  dt[, {
-    dt_subset <- .SD[, ..value_cols]
+  # Set seed for reproducibility. If seed is NULL no seed is set.
+  set.seed(seed)
+  
+  clusters_dt <- dt[, {
+    # Filter dt by value_cols
+    dt_subset <- .SD[, mget(value_cols)]
     
-    kmax <- get_kmax(dt_subset)
-    centers <- get_centers(dt_subset, kmax)
+    # Get cluster centres
+    centers <- get_centers(dt_subset)
     
     # Perform K-means clustering with additional arguments passed through ...
     model <- kmeans(dt_subset, centers = centers, ...)
     
+    # Get the clusters
     cluster_ids <- model$cluster
     
     dt <- .SD
@@ -99,6 +105,8 @@ perform_clustering_by_group <- function(dt, group_cols, value_cols, seed = NULL,
     dt
     
   }, by = group_cols]
+  
+  setcolorder(clusters_dt, col_order, "cluster_id")
 }
 
 

@@ -876,9 +876,8 @@ sample_until_global_threshold <- function(dt, value_col, threshold, seed = NULL)
   checkmate::assert_number(seed, null.ok = TRUE) # Allows seed to be NULL
   
   # Set seed for reproducibility if provided
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
+
+  set.seed(seed)
   
   # Shuffle the entire data.table
   dt <- dt[sample(.N)]

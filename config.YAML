@@ -156,4 +156,4 @@ SRC_init_multi_species: scripts/multiSiteSpeciesInit.R
 SRC_multi_species_from_init: scripts/multiSiteSpeciesFromInit.R
 TEST_parallel_process: tests/test_parallel_process.R
 TEST_clusters_dt: tests/test_clusters_dt.R
-
+TEST_utils: tests/test_utils.R

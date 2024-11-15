@@ -11,6 +11,8 @@ init_files <- list.files(boku_data_path, "FIN_", full.names = T)
 
 aaa <- fread(aaa_file)
 
+seed <- 123
+
 
 # Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km cell id.
 dts <- invisible(apply(aaa, 1, function(x) {
@@ -19,7 +21,7 @@ dts <- invisible(apply(aaa, 1, function(x) {
   threshold <- as.numeric(x["ba"])
   cell_val <- x["cell"]
   dt <- fread(path)
-  sampled_dt <- sample_until_global_threshold(dt, "ba", threshold)
+  sampled_dt <- sample_until_global_threshold(dt, "ba", threshold, seed = seed)
   sampled_dt[, cum_sum := NULL]
   sampled_dt[, cell := cell_val]
 }))
@@ -31,7 +33,7 @@ data <- dts
 FUN <- perform_clustering_by_group
 FUN_args <- list(group_cols = c("cell", "species"), 
                  value_cols = c("dbh", "treeheight"), 
-                 seed = 123, 
+                 seed = seed, 
                  nstart = 25, 
                  iter.max = 50)
 
@@ -41,9 +43,6 @@ all_clusters_dts <- get_in_parallel(data = data, FUN = FUN, FUN_args = FUN_args,
 
 
 all_clusters_dt <- rbindlist(all_clusters_dts)
-
-
-
 
 
 
