@@ -1,3 +1,13 @@
+# Script to sample from Boku treedata and create clusters. 
+# Data is sampled from individual tree data files and the cumulative sum of the
+# basal area for each selection is calculated.
+# The main file (AAA_ForestTypeList_Finland_2024-11-11.csv) basal area is used
+# as a threshold. The sampling ends when the cum_sum exceeds the threshold. The 
+# returned ba is the last value before exceeding the threshold.
+# Next parallel processing is used to cluster the data.
+
+
+
 source('scripts/settings.R')
 source("r/utils.R")
 source("r/clusters_dt.R")
