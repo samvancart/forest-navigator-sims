@@ -105,6 +105,17 @@ VAR_climate_names:
 VAR_nfi_sweden_paths:
 - data/nfi/sweden/sorted_group_species_cIDs_speciesID11to4_basal_area.csv
 - data/nfi/sweden/cluster_weighted_means_speciesID11to4.csv
+VAR_acc_sites:
+- test_sites
+- simulation_sites
+VAR_acc_data:
+- climate
+- soil
+- grid
+VAR_acc_data_types:
+- raw
+- clean
+PATH_acc_base: data/accelerator
 PATH_output: data/output/
 PATH_co2: data/co2/
 PATH_site_info: data/site_info/
