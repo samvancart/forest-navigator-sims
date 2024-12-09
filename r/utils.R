@@ -896,3 +896,41 @@ get_grouped_proportions <- function(dt, group_col) {
   group_col_name <- paste(group_col,"prop", sep = "_")
   dt[, (group_col_name) := .N, by = group_col][, (group_col_name) := get(group_col_name)/.N]
 }
+
+
+
+#' Process a Filename by Splitting and Recombining
+#'
+#' This function processes a given filename by splitting it using a specified separator
+#' and then either truncating or keeping it as is based on a desired length.
+#'
+#' @param filename A character string representing the filename to be processed.
+#' @param separator A character string used to split the filename.
+#' @param desired_length An integer indicating the desired length of the split filename list.
+#' @return A character string representing the processed filename.
+#' @examples
+#' process_acc_filename("file_name_part1_part2_part3", "_", 2)
+#' process_acc_filename("file_name_part1_part2_part3", "_", 4)
+#' @export
+process_acc_filename <- function(filename, separator, desired_length) {
+  # Split the filename using the specified separator
+  filename_list <- unlist(strsplit(filename, separator))
+  
+  # Check the length of the split filename
+  actual_length <- length(filename_list)
+  
+  # Handle different cases based on the length
+  if (actual_length > desired_length) {
+    # Cut from the front and collapse the list into a string
+    processed_filename <- paste(tail(filename_list, desired_length), collapse = separator)
+  } else if (actual_length < desired_length) {
+    # Produce a warning but return the filename unchanged
+    warning("The length of the filename list is shorter than the desired length.")
+    processed_filename <- filename
+  } else {
+    # Return the filename unchanged
+    processed_filename <- filename
+  }
+  
+  return(processed_filename)
+}

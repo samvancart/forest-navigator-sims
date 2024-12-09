@@ -21,6 +21,9 @@ init_files <- list.files(boku_data_path, "FIN_", full.names = T)
 
 aaa <- fread(aaa_file)
 
+length(aaa[cell_300arcsec==190997]$cell_300arcsec)
+unique(aaa$cell_300arcsec)
+
 seed <- 123
 
 
@@ -53,6 +56,22 @@ all_clusters_dts <- get_in_parallel(data = data, FUN = FUN, FUN_args = FUN_args,
 
 
 all_clusters_dt <- rbindlist(all_clusters_dts)
+
+test <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight), b = sum(ba), age = as.integer(mean(age))), 
+                        by = .(cell, species, cluster_id)]
+test[cell == 15806541]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

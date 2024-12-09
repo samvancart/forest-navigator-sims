@@ -1,55 +1,63 @@
+# This script is for unzipping .7z files downloaded from the accelerator db.
+# The files are extracted into the "unzipped" folder and renamed for future
+# processing convenience.
+
+
 source('scripts/settings.R')
 source('./r/utils.R')
 
-# Define the function to unzip a file and save it to a path
-unzip_file <- function(zip_file_path, destination_path) {
-  # Ensure the destination directory exists
-  if (!dir.exists(destination_path)) {
-    dir.create(destination_path, recursive = TRUE)
-  }
-  
-  # Unzip the file to the destination directory
-  unzip(zip_file_path, exdir = destination_path)
-  
-  cat("Unzipped", zip_file_path, "to", destination_path, "\n")
-}
 
+# Define paths: Check indices
+acc_sites <- config$VAR_acc_sites[1]
+acc_data_name <- config$VAR_acc_data[1]
+acc_data_type <- config$VAR_acc_data_types[1]
 
-# Define the function to process filenames
-process_filename <- function(filename, separator, desired_length) {
-  # Split the filename using the specified separator
-  filename_list <- unlist(strsplit(filename, separator))
-  
-  # Check the length of the split filename
-  actual_length <- length(filename_list)
-  
-  # Handle different cases based on the length
-  if (actual_length > desired_length) {
-    # Cut from the front and collapse the list into a string
-    processed_filename <- paste(tail(filename_list, desired_length), collapse = separator)
-  } else if (actual_length < desired_length) {
-    # Produce a warning but return the filename unchanged
-    warning("The length of the filename list is shorter than the desired length.")
-    processed_filename <- filename
-  } else {
-    # Return the filename unchanged
-    processed_filename <- filename
-  }
-  
-  return(processed_filename)
-}
-
+dir <- file.path(config$PATH_acc_base, acc_sites)
+print(dir)
 zip_pattern <- "7z"
-all_files <- list.files(config$PATH_acc_base, recursive = T)
-unzip_files <- all_files[grepl(zip_pattern, all_files)]
+all_files <- list.files(dir, recursive = T)
+unzip_files <- all_files[grepl(zip_pattern, all_files)] # Check which files are returned
 
-filenames <- unlist(lapply(unzip_files, function(file) {
-  split1 <- unlist(strsplit(file, "/"))
-  name_part <- split1[length(split1)]
-  split2 <- unlist(strsplit(name_part, "\\."))
-  filename <- paste(split2[1], split2[2], sep = ".")
-  process_filename(filename, "_", 5)
+# Define from and to paths
+zip_file_paths <- file.path(dir, unzip_files)
+dest_path <- file.path(dir, acc_data_name, acc_data_type, "unzipped")
+
+# Unzip all files
+invisible(lapply(seq_along(zip_file_paths), function(i) {
+  file <- zip_file_paths[i]
+  archive_extract(archive = file, dir = dest_path)
+  percent_completed <- ceiling((i/length(zip_file_paths))*100)
+  cat("\014")
+  cat("Unzipping: ", percent_completed, "%")
+  if(percent_completed==100) cat("\n Done!")
 }))
+
+unzipped_files <- list.files(dest_path)
+
+# Rename if necessary
+invisible(lapply(unzipped_files, function(file) {
+  filename <- process_acc_filename(file, "_", 5)
+  filename <- tolower(filename)
+  new_path <- file.path(dest_path, filename)
+  old_path <- file.path(dest_path, file)
+  if(old_path != new_path) {
+    cat("Renaming ", old_path, "\n to \n", new_path, "\n\n")
+    file.rename(from = old_path, to = new_path) 
+  }
+}))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

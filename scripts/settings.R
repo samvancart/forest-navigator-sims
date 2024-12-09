@@ -1,6 +1,8 @@
 
 ### Libraries ###
 
+library(bit64)
+library(archive)
 library(checkmate)
 library(data.table)
 library(dplyr)
