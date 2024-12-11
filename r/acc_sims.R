@@ -154,6 +154,43 @@ process_acc_filename <- function(filename, separator, desired_length) {
   return(processed_filename)
 }
 
+#' Generalized Function to Assign IDs and Unlist Data
+#'
+#' @param data_list A nested list of data.tables to process.
+#' @param id_columns A character vector of column names used to create the ID.
+#' @param separator A character string to separate the ID components.
+#' @return A list of data.tables with assigned IDs.
+#' @examples
+#' tree_data_dts <- list(list(data.table(cell=1), data.table(cell=2)), list(data.table(cell=3)))
+#' result <- assign_and_unlist_ids(tree_data_dts, id_columns = c("i", "j", "cell"), separator = "_")
+#' @export
+assign_and_unlist_ids <- function(data_list, id_columns, separator = "") {
+  # Check input
+  checkmate::assert_list(data_list, min.len = 1)
+  checkmate::assert_character(id_columns, min.len = 1)
+  checkmate::assert_character(separator, len = 1, null.ok = TRUE)
+  
+  # Process each data table in the nested list
+  result <- unlist(lapply(seq(data_list), function(i) {
+    dts_i <- data_list[[i]]
+    lapply(seq(dts_i), function(j) {
+      dt <- dts_i[[j]]
+      
+      # Prepare the ID components
+      id_values <- sapply(id_columns, function(col) {
+        if (col == "i") return(i)
+        if (col == "j") return(j)
+        return(dt[[col]][1])
+      })
+      
+      # Assign the ID
+      dt[, forested_ha_id := paste(id_values, collapse = separator)]
+      dt
+    })
+  }), recursive = FALSE)
+  
+  return(result)
+}
 
 
 
