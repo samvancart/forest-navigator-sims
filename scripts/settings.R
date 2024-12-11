@@ -1,35 +1,48 @@
 
 ### Libraries ###
 
-library(bit64)
-library(archive)
-library(checkmate)
-library(data.table)
-library(dplyr)
-library(doParallel)
-library(factoextra)
-library(foreach)
-library(foreign)
-library(geoTS)
-library(geosphere)
-library(ggplot2)
-library(ggpubr)
-library(gridExtra)
-library(hash)
-library(lubridate)
-library(ncdf4)
-library(parallel)
-library(parallelly)
-library(purrr)
-library(Rprebasso)
-library(reshape2)
-library(sf)
-library(stars)
-library(stringr)
-library(testthat)
-library(withr)
-library(yaml)
-library(zoo)
+library(devtools)
+
+vPREBAS <- "master"
+RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
+.libPaths(c(RprebassoFolder,
+            "/projappl/project_2000994/Rpackages/project_rpackages",
+            .libPaths()))
+
+install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+
+rm(vPREBAS, RprebassoFolder)
+
+require(bit64)
+require(archive)
+require(checkmate)
+require(data.table)
+require(dplyr)
+require(doParallel)
+require(factoextra)
+require(foreach)
+require(foreign)
+require(geoTS)
+require(geosphere)
+require(ggplot2)
+require(ggpubr)
+require(gridExtra)
+require(hash)
+require(lubridate)
+require(ncdf4)
+require(parallel)
+require(parallelly)
+require(purrr)
+require(Rprebasso)
+require(reshape2)
+require(sf)
+require(stars)
+require(stringr)
+require(testthat)
+require(withr)
+require(yaml)
+require(zoo)
+
 
 
 if(!exists("config_path")) {

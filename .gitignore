@@ -5,6 +5,7 @@
 .Ruserdata
 test.R
 *.rdata
+*.sh
 
 # Other files
 code_r.txt
@@ -12,3 +13,4 @@ code_r.txt
 # Folders
 data/
 temp/
+batch_jobs/

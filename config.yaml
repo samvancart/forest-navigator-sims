@@ -115,6 +115,7 @@ VAR_acc_data:
 VAR_acc_data_types:
 - raw
 - clean
+PATH_data: data
 PATH_acc_base: data/accelerator
 PATH_output: data/output/
 PATH_co2: data/co2/

@@ -106,7 +106,7 @@ perform_clustering_by_group <- function(dt, group_cols, value_cols, seed = NULL,
     
   }, by = group_cols]
   
-  setcolorder(clusters_dt, col_order, "cluster_id")
+  setcolorder(clusters_dt, neworder =  c(col_order, "cluster_id"))
 }
 
 
