@@ -159,16 +159,18 @@ process_acc_filename <- function(filename, separator, desired_length) {
 #' @param data_list A nested list of data.tables to process.
 #' @param id_columns A character vector of column names used to create the ID.
 #' @param separator A character string to separate the ID components.
+#' @param id_column_name A character string specifying the name of the column to store the assigned ID.
 #' @return A list of data.tables with assigned IDs.
 #' @examples
 #' tree_data_dts <- list(list(data.table(cell=1), data.table(cell=2)), list(data.table(cell=3)))
-#' result <- assign_and_unlist_ids(tree_data_dts, id_columns = c("i", "j", "cell"), separator = "_")
+#' result <- assign_and_unlist_ids(tree_data_dts, id_columns = c("i", "j", "cell"), separator = "_", id_column_name = "forested_ha_id")
 #' @export
-assign_and_unlist_ids <- function(data_list, id_columns, separator = "") {
+assign_and_unlist_ids <- function(data_list, id_columns, separator = "", id_column_name = "forested_ha_id") {
   # Check input
   checkmate::assert_list(data_list, min.len = 1)
   checkmate::assert_character(id_columns, min.len = 1)
   checkmate::assert_character(separator, len = 1, null.ok = TRUE)
+  checkmate::assert_character(id_column_name, len = 1)
   
   # Process each data table in the nested list
   result <- unlist(lapply(seq(data_list), function(i) {
@@ -184,7 +186,7 @@ assign_and_unlist_ids <- function(data_list, id_columns, separator = "") {
       })
       
       # Assign the ID
-      dt[, forested_ha_id := paste(id_values, collapse = separator)]
+      dt[, (id_column_name) := paste(id_values, collapse = separator)]
       dt
     })
   }), recursive = FALSE)
@@ -193,4 +195,66 @@ assign_and_unlist_ids <- function(data_list, id_columns, separator = "") {
 }
 
 
+#' Get Unique Species Codes from Initialization File
+#'
+#' This function reads an initialization file and returns the unique species codes from the specified column.
+#'
+#' @param file_path A character string specifying the path to the initialization file.
+#' @param species_col A character string specifying the name of the column containing species codes. Default is "species".
+#'
+#' @return A vector of unique species codes.
+#' @examples
+#' \dontrun{
+#' get_species_codes_from_init_file("path/to/init_file.csv", "species")
+#' }
+#' @export
+get_species_codes_from_init_file <- function(file_path, species_col = "species"){
+  # Validate file_path
+  assertFileExists(file_path)
+  
+  # Read the file
+  init_file <- fread(file_path)
+  
+  # Validate species_col
+  assertChoice(species_col, choices = colnames(init_file))
+  
+  # Return unique species codes
+  return(unique(init_file[[species_col]]))
+}
+
+
+#' Assign IDs, Unlist Data, and Merge with Species Codes
+#'
+#' This function assigns IDs to each 1 ha forest, unlists into a single list, and merges with a data.table containing species codes.
+#'
+#' @param tree_data_dts A nested list of data.tables to process.
+#' @param id_columns A character vector of column names used to create the ID.
+#' @param separator A character string to separate the ID components.
+#' @param id_column_name A character string specifying the name of the column to store the assigned ID.
+#' @param species_codes_dt A data.table containing species codes to merge with.
+#' @param ... Additional arguments passed to the merge function.
+#' @return A list of data.tables with assigned IDs and merged with species codes.
+#' @examples
+#' tree_data_dts <- list(list(data.table(cell=1), data.table(cell=2)), list(data.table(cell=3)))
+#' fin_codes_with_speciesID_dt <- data.table(species = c(1, 2, 3), code = c(1, 2, 3))
+#' result <- assign_and_merge(tree_data_dts, c("i", "j", "cell", "cell_300arcsec"), separator = "_", id_column_name = "forested_ha_id", species_codes_dt = fin_codes_with_speciesID_dt)
+#' @export
+assign_and_merge <- function(tree_data_dts, id_columns, separator = "", id_column_name = "forested_ha_id", species_codes_dt, ...) {
+  # Validate inputs
+  checkmate::assert_list(tree_data_dts, min.len = 1)
+  checkmate::assert_character(id_columns, min.len = 1)
+  checkmate::assert_character(separator, len = 1, null.ok = TRUE)
+  checkmate::assert_character(id_column_name, len = 1)
+  checkmate::assert_data_table(species_codes_dt)
+  
+  # Assign IDs and unlist data.tables
+  dts <- assign_and_unlist_ids(tree_data_dts, id_columns, separator, id_column_name)
+  
+  # Merge with species codes
+  dts <- lapply(dts, function(dt) {
+    merge(dt, species_codes_dt, ...)
+  })
+  
+  return(dts)
+}
 

@@ -47,7 +47,69 @@ get_parameter <- function(param_name, default, type) {
 
 
 
+#' Get Named Vector
+#'
+#' This function captures the names and values of the variables passed to it and returns them as a named vector.
+#'
+#' @param ... The variables you want to capture.
+#'
+#' @return A named vector with the names of the variables as the names of the vector elements and their corresponding values.
+#'
+#' @examples
+#' var1 <- 10
+#' var2 <- 20
+#' var3 <- "apple"
+#' get_named_vector(var1, var2, var3)
+#'
+#' @export
+#'
+#' @importFrom rlang enquo
+#' @importFrom rlang enquos
+#' @importFrom rlang sym
+#' @importFrom rlang syms
+get_named_list <- function(...) {
+  # Capture the expressions passed to the function
+  args <- list(...)
+  
+  if (length(args) == 0) {
+    stop("No variables provided to get_named_vector function.")
+  }
+  
+  # Use deparse and substitute to get the variable names
+  names <- sapply(substitute(list(...)), deparse)
+  names(args) <- names[2:length(names)]
+  
+  return(args)
+}
 
+#' Get Named Vector as Text
+#'
+#' This function takes a named vector and concatenates each name with its corresponding value, separated by a specified text.
+#'
+#' @param named_vec A named vector with elements to be concatenated.
+#' @param sep_text A string to separate the name and the value of each element in the named vector.
+#' @return A character vector where each element is a concatenation of the name and the value from the named vector.
+#' @examples
+#' named_vector <- c(a = 1, b = 2, c = 3)
+#' get_named_vector_as_txt(named_vector, sep_text = ": ")
+#' @export
+#'
+#' @importFrom stats setNames
+get_named_list_as_txt <- function(named_vec, sep_text="") {
+  
+  if (length(named_vec) == 0) {
+    stop("No variables provided to get_named_vector function.")
+  }
+  
+  txt_vec <- invisible(unlist(lapply(seq_along(named_vec), function(x) {
+    name <- names(named_vec)[x]
+    var <- named_vec[x]
+    sep_text <- sep_text
+    text <- paste0(name, sep_text, var)
+  })))
+  
+  return(txt_vec)
+}
 
 
 
