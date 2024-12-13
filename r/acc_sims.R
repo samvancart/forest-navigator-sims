@@ -258,3 +258,132 @@ assign_and_merge <- function(tree_data_dts, id_columns, separator = "", id_colum
   return(dts)
 }
 
+
+
+#' Apply Transformations and Add Columns to a Data Table
+#'
+#' This function applies a series of transformations to a data.table based on a list of operations.
+#' Each operation specifies a function to be applied, the columns involved, and the arguments to be passed to the function.
+#' The function makes a deep copy of the passed data.table to perform the operations on.
+#'
+#' @param dt A `data.table` object containing the data to be transformed.
+#' @param operations A list of operations to be applied. Each operation should be a named list with the following components:
+#' \itemize{
+#'   \item \strong{col_name}: A string specifying the name of the new column to be added. Required if \code{cols} is not NULL.
+#'   \item \strong{fun}: A function to be applied to the specified columns or to the entire data.table.
+#'   \item \strong{cols}: A character vector specifying the columns to be passed to the function. Can be NULL.
+#'   \item \strong{names_cols}: A character vector specifying the names of the arguments for the columns. Required if \code{cols} is not NULL.
+#'   \item \strong{args}: A list of additional arguments to be passed to the function. Can be NULL.
+#' }
+#' 
+#' @return The transformed `data.table`.
+#' 
+#' @examples
+#' library(data.table)
+#' library(checkmate)
+#' 
+#' dt <- data.table(
+#'   id = 1:5,
+#'   value1 = c(10, 20, 30, 40, 50),
+#'   value2 = c(5, 15, 25, 35, 45),
+#'   value3 = c(1, 1, 1, 1, 1),
+#'   time = as.Date(c("2000-02-29", "2021-03-01", "2020-02-28", "2020-02-29", "2022-02-28"))
+#' )
+#' 
+#' operations <- list(
+#'   list(col_name = "value1", fun = scale_by_2, cols = c("value1"), names_cols = c("x"), args = list()),
+#'   list(col_name = "value2", fun = log_transform, cols = "value2", names_cols = c("x"), args = list()),
+#'   list(col_name = "value_sum", fun = sum_three_columns, cols = c("value1", "value2", "value3"), names_cols = c("x", "y", "z"), args = list()),
+#'   list(col_name = "category", fun = categorize_value1, cols = "value1", names_cols = c("x"), args = list()),
+#'   list(col_name = "time", fun = remove_feb_29, cols = NULL, args = list(time_col = "time"))
+#' )
+#' 
+#' result_dt <- transform_and_add_columns(dt, operations)
+#' print(result_dt)
+#'
+#' @export
+transform_and_add_columns <- function(dt, operations = list()) {
+  
+  # Validate inputs
+  assert_data_table(dt, any.missing = FALSE)
+  assert_list(operations, types = "list")
+  
+  # Make deep copy of dt
+  dt_copy <- data.table::copy(dt)
+  
+  for (operation in operations) {
+    assert_list(operation, names = "named", min.len = 1, max.len = 5)
+    assert_function(operation$fun)
+    assert(checkmate::check_null(operation$cols), checkmate::check_character(operation$cols))
+    assert_list(operation$args, any.missing = FALSE, null.ok = TRUE)
+    assert_character(operation$cols, null.ok = TRUE)
+    
+    col_name <- operation$col_name
+    fun <- operation$fun
+    cols <- operation$cols
+    names_cols <- operation$names_cols
+    args <- operation$args
+    
+    if (is.null(cols)) {
+      # Call a function that takes dt as its first argument
+      dt_copy <- do.call(fun, c(list(dt_copy), args))
+    } else {
+      assert_list(operation, names = "named", len = 5)
+      assert_string(operation$col_name)
+      assert_names(colnames(dt_copy), must.include = cols)
+      assert_character(operation$names_cols, any.missing = FALSE)
+      
+      # Apply the function to specific columns of dt
+      selected_cols <- as.list(dt_copy[, ..cols])
+      named_list <- setNames(selected_cols, names_cols)
+      dt_copy[, (col_name) := do.call(fun, c(named_list, args))]
+    }
+  }
+  
+  return(dt_copy)
+}
+
+
+
+#' Filter Climate Data by Tree Data Cells
+#'
+#' This function filters climate data based on the cells present in the provided tree data.
+#'
+#' @param clim_data_path A character string specifying the path to the climate data file.
+#' @param tree_data_path A character string specifying the path to the tree data file.
+#' @return A filtered data.table containing climate data for the specified tree data cells.
+#' @examples
+#' clim_data_path <- "/path/to/your/clim_data.csv"
+#' tree_data_path <- "/path/to/your/aaa_file.csv"
+#' result <- filter_clim_by_tree_data_cells(clim_data_path, tree_data_path)
+#' @export
+filter_clim_by_tree_data_cells <- function(clim_data_path, tree_data_path) {
+  # Validate input paths
+  assert_file_exists(clim_data_path)
+  assert_file_exists(tree_data_path)
+  
+  # Read climate data and tree data
+  print(paste0("Loading ", clim_data_path, "..."))
+  clim_dt <- fread(clim_data_path)
+  aaa_all <- fread(tree_data_path)
+  
+  # Validate data structures
+  assert_data_table(clim_dt)
+  assert_true(all(!is.na(clim_dt)))
+  assert_data_table(aaa_all)
+  
+  cells_dt <- aaa_all[which(cell %in% unique(clim_dt$BOKU_ID))][, c("cell", "cell_300arcsec")]
+  cell_10 <- unique(cells_dt$cell_300arcsec)
+  assert_integer(cell_10, len = 1)
+  cells_1 <- cells_dt$cell
+  assert_integer(cells_1, min.len = 1)
+  
+  print(paste0("10km-by-10km cell id: ", cell_10))
+  print(paste0("Found ", length(cells_1), " 1km-by-1km cell(s)."))
+  
+  clim_dt <- clim_dt[which(BOKU_ID %in% cells_1)]
+  
+  clim_dt[, cell_300arcsec := cell_10]
+  
+  return(clim_dt)
+}

@@ -10,6 +10,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 #######################################
 
+# Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
 
 # Get all sampled_dt lists
 tree_data_dts <- do.call(get_in_parallel, get_in_parallel_tree_data_args)
@@ -30,7 +31,6 @@ gc()
 ############ CLUSTERS AND AGGREGATION
 
 #######################################
-
 
 
 
