@@ -1,3 +1,7 @@
+# This script is for preparing BOKU tree data first into 1ha-by-1ha forested areas
+# by sampling and then clustering the trees in each 1ha-by-1ha area. Each cluster
+# is saved as "clusters_<10km-by-10km_cell_id>.rdata.
+
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
@@ -10,7 +14,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 #######################################
 
-# Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
+
 
 # Get all sampled_dt lists
 tree_data_dts <- do.call(get_in_parallel, get_in_parallel_tree_data_args)

@@ -34,36 +34,18 @@ invisible(lapply(unzipped_files, function(file) {
 
 
 
-# Process clim file
-clim_paths <- list.files(dest_path, full.names = T)
-clim_path <- clim_paths[7]
-
-filtered_clim_dt <- filter_clim_by_tree_data_cells(clim_path, aaa_file)
-
-transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
 
 
 
-# Get climate scenario name
-parts <- strsplit(clim_path, split = "/")[[1]]
-name <- unlist(strsplit(parts[length(parts)], split = "_"), recursive = T)[1]
 
 
-# TRAN MATRICES
 
-# Variables to create TRAN tables for
-tranVars <- c("par", "vpd", "co2", "precip", "tair")
 
-print(paste0("Creating tran matrices..."))
-cat("\n")
 
-# Create list of TRAN matrices
-tranMatrices <- lapply(tranVars, function(x) {
-  formula <- as.formula(paste("cell", "~", "day"))
-  dcast_dt <- as.matrix(dcast(transformed_clim_dt, formula, value.var = x))
-})
 
-names(tranMatrices) <- paste0(tranVars,"Tran")
+
+
+
 
 
 

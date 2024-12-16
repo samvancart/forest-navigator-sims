@@ -10,6 +10,7 @@ simulation_sites <- c("simulation_sites", "test_sites")
 simulation_site_id <- 2
 simulation_site <- simulation_sites[simulation_site_id]
 
+
 # Load tree data
 boku_data_path <- paste0("data/acc/input/", simulation_site, "/raw")
 assert_directory_exists(boku_data_path)
@@ -35,6 +36,7 @@ cells_10_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
 aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 
+
 # Seed for creating reproducable list of seeds
 seed <- 123
 set.seed(seed)
@@ -55,7 +57,7 @@ process_treedata_files_args <- list(aaa = aaa,
                  del_cols = c("cum_sum"),
                  add_cols = c("cell", "cell_300arcsec"))
 
-
+# Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
 process_treedata_files_FUN <- process_treedata_files
 
 get_in_parallel_tree_data_args <- list(data = tree_data, 
@@ -102,6 +104,10 @@ files_7z <- all_files[grepl(zip_pattern, all_files)] # Check which files are ret
 # Define from and to paths
 files_7z_paths <- file.path(climate_7z_dir, files_7z)
 dest_path <- file.path(climate_7z_dir, "unzipped")
+
+
+
+climate_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
 
@@ -164,7 +170,7 @@ operations <- list(
        args = list()),
   
   list(col_name = "vpd", 
-       fun = function(dt) dt[, vpd := vpd/100],
+       fun = function(dt) dt[, vpd := vpd/1000],
        args = list()),
   
   list(col_name = "co2",

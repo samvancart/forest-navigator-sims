@@ -387,3 +387,172 @@ filter_clim_by_tree_data_cells <- function(clim_data_path, tree_data_path) {
   
   return(clim_dt)
 }
+
+
+
+#' Get Dcast Matrices List from Data Table
+#'
+#' This function processes a data.table and returns a list of matrices created using dcast.
+#'
+#' @param dt A data.table containing the data.
+#' @param var_cols A character vector of variable column names to be used in dcast.
+#' @param dcast_formula A formula to be used for dcast.
+#' @param suffix_str A string to append to the names of the matrices in the list.
+#' @return A list of matrices created using dcast on the provided data.table.
+#' @examples
+#' dt <- data.table(cell = 1:3, day = 1:3, par = rnorm(3), vpd = rnorm(3), co2 = rnorm(3), precip = rnorm(3), tair = rnorm(3))
+#' result <- get_dcast_matrices_list_from_dt(dt, var_cols = c("par", "vpd", "co2", "precip", "tair"))
+#' @export
+get_dcast_matrices_list_from_dt <- function(dt, 
+                                            var_cols = c("par", "vpd", "co2", "precip", "tair"), 
+                                            dcast_formula = as.formula(paste("cell", "~", "day")),
+                                            suffix_str = "") {
+  # Validate inputs
+  assert_data_table(dt)
+  assert_character(var_cols, min.len = 1)
+  assert_subset(var_cols, names(dt))
+  assert_formula(dcast_formula)
+  assert_character(suffix_str, len = 1)
+  
+  
+  print(paste0("Applying dcast on dt with formula:"))
+  print(dcast_formula)
+  cat("\n")
+  
+  # Create list of matrices
+  dcast_matrices <- lapply(var_cols, function(x) {
+    formula <- dcast_formula
+    dcast_dt <- as.matrix(dcast(dt, formula, value.var = x))
+  })
+  
+  print(paste0("Adding suffix_str ", "'", suffix_str, "'", " to dt names."))
+  names(dcast_matrices) <- paste0(var_cols, suffix_str)
+  
+  return(dcast_matrices)
+}
+
+
+
+
+#' Get Accumulated Initial Climate Object
+#'
+#' This function processes a climate data path and a tree data file to create an initial climate data object.
+#'
+#' @param clim_path A character string specifying the path to the climate data file.
+#' @param aaa_file A character string specifying the path to the tree data file.
+#' @param operations A list of operations to be applied to transform the climate data. Defaults to an empty list.
+#' @param suffix_str A string to append to the names of the matrices in the list. Defaults to "Tran".
+#' @return A list containing the name, plgid, and transformed matrices.
+#' @examples
+#' clim_path <- "/path/to/climate_data.csv"
+#' aaa_file <- "/path/to/tree_data.csv"
+#' operations <- list(operation1 = "mean", operation2 = "sum") # Example operations
+#' result <- get_acc_init_clim_object(clim_path, aaa_file, operations)
+#' @export
+get_acc_init_clim_object <- function(clim_path, aaa_file, operations = list(), suffix_str = "Tran") {
+  
+  # Validate inputs
+  assert_file_exists(clim_path)
+  assert_file_exists(aaa_file)
+  assert_list(operations)
+  assert_character(suffix_str, len = 1)
+  
+  print(paste0("Creating init clim data object..."))
+  cat("\n")
+  
+  name <- str_extract(clim_path, "(?<=/)[^/]+(?=_id_)")
+  plgid <- str_extract(clim_path, "(?<=plgid_)[0-9]+")
+  
+  print(paste0("name is ", name))
+  print(paste0("plgid is ", plgid))
+  cat("\n")
+  
+  filtered_clim_dt <- filter_clim_by_tree_data_cells(clim_path, aaa_file)
+  transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
+  tranMatrices <- get_dcast_matrices_list_from_dt(transformed_clim_dt, suffix_str = suffix_str)
+  
+  cat("\n")
+  print("Done.")
+  
+  return(list(name = name, plgid = plgid, tranMatrices = tranMatrices))
+}
+
+
+
+#' Save Accumulated Initial Climate Object
+#'
+#' This function saves each item in the climate object as an .RData file with filenames
+#' based on the names of the items. Optionally, it can run in test mode to print the actions
+#' without actually saving the files.
+#'
+#' @param init_clim_obj A list containing the initial climate data object. The list must include:
+#'   \itemize{
+#'     \item \code{name} - A character string representing the name of the climate data.
+#'     \item \code{plgid} - A character string representing the plot ID.
+#'     \item \code{tranMatrices} - A list of matrices to be saved.
+#'   }
+#' @param base_path A character string specifying the base path to save the files. The directory must exist and be writable.
+#' @param test A logical value indicating whether to run in test mode (default is \code{FALSE}). If \code{TRUE}, the function will only print the actions without saving the files.
+#' @return NULL. The function saves files to the specified directory and prints messages indicating the saved files.
+#' @examples
+#' init_clim_obj <- list(name = "historical", plgid = "7813006", tranMatrices = list(matrix1 = matrix(1:4, 2), matrix2 = matrix(5:8, 2)))
+#' base_path <- "/path/to/save"
+#' save_acc_init_clim_obj(init_clim_obj, base_path, test = TRUE)
+#' @export
+save_acc_init_clim_obj <- function(init_clim_obj, base_path, test = FALSE) {
+  # Validate inputs
+  assert_list(init_clim_obj, min.len = 3)
+  assert_subset(c("name", "plgid", "tranMatrices"), names(init_clim_obj))
+  assert_character(init_clim_obj$name, len = 1)
+  assert_character(init_clim_obj$plgid, len = 1)
+  assert_list(init_clim_obj$tranMatrices, min.len = 1)
+  assert_character(base_path, len = 1)
+  assert_directory_exists(base_path, access = "w")
+  
+  name <- init_clim_obj$name
+  plgid <- init_clim_obj$plgid
+  tranMatrices <- init_clim_obj$tranMatrices
+  
+  site_folder_name <- paste0("plgid_", plgid)
+  sub_dir <- file.path(site_folder_name, "climate", name)
+  clim_input_path <- file.path(base_path, sub_dir)
+  
+  dir_path <- get_or_create_path(pathVarName = "clim_input_path", defaultDir = base_path, subDir = "")
+  
+  invisible(lapply(names(tranMatrices), function(name) {
+    item <- tranMatrices[[name]]
+    save_path <- file.path(dir_path, paste0(name, ".rdata"))
+    
+    if(!test) {
+      print(paste0("Saving ", name, " into ", save_path))
+      save(item, file = save_path)
+    } else {
+      print(paste0("Not saved! Set test = FALSE to save ", name, " into ", save_path))
+    }
+  }))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -259,10 +259,10 @@ extract_forest_classes_10km <- function(sf, cores, fromRow=1, toRow=nrow(sf), li
 #'
 #' @examples
 get_or_create_path <- function(pathVarName, defaultDir, subDir="") {
-  if(!exists(pathVarName)) {
+  if(!exists(pathVarName, where = parent.frame())) {
     path = defaultDir
   } else {
-    mainDir <- eval(parse(text=pathVarName))
+    mainDir <- eval(parse(text=pathVarName), envir = parent.frame())
     path <- file.path(mainDir, subDir)
     print(paste0("Creating ", pathVarName, " in ", path))
     dir.create(path = path, recursive = T, showWarnings = F)
