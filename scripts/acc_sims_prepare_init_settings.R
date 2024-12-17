@@ -52,8 +52,9 @@ type <- "FORK"
 # TREE DATA
 
 tree_data <- seeds
+tree_data_path <- file.path(boku_data_path, "tree_data")
 process_treedata_files_args <- list(aaa = aaa,
-                 boku_data_path = boku_data_path,
+                 boku_data_path = tree_data_path,
                  del_cols = c("cum_sum"),
                  add_cols = c("cell", "cell_300arcsec"))
 
@@ -73,7 +74,10 @@ id_columns <- c("i", "j", "cell", "cell_300arcsec")
 
 # CLUSTERING
 
-clustering_group_cols <- c("forested_ha_id","speciesID")
+
+group_id_name <- "forested_ha_id"
+species_id_name <- "speciesID"
+clustering_group_cols <- c(group_id_name, species_id_name)
 clustering_value_cols <-  c("dbh", "treeheight")
 perform_clustering_by_group_FUN <- perform_clustering_by_group
 perform_clustering_by_group_args <- list(group_cols = clustering_group_cols, # Check group_cols based on dts structure
@@ -89,7 +93,26 @@ get_in_parallel_all_clusters_dts_args <- list(FUN = perform_clustering_by_group_
                                               type = type)
 
 
+### multiInitVar
 
+grid_file_path <- list.files(file.path(boku_data_path, "grid"), 
+                             pattern = "filtered_selection_fi_cell10\\.csv", 
+                             recursive = T, 
+                             full.names = T)
+
+
+cluster_data_col_names = list(
+  speciesID = "speciesID",
+  Age = "age",
+  Height = "h",
+  Dbh = "d",
+  basal_area = "b"
+)
+
+create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
+                                            group_id_name = group_id_name,
+                                            species_id_name = species_id_name,
+                                            col_names = cluster_data_col_names)
 
 
 
@@ -106,8 +129,8 @@ files_7z_paths <- file.path(climate_7z_dir, files_7z)
 dest_path <- file.path(climate_7z_dir, "unzipped")
 
 
-
-climate_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
+# Cleaned data path
+clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
 
@@ -197,19 +220,31 @@ operations <- list(
 )
 
 
+
+
+
+
+
+
+
+
 ############ PRINT ################
 
 # Get variables as named list
-all_vars <- get_named_list(cells_10_id,
+all_vars <- get_named_list(simulation_site,
+                           cells_10_id,
                            cores,
                            num_sample_runs,
                            boku_data_path,
+                           clean_data_base_path,
                            id_columns,
-                           perform_clustering_by_group_args)
+                           perform_clustering_by_group_args,
+                           cluster_data_col_names,
+                           grid_file_path)
 
 
 # Named list as text
-txt_vec <- get_named_list_as_txt(all_vars, sep_text = " is ")
+txt_vec <- get_named_list_as_txt(all_vars, sep_text = ": ")
 
 print(txt_vec)
 

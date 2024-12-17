@@ -461,7 +461,8 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, operations = list(), s
   cat("\n")
   
   name <- str_extract(clim_path, "(?<=/)[^/]+(?=_id_)")
-  plgid <- str_extract(clim_path, "(?<=plgid_)[0-9]+")
+  plgid_str <- str_extract(clim_path, "(?<=plgid_)[0-9]+")
+  plgid <- as.integer(plgid_str)
   
   print(paste0("name is ", name))
   print(paste0("plgid is ", plgid))
@@ -471,63 +472,106 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, operations = list(), s
   transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
   tranMatrices <- get_dcast_matrices_list_from_dt(transformed_clim_dt, suffix_str = suffix_str)
   
+  # Get save path
+  save_dir <- file.path("climate", name)
+  save_path <- get_acc_input_save_path(plgid, save_dir)
+  
   cat("\n")
   print("Done.")
   
-  return(list(name = name, plgid = plgid, tranMatrices = tranMatrices))
+  return(list(name = name, plgid = plgid, data = tranMatrices, save_path = save_path))
 }
 
 
 
-#' Save Accumulated Initial Climate Object
+#' Get multiInitVar Object
 #'
-#' This function saves each item in the climate object as an .RData file with filenames
-#' based on the names of the items. Optionally, it can run in test mode to print the actions
-#' without actually saving the files.
+#' This function creates a multiInitVar object based on the provided clustered path and grid file path.
 #'
-#' @param init_clim_obj A list containing the initial climate data object. The list must include:
-#'   \itemize{
-#'     \item \code{name} - A character string representing the name of the climate data.
-#'     \item \code{plgid} - A character string representing the plot ID.
-#'     \item \code{tranMatrices} - A list of matrices to be saved.
-#'   }
-#' @param base_path A character string specifying the base path to save the files. The directory must exist and be writable.
-#' @param test A logical value indicating whether to run in test mode (default is \code{FALSE}). If \code{TRUE}, the function will only print the actions without saving the files.
-#' @return NULL. The function saves files to the specified directory and prints messages indicating the saved files.
+#' @param clustered_path A string representing the path to the clustered R data file.
+#' @param grid_file_path A string representing the path to the grid file.
+#' @param ... Additional arguments passed to the create_multiInitVar_for_layers function.
+#'
+#' @return A list containing the plgid and multiInitVar.
+#' @import checkmate
+#' @import data.table
+#' @import stringr
 #' @examples
-#' init_clim_obj <- list(name = "historical", plgid = "7813006", tranMatrices = list(matrix1 = matrix(1:4, 2), matrix2 = matrix(5:8, 2)))
-#' base_path <- "/path/to/save"
-#' save_acc_init_clim_obj(init_clim_obj, base_path, test = TRUE)
-#' @export
-save_acc_init_clim_obj <- function(init_clim_obj, base_path, test = FALSE) {
+#' # Example usage
+#' multiInitVar_obj <- get_multiInitVar_object("path/to/clustered.RData", "path/to/grid.csv")
+get_multiInitVar_object <- function(clustered_path, grid_file_path, ...) {
+  
+  
   # Validate inputs
-  assert_list(init_clim_obj, min.len = 3)
-  assert_subset(c("name", "plgid", "tranMatrices"), names(init_clim_obj))
-  assert_character(init_clim_obj$name, len = 1)
-  assert_character(init_clim_obj$plgid, len = 1)
-  assert_list(init_clim_obj$tranMatrices, min.len = 1)
-  assert_character(base_path, len = 1)
-  assert_directory_exists(base_path, access = "w")
+  assert_character(clustered_path, any.missing = FALSE, len = 1)
+  assert_file_exists(clustered_path)
+  assert_character(grid_file_path, any.missing = FALSE, len = 1)
+  assert_file_exists(grid_file_path)
   
-  name <- init_clim_obj$name
-  plgid <- init_clim_obj$plgid
-  tranMatrices <- init_clim_obj$tranMatrices
+  # Create multiInitVar
+  multiInitVar <- create_multiInitVar_for_layers(dt_path = clustered_path, ...)
   
-  site_folder_name <- paste0("plgid_", plgid)
-  sub_dir <- file.path(site_folder_name, "climate", name)
-  clim_input_path <- file.path(base_path, sub_dir)
+  # Load the grid file
+  grid_dt <- fread(grid_file_path)
+  assert_data_frame(grid_dt, min.rows = 1, col.names = "strict")
   
-  dir_path <- get_or_create_path(pathVarName = "clim_input_path", defaultDir = base_path, subDir = "")
+  # Extract boku_cell_10 from clustered_path
+  boku_cell_10 <- str_extract(clustered_path, "(?<=_)[0-9]+")
   
-  invisible(lapply(names(tranMatrices), function(name) {
-    item <- tranMatrices[[name]]
-    save_path <- file.path(dir_path, paste0(name, ".rdata"))
+  # Validate boku_cell_10 is not missing
+  assert_character(boku_cell_10, any.missing = FALSE)
+  
+  # Extract plgid
+  plgid <- unique(grid_dt[cell_300arcsec == boku_cell_10]$PlgID)
+  
+  # Get save path
+  save_path <- get_acc_input_save_path(plgid, "tree_data")
+  
+  return(list(name = "multiInitVar", plgid = plgid, data = list(multiInitVar), save_path = save_path))
+}
+
+
+
+
+#' Save Acc Data Object
+#'
+#' This function saves the data object to a specified save path.
+#'
+#' @param data A list containing the data to be saved.
+#' @param save_path A string representing the base path where the files will be saved.
+#' @param test A logical flag indicating whether to run in test mode (default is FALSE).
+#' @param default_name A string representing the default name to use if an item's name is NULL.
+#'
+#' @return NULL
+#' @import checkmate
+#' @importFrom utils dir.create
+#' @examples
+#' data <- list(matrix1 = matrix(1:4, 2, 2), matrix2 = matrix(5:8, 2, 2))
+#' save_data(data, "/path/to/save", default_name = "default", test = TRUE)
+save_acc_data <- function(data, save_path, default_name = "default", test = FALSE) {
+
+  # Validate inputs
+  assert_list(data, min.len = 1)
+  assert_character(save_path, len = 1)
+  assert_directory_exists(dirname(save_path), access = "w")
+  assert_character(default_name, len = 1)
+  assert_logical(test, len = 1)
+  
+  
+  # Save each item in the data list
+  invisible(lapply(seq_along(data), function(index) {
+    item <- data[[index]]
+    name <- names(data)[index]
+    if (is.null(name) || name == "") {
+      name <- default_name
+    }
+    save_file_path <- file.path(save_path, paste0(name, ".rdata"))
     
-    if(!test) {
-      print(paste0("Saving ", name, " into ", save_path))
-      save(item, file = save_path)
+    if (!test) {
+      message(paste0("Saving ", name, " into ", save_file_path))
+      save(item, file = save_file_path)
     } else {
-      print(paste0("Not saved! Set test = FALSE to save ", name, " into ", save_path))
+      message(paste0("Not saved! Set test=FALSE to save ", name, " into ", save_file_path))
     }
   }))
 }
@@ -544,9 +588,79 @@ save_acc_init_clim_obj <- function(init_clim_obj, base_path, test = FALSE) {
 
 
 
+#' Get ACC Input Save Path
+#'
+#' This function constructs and returns the save path based on the provided plgid and save directory.
+#'
+#' @param plgid A character string representing the plgid.
+#' @param save_dir A character string representing the save directory.
+#'
+#' @return A character string representing the constructed save path.
+#' @import checkmate
+#' @examples
+#' path <- get_acc_input_save_path("123", "output_dir")
+get_acc_input_save_path <- function(plgid, save_dir) {
+  # Load checkmate library
+  library(checkmate)
+  
+  # Validate inputs
+  assert_integer(plgid, len = 1, any.missing = FALSE)
+  assert_character(save_dir, len = 1, any.missing = FALSE)
+  
+  # Construct the save path
+  site_folder_name <- paste0("plgid_", plgid)
+  sub_dir <- file.path(site_folder_name, save_dir)
+  
+  return(file.path(clean_data_base_path, sub_dir))
+}
 
 
 
+#' Create Directory and Save ACC Object
+#'
+#' This function creates a directory and saves the ACC object to a specified base path.
+#'
+#' @param acc_obj A list containing the ACC object. Must include elements "name", "plgid", "data", and "save_path".
+#' @param base_path A string representing the base path where the files will be saved.
+#' @param test A logical flag indicating whether to run in test mode (default is FALSE).
+#'
+#' @return NULL
+#' @import checkmate
+#' @examples
+#' acc_obj <- list(
+#'   name = "example",
+#'   plgid = "123",
+#'   data = list(matrix1 = matrix(1:4, 2, 2), matrix2 = matrix(5:8, 2, 2)),
+#'   save_path = "/path/to/save"
+#' )
+#' create_dir_and_save_acc_obj(acc_obj, "/path/to/base", test = TRUE)
+create_dir_and_save_acc_obj <- function(acc_obj, base_path, test = FALSE) {
+  
+  # Validate inputs
+  assert_list(acc_obj, min.len = 4)
+  assert_subset(c("name", "plgid", "data", "save_path"), names(acc_obj))
+  assert_character(acc_obj$name, len = 1)
+  assert_integer(acc_obj$plgid, len = 1)
+  assert_list(acc_obj$data, min.len = 1)
+  assert_character(acc_obj$save_path, len = 1)
+  assert_character(base_path, len = 1)
+  assert_directory_exists(base_path, access = "w")
+  assert_logical(test, len = 1)
+  
+  name <- acc_obj$name
+  plgid <- acc_obj$plgid
+  data <- acc_obj$data
+  save_path <- acc_obj$save_path
+  
+  # Create directory path
+  if(!test) {
+    get_or_create_path(pathVarName = "save_path", defaultDir = clean_data_base_path, subDir = "")
+    assert_directory_exists(save_path, access = "w")
+  }
+
+  # Save data using save_acc_data function
+  save_acc_data(data = data, save_path = save_path, default_name = name, test = test)
+}
 
 
 
