@@ -345,34 +345,69 @@ transform_and_add_columns <- function(dt, operations = list()) {
 
 
 
-#' Filter Climate Data by Tree Data Cells
+
+
+
+
+#' Handle Data Input
 #'
-#' This function filters climate data based on the cells present in the provided tree data.
+#' This function handles the input data, reading it with `fread` if it's a file path, or returning it directly if it's already a `data.table`.
 #'
-#' @param clim_data_path A character string specifying the path to the climate data file.
-#' @param tree_data_path A character string specifying the path to the tree data file.
-#' @return A filtered data.table containing climate data for the specified tree data cells.
+#' @param data Either a character string specifying the path to the data file or a `data.table` object.
+#' @return A `data.table` containing the data.
+#' @import checkmate
+#' @import data.table
 #' @examples
-#' clim_data_path <- "/path/to/your/clim_data.csv"
-#' tree_data_path <- "/path/to/your/aaa_file.csv"
-#' result <- filter_clim_by_tree_data_cells(clim_data_path, tree_data_path)
+#' data_path <- "/path/to/your/data.csv"
+#' data_dt <- data.table(a = 1:5, b = letters[1:5])
+#' result1 <- handle_data_input(data_path)
+#' result2 <- handle_data_input(data_dt)
 #' @export
-filter_clim_by_tree_data_cells <- function(clim_data_path, tree_data_path) {
-  # Validate input paths
-  assert_file_exists(clim_data_path)
-  assert_file_exists(tree_data_path)
+handle_data_input <- function(data) {
+  # Load necessary libraries
+  library(checkmate)
+  library(data.table)
   
-  # Read climate data and tree data
-  print(paste0("Loading ", clim_data_path, "..."))
-  clim_dt <- fread(clim_data_path)
-  aaa_all <- fread(tree_data_path)
+  # Validate input
+  if (is.character(data)) {
+    assert_file_exists(data, access = "r")
+    dt <- fread(data)
+  } else if (inherits(data, "data.table")) {
+    assert_data_table(data, min.rows = 1, col.names = "strict")
+    dt <- data
+  } else {
+    stop("The 'data' parameter should be either a path to a data file or a data.table object.")
+  }
+  
+  return(dt)
+}
+
+#' Filter Data by Tree Data Cells
+#'
+#' This function filters data based on the cells present in the provided tree data.
+#'
+#' @param data Either a character string specifying the path to the data file or a `data.table` object.
+#' @param tree_data Either a character string specifying the path to the tree data file or a `data.table` object.
+#' @return A filtered `data.table` containing data for the specified tree data cells.
+#' @examples
+#' data_path <- "/path/to/your/data.csv"
+#' tree_data_path <- "/path/to/your/tree_data.csv"
+#' data_dt <- data.table(BOKU_ID = 1:5, value = 6:10)
+#' tree_data_dt <- data.table(cell = 1:5, cell_300arcsec = 1:5)
+#' result1 <- filter_data_by_tree_data_cells(data_path, tree_data_path)
+#' result2 <- filter_data_by_tree_data_cells(data_dt, tree_data_dt)
+#' @export
+filter_data_by_tree_data_cells <- function(data, tree_data) {
+  # Use handle_data_input to read the data
+  data_dt <- handle_data_input(data)
+  tree_dt <- handle_data_input(tree_data)
   
   # Validate data structures
-  assert_data_table(clim_dt)
-  assert_true(all(!is.na(clim_dt)))
-  assert_data_table(aaa_all)
+  assert_data_table(data_dt)
+  assert_true(all(!is.na(data_dt)))
+  assert_data_table(tree_dt)
   
-  cells_dt <- aaa_all[which(cell %in% unique(clim_dt$BOKU_ID))][, c("cell", "cell_300arcsec")]
+  cells_dt <- tree_dt[which(cell %in% unique(data_dt$BOKU_ID))][, .(cell, cell_300arcsec)]
   cell_10 <- unique(cells_dt$cell_300arcsec)
   assert_integer(cell_10, len = 1)
   cells_1 <- cells_dt$cell
@@ -381,12 +416,14 @@ filter_clim_by_tree_data_cells <- function(clim_data_path, tree_data_path) {
   print(paste0("10km-by-10km cell id: ", cell_10))
   print(paste0("Found ", length(cells_1), " 1km-by-1km cell(s)."))
   
-  clim_dt <- clim_dt[which(BOKU_ID %in% cells_1)]
+  data_dt <- data_dt[which(BOKU_ID %in% cells_1)]
+  data_dt[, cell_300arcsec := cell_10]
   
-  clim_dt[, cell_300arcsec := cell_10]
-  
-  return(clim_dt)
+  return(data_dt)
 }
+
+
+
 
 
 
@@ -468,7 +505,7 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, operations = list(), s
   print(paste0("plgid is ", plgid))
   cat("\n")
   
-  filtered_clim_dt <- filter_clim_by_tree_data_cells(clim_path, aaa_file)
+  filtered_clim_dt <- filter_data_by_tree_data_cells(clim_path, aaa_file)
   transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
   tranMatrices <- get_dcast_matrices_list_from_dt(transformed_clim_dt, suffix_str = suffix_str)
   
@@ -667,6 +704,12 @@ create_dir_and_save_acc_obj <- function(acc_obj, base_path, test = FALSE) {
 
 
 
-
-
-
+get_nYears_from_acc_tran <- function(tran_dir_path) {
+  assert_directory(tran_dir_path)
+  parTran_path <- file.path(tran_dir_path, "parTran.rdata")
+  assert_file_exists(parTran_path)
+  
+  parTran <- loadRDataFile(parTran_path)
+  
+  return(floor(ncol(parTran)/365))
+}

@@ -116,6 +116,19 @@ create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
 
 
 
+# Site info
+
+
+soil_file_path <- list.files(file.path(boku_data_path, "soil"), 
+                             pattern = "selection_fi_soil_data\\.csv", 
+                             recursive = T, 
+                             full.names = T)
+
+
+nYears_lookup <- c(detrended = 121, gwl2 = 110, gwl3 = 110, gwl4 = 110, historical = 72)
+
+
+
 # Climate paths
 climate_7z_dir <- paste0( "data/acc/input/", simulation_site, "/raw/climate")
 assert_directory_exists(climate_7z_dir)
@@ -240,7 +253,8 @@ all_vars <- get_named_list(simulation_site,
                            id_columns,
                            perform_clustering_by_group_args,
                            cluster_data_col_names,
-                           grid_file_path)
+                           grid_file_path,
+                           soil_file_path)
 
 
 # Named list as text
