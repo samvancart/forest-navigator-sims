@@ -127,6 +127,11 @@ soil_file_path <- list.files(file.path(boku_data_path, "soil"),
 
 nYears_lookup <- c(detrended = 121, gwl2 = 110, gwl3 = 110, gwl4 = 110, historical = 72)
 
+site_type_probs <- c(.1, .3, .5, .7, .9)
+site_types <- c(5, 4, 3, 2, 1)
+
+
+
 
 
 # Climate paths
@@ -144,6 +149,9 @@ dest_path <- file.path(climate_7z_dir, "unzipped")
 
 # Cleaned data path
 clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
+
+
+
 
 
 

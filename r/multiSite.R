@@ -264,8 +264,6 @@ process_subset <- function(subset, i, nLayers, col_names = list(
 #' # Example usage
 #' multiInitVar <- create_multiInitVar_for_layers("path/to/data.RData", "groupID", "speciesID")
 create_multiInitVar_for_layers <- function(dt_path, group_id_name, species_id_name, ...) {
-  # Load checkmate library
-  library(checkmate)
   
   # Validate inputs
   assert_character(dt_path, any.missing = FALSE, len = 1)
