@@ -1,4 +1,1 @@
 TMPDIR=/scratch/project_2000994/Rtmp_heap
-TZ="Europe/Helsinki"
-LANG="C.UTF-8"
-LC_CTYPE="C.UTF-8"

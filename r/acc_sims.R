@@ -647,6 +647,7 @@ get_acc_input_save_path <- function(plgid, save_dir) {
   site_folder_name <- paste0("plgid_", plgid)
   sub_dir <- file.path(site_folder_name, save_dir)
   
+  # clean_data_base_path NOT IN PARAMS!! FIX!!!
   return(file.path(clean_data_base_path, sub_dir))
 }
 
