@@ -743,7 +743,8 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
                                  group_id_name,
                                  species_id_name,
                                  site_type_probs = c(.1, .3, .5, .7, .9),
-                                 site_types = c(5, 4, 3, 2, 1)) {
+                                 site_types = c(5, 4, 3, 2, 1),
+                                 rep_times = 1) {
   
   # Validate inputs using checkmate
   assert_data_table(filtered_soil_dt, min.cols = 3)
@@ -754,6 +755,7 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
   assert_character(species_id_name, len = 1)
   assert_numeric(site_type_probs, lower = 0, upper = 1, len = length(site_types))
   assert_numeric(site_types, len = length(site_type_probs))
+  assert_integer(rep_times, lower = 1)
   
   print(paste0("Creating siteInfo for PlgID ", plgid, "..."))
   
@@ -777,7 +779,7 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
   id_lookup_climID <- merge(climID_dt, id_lookup, by = "cell")
   
   # Extract siteID and climID
-  siteID <- id_lookup_climID[[group_id_name]]
+  siteID <- seq_along(id_lookup_climID[[group_id_name]])
   climID <- id_lookup_climID[["climID"]]
   nSites <- length(siteID)
   
@@ -789,9 +791,9 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
   
   # Calculate soil-related variables
   soil_depth_div <- filtered_soil_dt$soil_depth * 10
-  fc <- rep(filtered_soil_dt$FC / soil_depth_div, 100)
-  wp <- rep(filtered_soil_dt$WP / soil_depth_div, 100)
-  soil_depth <- rep(soil_depth_div, 100)
+  fc <- rep(filtered_soil_dt$FC / soil_depth_div, rep_times)
+  wp <- rep(filtered_soil_dt$WP / soil_depth_div, rep_times)
+  soil_depth <- rep(soil_depth_div, rep_times)
   
   # Initialize other variables
   SWinit <- rep(160, nSites)
@@ -851,7 +853,8 @@ get_site_info_acc_object <- function(soil_dt,
                                      group_id_name,
                                      species_id_name,
                                      site_type_probs = c(.1, .3, .5, .7, .9),
-                                     site_types = c(5, 4, 3, 2, 1)) {
+                                     site_types = c(5, 4, 3, 2, 1),
+                                     rep_times = 1) {
   
   # Validate inputs using checkmate
   assert_data_table(soil_dt, min.cols = 1)
@@ -896,7 +899,8 @@ get_site_info_acc_object <- function(soil_dt,
                                        group_id_name,
                                        species_id_name,
                                        site_type_probs,
-                                       site_types)
+                                       site_types,
+                                       rep_times)
   
   # Determine save path
   save_path <- get_acc_input_save_path(plgid, "site")
@@ -915,3 +919,98 @@ get_site_info_acc_object <- function(soil_dt,
 
 
 
+#' Initialize Prebas Model for a Given PLG ID
+#'
+#' This function initializes the Prebas model for a specified PLG ID using the provided climate scenario and clean data base path.
+#'
+#' @param plgid Integer. The PLG ID.
+#' @param clim_scen Character. The climate scenario.
+#' @param clean_data_base_path Character. The base path to the clean data.
+#' @param ... Additional parameters passed to InitMultiSite.
+#'
+#' @return A list containing the initialized Prebas model.
+#' @examples
+#' \dontrun{
+#' init_prebas <- get_init_prebas_for_plgid(plgid = 1, clim_scen = "scenarioA", clean_data_base_path = "path/to/data")
+#' }
+#' @import checkmate
+#' @export
+get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ...) {
+  
+  # Input validations
+  assertInteger(plgid, lower = 1)
+  assertString(clim_scen)
+  assertString(clean_data_base_path)
+  assertDirectoryExists(clean_data_base_path)
+  
+  base_path <- file.path(clean_data_base_path, paste0("plgid_", plgid))
+  base_clim_path <- file.path(base_path, "climate")
+  
+  clim_dirs <- list.files(base_clim_path)
+  clim_dir_paths <- file.path(base_clim_path, clim_dirs)
+  clim_dir_path <- grep(clim_scen, clim_dir_paths, value = TRUE)
+  
+  required_files <- c("parTran.rdata", "co2Tran.rdata", "tairTran.rdata", "vpdTran.rdata", "precipTran.rdata")
+  
+  # Loading required files using lapply
+  climate_data <- lapply(required_files, function(file) {
+    file_path <- file.path(clim_dir_path, file)
+    assertFileExists(file_path, access = "r")
+    loadRDataFile(file_path)
+  })
+  names(climate_data) <- required_files
+  
+  site_info_path <- file.path(base_path, "site", "siteInfo.rdata")
+  multi_init_var_path <- file.path(base_path, "tree_data", "multiInitVar.rdata")
+  
+  # Additional input validations
+  assertFileExists(site_info_path, access = "r")
+  assertFileExists(multi_init_var_path, access = "r")
+  
+  siteInfo <- loadRDataFile(site_info_path)
+  multiInitVar <- loadRDataFile(multi_init_var_path)
+  
+  nYears <- get_nYears_from_acc_tran(clim_dir_path)
+  nSites <- nrow(siteInfo)
+  
+  print("Initialising model...")
+  initPrebas <- InitMultiSite(nYearsMS = rep(nYears, nSites),
+                              siteInfo = as.matrix(siteInfo),
+                              multiInitVar = multiInitVar,
+                              PAR = climate_data[["parTran.rdata"]],
+                              VPD = climate_data[["vpdTran.rdata"]],
+                              CO2 = climate_data[["co2Tran.rdata"]],
+                              Precip = climate_data[["precipTran.rdata"]],
+                              TAir = climate_data[["tairTran.rdata"]],
+                              ...)
+  
+  print("Done.")
+  
+  return(initPrebas)
+}
+
+
+#' Execute Model Function with Initialized Prebas Model
+#'
+#' This function executes a given model function with the initialized Prebas model and additional arguments.
+#'
+#' @param FUN Function. The model function to be executed.
+#' @param initPrebas List. The initialized Prebas model.
+#' @param ... Additional arguments passed to the model function.
+#'
+#' @return The output of the model function.
+#' @examples
+#' \dontrun{
+#' modOut <- get_modOut(FUN = myModelFunction, initPrebas = initPrebas, arg1 = val1, arg2 = val2)
+#' }
+#' @import checkmate
+#' @export
+get_modOut <- function(FUN, initPrebas, ...) {
+  
+  # Input validations
+  assertFunction(FUN)
+  assertList(initPrebas)
+  
+  FUN_args <- c(list(initPrebas), ...)
+  return(do.call(FUN, FUN_args))
+}

@@ -40,7 +40,7 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 # Seed for creating reproducable list of seeds
 seed <- 123
 set.seed(seed)
-num_sample_runs <- 100
+num_sample_runs <- 1
 seeds <- sample(c(1:1000000), num_sample_runs) # List of seeds to use
 
 
@@ -159,7 +159,10 @@ clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
 # Define functions
-par_fun <- function(x) x * 0.48 * 4.6/1000
+# PAR <- swRad*0.48*4.6*0.08640000224 #mol PPFD m-2 d-1
+# par_fun <- function(x) x * 0.48 * 4.6/1000
+# PAR from https://nature.berkeley.edu/biometlab/pdf/Ruimy%20et%20al%201995%20Adv%20Ecol%20Research.pdf
+par_fun <- function(x) x * 0.48 * 4.6 * 0.08640000224
 kelvin_to_c <- function(x) x - 273.15
 precip_to_mm_per_day <- function(x) {
   x <- x * 86400

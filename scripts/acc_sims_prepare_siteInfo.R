@@ -16,7 +16,8 @@ site_info_obj_list <- lapply(names(split_soil_dts), function(id) {
                            clustered_paths, 
                            clean_data_base_path, 
                            group_id_name,
-                           species_id_name)
+                           species_id_name,
+                           rep_times = as.integer(num_sample_runs))
 
 })
 

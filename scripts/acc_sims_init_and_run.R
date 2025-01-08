@@ -3,60 +3,107 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-plgid <- 8149995
+plgid <- as.integer(7998833)
 clim_scen <- "historical"
 
-base_path <- file.path(clean_data_base_path, paste0("plgid_", plgid))
-base_clim_path <- file.path(base_path, "climate")
-clim_dirs <- list.files(base_clim_path)
-clim_dir_paths <- file.path(base_clim_path, clim_dirs)
-clim_dir_path <- grep("historical", clim_dir_paths, value = TRUE)
 
-clim_file_paths <- list.files(clim_dir_path, full.names = T)
+####management parameters
+defaultThin = 0
+ClCut = 0
+mortMod = 3
+ingrowth = T
 
-parTran <- loadRDataFile(file.path(base_clim_path, clim_scen, "parTran.rdata"))
-co2Tran <- loadRDataFile(file.path(base_clim_path, clim_scen, "co2Tran.rdata"))
-tairTran <- loadRDataFile(file.path(base_clim_path, clim_scen, "tairTran.rdata"))
-vpdTran <- loadRDataFile(file.path(base_clim_path, clim_scen, "vpdTran.rdata"))
-precipTran <- loadRDataFile(file.path(base_clim_path, clim_scen, "precipTran.rdata"))
+init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
+man_init_args <- list(defaultThin = defaultThin,
+                      ClCut = ClCut,
+                      mortMod = mortMod,
+                      ingrowth = ingrowth)
 
-
-
+initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
 
 
-siteInfo <- loadRDataFile(file.path(base_path, "site", "siteInfo.rdata"))
-multiInitVar <- loadRDataFile(file.path(base_path, "tree_data", "multiInitVar.rdata"))
+modOut <- get_modOut(regionPrebas, initPrebas)
 
-nYears <- get_nYears_from_acc_tran(clim_dir_path)
-nSites <- nrow(siteInfo)
+
+multiOut <- modOut$multiOut
 
 
 
-print("Initialising model...")
-initPrebas <- InitMultiSite(nYearsMS = rep(nYears,nSites),
-                            siteInfo = as.matrix(siteInfo),
-                            multiInitVar = multiInitVar,
-                            PAR = parTran,
-                            VPD = vpdTran,
-                            CO2= co2Tran,
-                            Precip=precipTran,
-                            TAir=tairTran,
-                            CO2model = 1)
 
+#!!!!!issues: 
+# PAR units is wrong
+# first column seems to be an ID 
+# are the leap years processed correctly?
+# 
+# parTran[,1]
+# 
+# parTran <- parTran[,2:26585]*100  
+# vpdTran <- vpdTran[,2:26585]
+# co2Tran <- co2Tran[,2:26585]
+# precipTran <- precipTran[,2:26585]
+# tairTran <- tairTran[,2:26585]
+
+
+#### foroutput processing
+varOutID <- c(44,18,19,11:13,17,30,43,42,37,7,22,31:33,24:25,47,50)
+vHarv <- c(30,2)
+
+# harv  ###check over bark  and tree tops are included?
+#transp ####we have ET not just transp
+###branch biomass?separately or included in the stem?
+stem_biom_sap
+stem_biom_heart
+
+
+modOut <- get_modOut(regionPrebas, initPrebas)
+
+# modOut2 <- regionPrebas(initPrebas)
+
+
+multiOut <- modOut$multiOut
+
+out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
+species <- as.data.table(melt(multiOut[,,4,,1]))
+v_harv <- as.data.table(melt(multiOut[,,30,,2]))
+
+setnames(species, old = "value", new = "species")
+out_dt_species <- merge(out_dt, species)
+v_harv_species <- merge(v_harv, species)
+v_harv_species[, variable := "harv"]
+out_dt_all <- rbind(out_dt_species, v_harv_species)
+
+conversions_dt <- fread("data/acc/docs/forest_nav_conversions_lookup.csv")
+
+
+varNames
+unique(out_dt_all$variable)
+unique(conversions_dt$Variable)
+
+out_dt_all[, Model := "PREBAS"]
+out_dt_all[, Country := "Finland"]
+out_dt_all[, Climate_scenario := clim_scen]
+out_dt_all[, Management_scenario := "noman"]
+
+
+
+base_output_path <- "data/acc/output/test_sites"
+init_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "initPrebas.rdata")
+modOut_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "modout.rdata")
+multiOut_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "multiOut.rdata")
+
+
+print(paste0("Saving initPrebas into ", init_save_path))
+save(initPrebas, file = init_save_path)
+print("Done.")
+
+print(paste0("Saving modOut into ", modOut_save_path))
+save(modOut, file = modOut_save_path)
 print("Done.")
 
 
-
-
-modOut <- regionPrebas(initPrebas)
-
-base_output_path <- "data/acc/output/test_sites"
-save_path <- file.path(base_output_path, paste0("plgid_", plgid), "modout.rdata")
-save(modOut, file = save_path)
-
-
-
-
+print(paste0("Saving multiOut into ", multiOut_save_path))
+save(multiOut, file = multiOut_save_path)
+print("Done.")
 
 
 
