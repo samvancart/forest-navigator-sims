@@ -20,13 +20,22 @@ man_init_args <- list(defaultThin = defaultThin,
                       ingrowth = ingrowth)
 
 initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
-
-
 modOut <- get_modOut(regionPrebas, initPrebas)
-
-
 multiOut <- modOut$multiOut
 
+
+# Get siteID lookup
+selection_path <- "data/acc/input/test_sites/raw/grid/filtered_selection_fi_cell10.csv"
+clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
+siteID_lookup <- get_siteID_lookup(plgid, selection_path, clustered_base_path, aaa_file)
+
+
+#### foroutput processing
+varOutID <- c(44,18,19,11:13,17,30,43,42,37,7,22,31:33,24:25,47,50)
+vHarv <- c(30,2)
+
+out_dt_all <- get_melted_multiOut_dt_with_species_and_harv(plgid, multiOut, varOutID)
+out_dt_all <- merge(out_dt_all, siteID_lookup, by = c("site"))
 
 
 
@@ -44,9 +53,7 @@ multiOut <- modOut$multiOut
 # tairTran <- tairTran[,2:26585]
 
 
-#### foroutput processing
-varOutID <- c(44,18,19,11:13,17,30,43,42,37,7,22,31:33,24:25,47,50)
-vHarv <- c(30,2)
+
 
 # harv  ###check over bark  and tree tops are included?
 #transp ####we have ET not just transp
@@ -55,29 +62,48 @@ stem_biom_sap
 stem_biom_heart
 
 
-modOut <- get_modOut(regionPrebas, initPrebas)
-
-# modOut2 <- regionPrebas(initPrebas)
 
 
-multiOut <- modOut$multiOut
 
-out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
-species <- as.data.table(melt(multiOut[,,4,,1]))
-v_harv <- as.data.table(melt(multiOut[,,30,,2]))
 
-setnames(species, old = "value", new = "species")
-out_dt_species <- merge(out_dt, species)
-v_harv_species <- merge(v_harv, species)
-v_harv_species[, variable := "harv"]
-out_dt_all <- rbind(out_dt_species, v_harv_species)
 
 conversions_dt <- fread("data/acc/docs/forest_nav_conversions_lookup.csv")
+
 
 
 varNames
 unique(out_dt_all$variable)
 unique(conversions_dt$Variable)
+
+add_columns_to_dt <- function(dt, columns) {
+  # Ensure columns is a named list
+  assert_list(columns, names = "named")
+  
+  # Add columns to the data.table
+  dt[, names(columns) := mget(names(columns), envir = as.environment(columns))]
+  
+  return(dt)
+}
+
+# Add columns from table
+add_single_row_columns <- function(base_dt, info_dt) {
+  # Ensure info_dt has only one row
+  assert_true(nrow(info_dt) == 1)
+  
+  # Replicate the values from info_dt to match the number of rows in base_dt
+  repeated_info_dt <- info_dt[rep(1, nrow(base_dt)), ]
+  
+  # Combine the base data.table with the repeated info data.table
+  combined_dt <- cbind(base_dt, repeated_info_dt)
+  
+  return(combined_dt)
+}
+
+
+
+add_cols <- list(Model = "PREBAS", Country = "Finland", Climate_scenario = clim_scen, Management_scenario = "noman")
+out_dt_all <- add_columns_to_dt(out_dt_all, add_cols)
+
 
 out_dt_all[, Model := "PREBAS"]
 out_dt_all[, Country := "Finland"]
@@ -86,24 +112,7 @@ out_dt_all[, Management_scenario := "noman"]
 
 
 
-base_output_path <- "data/acc/output/test_sites"
-init_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "initPrebas.rdata")
-modOut_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "modout.rdata")
-multiOut_save_path <- file.path(base_output_path, paste0("plgid_", plgid), "multiOut.rdata")
 
-
-print(paste0("Saving initPrebas into ", init_save_path))
-save(initPrebas, file = init_save_path)
-print("Done.")
-
-print(paste0("Saving modOut into ", modOut_save_path))
-save(modOut, file = modOut_save_path)
-print("Done.")
-
-
-print(paste0("Saving multiOut into ", multiOut_save_path))
-save(multiOut, file = multiOut_save_path)
-print("Done.")
 
 
 

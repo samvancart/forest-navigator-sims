@@ -1014,3 +1014,144 @@ get_modOut <- function(FUN, initPrebas, ...) {
   FUN_args <- c(list(initPrebas), ...)
   return(do.call(FUN, FUN_args))
 }
+
+
+
+#' Get Site ID Lookup
+#'
+#' This function generates a lookup table for site IDs based on the provided PlgID. The table contains the PlgID_05 and
+#' the forest_type of each site.
+#'
+#' @param plgid Numeric. The PlgID for which the lookup table is generated.
+#' @param filtered_selection_path Character. Path to the filtered selection data file.
+#' @param clustered_base_path Character. Path to the directory containing the clustered data files.
+#' @param aaa_path Character. Path to the AAA data file.
+#' @param id_col_name Character. Name of the ID column in the clustered data. Default is "forested_ha_id".
+#' @param sep Character. Separator used in the ID column. Default is "_".
+#' @param keep Integer. Position of the element to extract from the ID column. Default is 2.
+#'
+#' @return A data.table containing the site lookup information.
+#' @import data.table
+#' @import checkmate
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' get_siteID_lookup(
+#'   plgid = 12345,
+#'   filtered_selection_path = "path/to/filtered_selection.csv",
+#'   clustered_base_path = "path/to/clustered/data",
+#'   aaa_path = "path/to/aaa.csv"
+#' )
+#' }
+
+get_siteID_lookup <- function(plgid, 
+                              filtered_selection_path, 
+                              clustered_base_path, 
+                              aaa_path, 
+                              id_col_name = "forested_ha_id",
+                              sep = "_",
+                              keep = 2) {
+  
+  # Input validations using checkmate
+  assert_number(plgid, finite = TRUE)
+  assert_file_exists(filtered_selection_path, access = "r")
+  assert_directory_exists(clustered_base_path)
+  assert_file_exists(aaa_path, access = "r")
+  assert_string(id_col_name)
+  assert_string(sep)
+  assert_integerish(keep, lower = 1, upper = 4, len = 1)
+  
+  # Read the filtered selection data and filter by PlgID
+  selection_plgid_dt <- fread(filtered_selection_path)[PlgID == plgid]
+  if (nrow(selection_plgid_dt) == 0) stop("No data found for the given PlgID")
+  
+  # Extract unique cell identifier
+  cell_10 <- unique(selection_plgid_dt$cell_300arcsec)
+  if (length(cell_10) != 1) stop("Expected a single unique cell identifier")
+  
+  # Load the clustered data
+  clustered_dt <- loadRDataFile(file.path(clustered_base_path, paste0("clustered_", cell_10, ".rdata")))
+  if (is.null(clustered_dt) || nrow(clustered_dt) == 0) stop("No clustered data found")
+  
+  # Create a lookup table and extract necessary columns
+  clustered_dt_lookup <- unique(clustered_dt[, c(1:3)])
+  clustered_dt_lookup[, site := as.integer(unlist(tstrsplit(get(id_col_name), split = sep, keep = keep)))]
+  
+  # Read the AAA data
+  aaa_all <- fread(aaa_path)
+  if (is.null(aaa_all) || nrow(aaa_all) == 0) stop("No AAA data found")
+  
+  # Merge the lookup table with the selection data
+  siteID_selection_lookup <- merge(clustered_dt_lookup, selection_plgid_dt, 
+                                   by.x = c("cell", "cell_300arcsec"), 
+                                   by.y = c("BOKU_ID", "cell_300arcsec"))
+  
+  # Merge with AAA data to include forest type
+  siteID_all_lookup <- merge(siteID_selection_lookup, 
+                             aaa_all[cell_300arcsec == cell_10][, c("cell", "cell_300arcsec", "forest_type")], 
+                             by = c("cell", "cell_300arcsec"))
+  
+  # Select final columns for the output
+  siteID_lookup <- siteID_all_lookup[, .(site, PlgID_05, forest_type)]
+  
+  # Return the final lookup table
+  return(siteID_lookup)
+}
+
+
+
+
+
+#' Get Melted MultiOut Data Table with Species and Harvest
+#'
+#' This function generates a melted data.table from a multi-dimensional array, 
+#' including species and harvest data.
+#'
+#' @param plgid Numeric. The PlgID for which the data.table is generated.
+#' @param multiOut Array. A multi-dimensional array containing the data.
+#' @param var_out_ids Integer vector. IDs of the variables to be extracted from the array.
+#' @param vHarv Integer vector of length 2. Specifies the indices for harvest data. Default is c(30, 2).
+#'
+#' @return A melted data.table containing the combined output, species, and harvest information.
+#' @import data.table
+#' @import checkmate
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' get_melted_multiOut_dt_with_species_and_harv(
+#'   plgid = 12345,
+#'   multiOut = array(data = rnorm(1000), dim = c(10, 10, 10, 10)),
+#'   var_out_ids = 1:5,
+#'   vHarv = c(30, 2)
+#' )
+#' }
+
+get_melted_multiOut_dt_with_species_and_harv  <- function(plgid, multiOut, var_out_ids, vHarv = c(30, 2)) {
+  
+  # Input validations using checkmate
+  assert_number(plgid, finite = TRUE)
+  assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
+  assert_integerish(var_out_ids, lower = 1, any.missing = FALSE)
+  assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
+  
+  # Convert multi-dimensional arrays to data.table and melt them
+  out_dt <- as.data.table(melt(multiOut[,,var_out_ids,,1]))
+  species <- as.data.table(melt(multiOut[,,4,,1]))
+  v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
+  
+  # Rename columns for clarity
+  setnames(species, old = "value", new = "species")
+  
+  # Merge datasets
+  out_dt_species <- merge(out_dt, species, by = intersect(names(out_dt), names(species)))
+  v_harv_species <- merge(v_harv, species, by = intersect(names(v_harv), names(species)))
+  v_harv_species[, variable := "harv"]
+  
+  # Combine data.tables
+  out_dt_all <- rbind(out_dt_species, v_harv_species)
+  
+  # Return the final data.table
+  return(out_dt_all)
+}
