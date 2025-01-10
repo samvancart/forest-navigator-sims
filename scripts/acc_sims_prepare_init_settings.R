@@ -247,6 +247,76 @@ operations <- list(
 
 
 
+# OUTPUT
+
+# Paths for siteID lookup creation
+selection_path <- "data/acc/input/test_sites/raw/grid/filtered_selection_fi_cell10.csv"
+clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
+
+
+# Output IDs
+varOutID <- c(44,18,19,11:13,17,30,43,42,7,22,31:33,24:25,47,50)
+vHarv <- c(30,2)
+
+# Lookup for converting names and units
+conversions_dt <- fread("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
+
+
+# Operations
+
+sum_bioms <- function(dt, name, sum_cols, by = c("year", "site", "layer")) {
+  dt[, (name) := sum(unlist(.SD)), by = by, .SDcols = sum_cols]
+  return(dt)
+}
+
+set_output_names <- function(dt, ...) {
+  setnames(dt, ...)
+}
+
+convert_output_vals_to_correct_units <- function(dt, conversions_dt) {
+  invisible(  apply(conversions_dt, 1, function(row) {
+    var <- row[["Variable"]]
+    conversion_char <- row[["PREBASconv"]]
+    conversion <- eval(parse(text = conversion_char))
+    
+    if(var %in% names(dt)) {
+      dt[, (var) := .SD * conversion, .SDcols = var]
+    }
+  }))
+  return(dt)
+}
+
+
+stem_cols <-  c("Wstem", "Wbranch")
+root_cols <- c("WfineRoots", "W_croot")
+
+
+output_operations <- list(
+  list(fun = sum_bioms,
+       args = list(name = "stem_biom", sum_cols = stem_cols)),
+  
+  list(fun = sum_bioms,
+       args = list(name = "root_biom", sum_cols = root_cols)),
+  
+  list(fun = del_dt_cols,
+       args = list(del_cols = stem_cols)),
+  
+  list(fun = set_output_names,
+       args = list(old = conversions_dt$PREBAS, new = conversions_dt$Variable, skip_absent = T)),
+  
+  list(fun = convert_output_vals_to_correct_units,
+       args = list(conversions_dt = conversions_dt)),
+  
+  list(fun = melt.data.table,
+       args = list(id.vars = c("site", "year", "layer"))),
+  
+  list(fun = merge_multiOut_species_and_harv_with_out_dt,
+       args = list(multiOut = multiOut, vHarv = vHarv)),
+  
+  list(fun = merge.data.table,
+       args = list(y = conversions_dt[,c("Variable", "Units")], by.x = "variable", by.y = "Variable"))
+)
+
 
 
 

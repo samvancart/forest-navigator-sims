@@ -1103,41 +1103,36 @@ get_siteID_lookup <- function(plgid,
 
 
 
-#' Get Melted MultiOut Data Table with Species and Harvest
+#' Merge MultiOut Species and Harvest with Out Data Table
 #'
-#' This function generates a melted data.table from a multi-dimensional array, 
-#' including species and harvest data.
+#' This function merges species and harvest data from a multi-dimensional array into an existing data.table.
 #'
-#' @param plgid Numeric. The PlgID for which the data.table is generated.
+#' @param out_dt Data.table. The existing data.table to which the species and harvest data will be merged.
 #' @param multiOut Array. A multi-dimensional array containing the data.
-#' @param var_out_ids Integer vector. IDs of the variables to be extracted from the array.
 #' @param vHarv Integer vector of length 2. Specifies the indices for harvest data. Default is c(30, 2).
 #'
-#' @return A melted data.table containing the combined output, species, and harvest information.
+#' @return A merged data.table containing the combined output, species, and harvest information.
 #' @import data.table
 #' @import checkmate
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' get_melted_multiOut_dt_with_species_and_harv(
-#'   plgid = 12345,
+#' merge_multiOut_species_and_harv_with_out_dt(
+#'   out_dt = data.table(id = 1:5),
 #'   multiOut = array(data = rnorm(1000), dim = c(10, 10, 10, 10)),
-#'   var_out_ids = 1:5,
 #'   vHarv = c(30, 2)
 #' )
 #' }
 
-get_melted_multiOut_dt_with_species_and_harv  <- function(plgid, multiOut, var_out_ids, vHarv = c(30, 2)) {
+merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv = c(30, 2)) {
   
   # Input validations using checkmate
-  assert_number(plgid, finite = TRUE)
+  assert_data_table(out_dt)  # Ensure out_dt is a data.table
   assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
-  assert_integerish(var_out_ids, lower = 1, any.missing = FALSE)
   assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
   
   # Convert multi-dimensional arrays to data.table and melt them
-  out_dt <- as.data.table(melt(multiOut[,,var_out_ids,,1]))
   species <- as.data.table(melt(multiOut[,,4,,1]))
   v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
   
@@ -1155,3 +1150,4 @@ get_melted_multiOut_dt_with_species_and_harv  <- function(plgid, multiOut, var_o
   # Return the final data.table
   return(out_dt_all)
 }
+

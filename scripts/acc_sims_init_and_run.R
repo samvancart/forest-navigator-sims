@@ -24,18 +24,17 @@ modOut <- get_modOut(regionPrebas, initPrebas)
 multiOut <- modOut$multiOut
 
 
+
+out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
+out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
+out_dt_melted <- transform_and_add_columns(out_dt_wide, output_operations)
+
+
 # Get siteID lookup
-selection_path <- "data/acc/input/test_sites/raw/grid/filtered_selection_fi_cell10.csv"
-clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 siteID_lookup <- get_siteID_lookup(plgid, selection_path, clustered_base_path, aaa_file)
 
-
-#### foroutput processing
-varOutID <- c(44,18,19,11:13,17,30,43,42,37,7,22,31:33,24:25,47,50)
-vHarv <- c(30,2)
-
-out_dt_all <- get_melted_multiOut_dt_with_species_and_harv(plgid, multiOut, varOutID)
-out_dt_all <- merge(out_dt_all, siteID_lookup, by = c("site"))
+# Merge siteID lookup
+out_dt_all <- merge(out_dt_melted, siteID_lookup, by = c("site"))
 
 
 
@@ -58,18 +57,19 @@ out_dt_all <- merge(out_dt_all, siteID_lookup, by = c("site"))
 # harv  ###check over bark  and tree tops are included?
 #transp ####we have ET not just transp
 ###branch biomass?separately or included in the stem?
-stem_biom_sap
-stem_biom_heart
+# stem_biom_sap
+# stem_biom_heart
+
+
+
+# conversions_dt <- fread("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
 
 
 
 
 
 
-
-conversions_dt <- fread("data/acc/docs/forest_nav_conversions_lookup.csv")
-
-
+unique(out_dt_all$variable)
 
 varNames
 unique(out_dt_all$variable)
@@ -100,6 +100,8 @@ add_single_row_columns <- function(base_dt, info_dt) {
 }
 
 
+info_dt <- data.table(Model = "PREBAS", Country = "Finland", Climate_scenario = clim_scen, Management_scenario = "noman", Canopy_layer = 1)
+out_dt_all_combined <- add_single_row_columns(out_dt_all, info_dt)
 
 add_cols <- list(Model = "PREBAS", Country = "Finland", Climate_scenario = clim_scen, Management_scenario = "noman")
 out_dt_all <- add_columns_to_dt(out_dt_all, add_cols)
@@ -112,7 +114,7 @@ out_dt_all[, Management_scenario := "noman"]
 
 
 
-
+out_dt_all[site == 1 & year == 1 & layer == "layer 1"]
 
 
 
