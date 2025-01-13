@@ -5,6 +5,11 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 plgid <- as.integer(7998833)
 clim_scen <- "historical"
+model <- "PREBAS"
+country <- "Finland"
+man_scen <- "noman"
+canopy_layer <- 1
+
 
 
 ####management parameters
@@ -13,108 +18,96 @@ ClCut = 0
 mortMod = 3
 ingrowth = T
 
-init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
-man_init_args <- list(defaultThin = defaultThin,
-                      ClCut = ClCut,
-                      mortMod = mortMod,
-                      ingrowth = ingrowth)
-
-initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
-modOut <- get_modOut(regionPrebas, initPrebas)
-multiOut <- modOut$multiOut
-
-
-
-out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
-out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
-out_dt_melted <- transform_and_add_columns(out_dt_wide, output_operations)
-
-
-# Get siteID lookup
-siteID_lookup <- get_siteID_lookup(plgid, selection_path, clustered_base_path, aaa_file)
-
-# Merge siteID lookup
-out_dt_all <- merge(out_dt_melted, siteID_lookup, by = c("site"))
-
-
-
-#!!!!!issues: 
-# PAR units is wrong
-# first column seems to be an ID 
-# are the leap years processed correctly?
-# 
-# parTran[,1]
-# 
-# parTran <- parTran[,2:26585]*100  
-# vpdTran <- vpdTran[,2:26585]
-# co2Tran <- co2Tran[,2:26585]
-# precipTran <- precipTran[,2:26585]
-# tairTran <- tairTran[,2:26585]
+acc_run_table <- data.table(plgid = plgid, clim_scen = clim_scen, 
+                            model = model, country = country,
+                            man_scen = man_scen, 
+                            canopy_layer = canopy_layer,
+                            man_init_args = list(list(defaultThin = defaultThin, 
+                                                      ClCut = ClCut,
+                                                      mortMod = mortMod,
+                                                      ingrowth = ingrowth)),
+                            
+                            clean_data_base_path = clean_data_base_path,
+                            selection_path = selection_path, 
+                            clustered_base_path = clustered_base_path, 
+                            aaa_file = aaa_file,
+                            conversions_path = conversions_path,
+                            output_base_path = output_base_path,
+                            species_lookup = species_lookup,
+                            varOutID = list(varOutID),
+                            vHarv = list(vHarv)
+                            )
 
 
 
 
-# harv  ###check over bark  and tree tops are included?
-#transp ####we have ET not just transp
-###branch biomass?separately or included in the stem?
-# stem_biom_sap
-# stem_biom_heart
-
-
-
-# conversions_dt <- fread("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
-
-
-
-
-
-
-unique(out_dt_all$variable)
-
-varNames
-unique(out_dt_all$variable)
-unique(conversions_dt$Variable)
-
-add_columns_to_dt <- function(dt, columns) {
-  # Ensure columns is a named list
-  assert_list(columns, names = "named")
+produce_acc_output_obj_from_run_table <- function(acc_run_table) {
   
-  # Add columns to the data.table
-  dt[, names(columns) := mget(names(columns), envir = as.environment(columns))]
+  output_objects <- apply(acc_run_table, 1, function(dt) {
+    with(dt, {
+      
+      # Init model
+      init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
+      initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
+      modOut <- get_modOut(regionPrebas, initPrebas)
+      multiOut <- modOut$multiOut
+      
+      print(paste0("Getting siteID_lookup..."))
+      # Get siteID lookup
+      siteID_lookup <- get_siteID_lookup(plgid, selection_path, clustered_base_path, aaa_file)
+      
+      # Get conversions_dt
+      conversions_dt <- fread(conversions_path)
+      
+      print(paste0("Creating output from multiOut..."))
+      
+      # Get multiOut as dt
+      out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
+      out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
+      
+      add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen, 
+                       Management_scenario = man_scen, Canopy_layer = canopy_layer)
+      # Get operations
+      output_operations <- get_output_operations(plgid, multiOut, conversions_dt, siteID_lookup, species_lookup, add_cols)
+      
+      # Get output dt
+      out_dt_melted <- transform_and_add_columns(out_dt_wide, output_operations)
+      
+      print("Done.")
+      
+      print("Creating acc output object...")
+      
+      output_template_vector <- c(model, plgid, clim_scen, man_scen)
+      name <- str_c(output_template_vector, collapse = "_")
+      
+      # Get save path
+      save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
+      
+      list(name = name, plgid = plgid, data = out_dt_melted, save_path = save_path)
+    })
+  })
   
-  return(dt)
+  print("Done.")
+  
+  return(output_objects)
 }
 
-# Add columns from table
-add_single_row_columns <- function(base_dt, info_dt) {
-  # Ensure info_dt has only one row
-  assert_true(nrow(info_dt) == 1)
-  
-  # Replicate the values from info_dt to match the number of rows in base_dt
-  repeated_info_dt <- info_dt[rep(1, nrow(base_dt)), ]
-  
-  # Combine the base data.table with the repeated info data.table
-  combined_dt <- cbind(base_dt, repeated_info_dt)
-  
-  return(combined_dt)
-}
-
-
-info_dt <- data.table(Model = "PREBAS", Country = "Finland", Climate_scenario = clim_scen, Management_scenario = "noman", Canopy_layer = 1)
-out_dt_all_combined <- add_single_row_columns(out_dt_all, info_dt)
-
-add_cols <- list(Model = "PREBAS", Country = "Finland", Climate_scenario = clim_scen, Management_scenario = "noman")
-out_dt_all <- add_columns_to_dt(out_dt_all, add_cols)
-
-
-out_dt_all[, Model := "PREBAS"]
-out_dt_all[, Country := "Finland"]
-out_dt_all[, Climate_scenario := clim_scen]
-out_dt_all[, Management_scenario := "noman"]
+output_dts <- produce_acc_output_obj_from_run_table(acc_run_table)
 
 
 
-out_dt_all[site == 1 & year == 1 & layer == "layer 1"]
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

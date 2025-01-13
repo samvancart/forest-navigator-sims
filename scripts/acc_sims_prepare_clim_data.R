@@ -19,7 +19,8 @@ clim_paths <- list.files(dest_path, full.names = T)
 init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
                                                     FUN = get_acc_init_clim_object,
                                                     FUN_args = list(aaa_file = aaa_file, 
-                                                                    operations = operations),
+                                                                    operations = operations,
+                                                                    clean_data_base_path = clean_data_base_path),
                                                     cores = cores,
                                                     type = type))
 
