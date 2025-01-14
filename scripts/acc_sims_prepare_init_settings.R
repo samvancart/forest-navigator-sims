@@ -269,7 +269,13 @@ conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions
 conversions_dt <- fread(conversions_path)
 
 # lookup for species IDs
-species_lookup <- fread("data/acc/docs/test_sites_species_codes_lookup.csv")
+species_lookup_path <- "data/acc/docs/test_sites_species_codes_lookup.csv"
+species_lookup <- fread(species_lookup_path)
+
+
+
+
+
 
 # Operations
 
@@ -358,7 +364,7 @@ get_output_operations <- function(plgid,
     list(fun = merge.data.table,
          args = list(y = siteID_lookup, by = c("site"))),
     
-    list(fun = function(dt) dt[species_lookup[, c("speciesID", "species_group_name")], on = .(species = speciesID), Species := i.species_group_name],
+    list(fun = function(dt) dt[species_lookup[, c("speciesID", "species_code")], on = .(species = speciesID), Species := i.species_code],
          args = list()),
     
     list(fun = add_columns_to_dt,
