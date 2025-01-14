@@ -261,7 +261,7 @@ clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustere
 
 
 # Output IDs
-varOutID <- c(44,18,19,11:13,17,30,43,42,7,22,31:33,24:25,47,50)
+varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
 vHarv <- c(30,2)
 
 # Lookup for converting names and units
@@ -314,8 +314,8 @@ add_columns_to_dt <- function(dt, columns) {
 
 stem_cols <-  c("Wstem", "Wbranch")
 root_cols <- c("WfineRoots", "W_croot")
-old_output_col_names <- c("Units", "forest_type", "value", "year")
-new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year")
+old_output_col_names <- c("Units", "forest_type", "value", "year", "layer")
+new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Layer")
 del_output_cols <- c("site", "species")
 output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", 
                       "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value")
@@ -365,6 +365,9 @@ get_output_operations <- function(plgid,
          args = list(y = siteID_lookup, by = c("site"))),
     
     list(fun = function(dt) dt[species_lookup[, c("speciesID", "species_code")], on = .(species = speciesID), Species := i.species_code],
+         args = list()),
+    
+    list(fun = function(dt) dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))],
          args = list()),
     
     list(fun = add_columns_to_dt,

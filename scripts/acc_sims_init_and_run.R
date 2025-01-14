@@ -30,21 +30,12 @@ save_obj_list <- do.call(get_in_parallel, list(data = output_obj_list,
 
 
 
+dt <- output_obj_list[[1]]$data[[1]]
+
+unique(dt$Variable)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+varNames[c(11,14)]
 
 
 
