@@ -6,7 +6,6 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
 # Unzip all files
 invisible(lapply(seq_along(files_7z_paths), function(i) {
   file <- files_7z_paths[i]

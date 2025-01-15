@@ -196,7 +196,15 @@ del_dt_cols <- function(dt, del_cols) {
   dt
 }
 
+
+filter_dt_cols <- function(dt, keep_cols) {
+  assert_subset(keep_cols, names(dt))
+  return(dt[, ..clim_keep_cols])
+}
+
 del_dt_cols_args <- list(del_cols = c("rsds", "tasmax", "tasmin", "XLON", "YLAT", "PlgID_05", "PET", "Longitude", "Latitude"))
+
+clim_keep_cols <- c("PlgID","time","pr","tas","vpd", "BOKU_ID", "cell_300arcsec", "par", "co2")
 
 
 # Define operations
@@ -233,8 +241,8 @@ operations <- list(
   list(fun = remove_feb_29,
        args = list(time_col = "time")),
   
-  list(fun = del_dt_cols,
-       args = del_dt_cols_args),
+  list(fun = filter_dt_cols,
+       args = list(keep_cols = clim_keep_cols)),
   
   list(fun = setnames_fun, 
        args = list(old = "BOKU_ID", new = "cell")),
@@ -268,10 +276,10 @@ vHarv <- c(30,2)
 conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
 conversions_dt <- fread(conversions_path)
 
+
 # lookup for species IDs
 species_lookup_path <- "data/acc/docs/test_sites_species_codes_lookup.csv"
 species_lookup <- fread(species_lookup_path)
-
 
 
 
@@ -281,6 +289,11 @@ species_lookup <- fread(species_lookup_path)
 
 sum_bioms <- function(dt, name, sum_cols, by = c("year", "site", "layer")) {
   dt[, (name) := sum(unlist(.SD)), by = by, .SDcols = sum_cols]
+  return(dt)
+}
+
+calculate_lc <- function(dt, name = "Lc", height = "H", hc_base = "Hc_base") {
+  dt[, Lc := pmax(get(height) - get(hc_base), 0)]
   return(dt)
 }
 
@@ -314,6 +327,7 @@ add_columns_to_dt <- function(dt, columns) {
 
 stem_cols <-  c("Wstem", "Wbranch")
 root_cols <- c("WfineRoots", "W_croot")
+hc_base_col <- c("Hc_base")
 old_output_col_names <- c("Units", "forest_type", "value", "year", "layer")
 new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Layer")
 del_output_cols <- c("site", "species")
@@ -337,15 +351,19 @@ get_output_operations <- function(plgid,
                                                        "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value")) {
   
   output_operations <- list(
+    # Get stem and root biomasses
     list(fun = sum_bioms,
          args = list(name = "stem_biom", sum_cols = stem_cols)),
     
     list(fun = sum_bioms,
          args = list(name = "root_biom", sum_cols = root_cols)),
-    
+    # Calculate crown length from H and Hc_base
+    list(fun = calculate_lc, 
+         args = list()),
+    # Delete unnecessary cols
     list(fun = del_dt_cols,
-         args = list(del_cols = stem_cols)),
-    
+         args = list(del_cols = c(stem_cols, hc_base_col))),
+    # Get new names from conversion table
     list(fun = set_output_names,
          args = list(old = conversions_dt$PREBAS, new = conversions_dt$Variable, skip_absent = T)),
     
@@ -360,16 +378,16 @@ get_output_operations <- function(plgid,
     
     list(fun = merge.data.table,
          args = list(y = conversions_dt[,c("Variable", "Units")], by.x = "variable", by.y = "Variable")),
-    
+    # Get PlgID_05 and mixture type
     list(fun = merge.data.table,
          args = list(y = siteID_lookup, by = c("site"))),
-    
+    # Get species codes
     list(fun = function(dt) dt[species_lookup[, c("speciesID", "species_code")], on = .(species = speciesID), Species := i.species_code],
          args = list()),
-    
+    # Layer to int
     list(fun = function(dt) dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))],
          args = list()),
-    
+    # Add Model, Country clim_scen, harv_scen and Canopy_layer
     list(fun = add_columns_to_dt,
          args = list(columns = add_cols)),
     

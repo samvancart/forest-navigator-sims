@@ -40,3 +40,12 @@ save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,
 
 
 
+
+
+
+
+
+
+
+
+

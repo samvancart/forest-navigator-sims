@@ -63,8 +63,6 @@ acc_vectors_list <- list(plgid = plgid,
                          canopy_layer = canopy_layer)
 
 acc_base_table <- expand_vectors_to_dt(acc_vectors_list)
-print(acc_base_table)
-
 
 
 ####management parameters
@@ -81,6 +79,7 @@ acc_man_noharv_historical_vectors_list <- list(defaultThin = 0,
 acc_man_table <- create_table_from_vars(id_vars = list(clim_scen = "historical", man_scen = "noman"), 
                                         value_vars = acc_man_noharv_historical_vectors_list, 
                                         result_name = "man_init_args")
+
 
 
 acc_base_man_table <- merge.data.table(acc_base_table, acc_man_table, by = c("clim_scen", "man_scen"))
