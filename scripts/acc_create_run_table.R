@@ -49,7 +49,7 @@ create_table_from_vars <- function(id_vars, value_vars_list, result_name = "resu
 
 
 plgid <- as.integer(unlist(tstrsplit(list.files(output_base_path), split = "_", keep = 2)))
-clim_scen <- c("historical")
+clim_scen <- c("detrended")
 man_scen <- c("noman")
 model <- c("PREBAS")
 country <- c("Finland")
@@ -76,7 +76,7 @@ acc_man_noharv_historical_vectors_list <- list(defaultThin = 0,
                                                ingrowth = T)
 
 
-acc_man_table <- create_table_from_vars(id_vars = list(clim_scen = "historical", man_scen = "noman"), 
+acc_man_table <- create_table_from_vars(id_vars = list(clim_scen = clim_scen, man_scen = man_scen), 
                                         value_vars = acc_man_noharv_historical_vectors_list, 
                                         result_name = "man_init_args")
 

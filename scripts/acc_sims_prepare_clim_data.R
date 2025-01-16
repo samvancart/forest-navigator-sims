@@ -13,7 +13,8 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 # Clim files to process
 clim_paths <- list.files(dest_path, full.names = T)
-
+# paths_dt <- as.data.table(tstrsplit(clim_paths, split = "[/_]", keep = 9))[, id := .GRP, by = "V1"][, path := clim_paths][, c("id", "path")]
+# split(paths_dt, by = "id")
 
 # Get list of acc objects
 init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
@@ -31,6 +32,29 @@ save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,
                                               test = F),
                               cores = cores,
                               type = type))
+
+
+
+# init_clim_obj_list[[1]]$data[[1]][1:70,]
+
+
+
+# clim <- fread(clim_paths[4])
+# 
+# class(clim$time)
+# 
+# filtered <- filter_data_by_tree_data_cells(clim, aaa_file)
+# filtered_op <- transform_and_add_columns(filtered, operations)
+# 
+# names(filtered)
+# 
+# fread(selection_path)
+
+
+
+
+
+
 
 
 

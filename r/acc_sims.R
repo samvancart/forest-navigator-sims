@@ -1026,11 +1026,11 @@ get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ..
   initPrebas <- InitMultiSite(nYearsMS = rep(nYears, nSites),
                               siteInfo = as.matrix(siteInfo),
                               multiInitVar = multiInitVar,
-                              PAR = climate_data[["parTran.rdata"]],
-                              VPD = climate_data[["vpdTran.rdata"]],
-                              CO2 = climate_data[["co2Tran.rdata"]],
-                              Precip = climate_data[["precipTran.rdata"]],
-                              TAir = climate_data[["tairTran.rdata"]],
+                              PAR = climate_data[["parTran.rdata"]][,-1], # Remove cell column (column was required for siteInfo)
+                              VPD = climate_data[["vpdTran.rdata"]][,-1],
+                              CO2 = climate_data[["co2Tran.rdata"]][,-1],
+                              Precip = climate_data[["precipTran.rdata"]][,-1],
+                              TAir = climate_data[["tairTran.rdata"]][,-1],
                               ...)
   
   print("Done.")

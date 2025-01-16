@@ -6,7 +6,7 @@ source("r/csc_utils.R")
 source('./r/multiSite.R')
 
 
-simulation_sites <- c("simulation_sites", "test_sites")
+simulation_sites <- c("simulation_sites_200", "test_sites")
 simulation_site_id <- 2
 simulation_site <- simulation_sites[simulation_site_id]
 
@@ -14,7 +14,7 @@ simulation_site <- simulation_sites[simulation_site_id]
 # Load tree data
 boku_data_path <- paste0("data/acc/input/", simulation_site, "/raw")
 assert_directory_exists(boku_data_path)
-aaa_file <- list.files(config$PATH_data, pattern = "AAA", full.names = T, recursive = T)
+aaa_file <- list.files(boku_data_path, pattern = "AAA", full.names = T, recursive = T)
 assert_file_exists(aaa_file)
 init_files <- list.files(config$PATH_data, "FIN_", full.names = T, recursive = T)
 assert_character(init_files, len = 64)
@@ -202,10 +202,15 @@ filter_dt_cols <- function(dt, keep_cols) {
   return(dt[, ..clim_keep_cols])
 }
 
+filter_years <- function(dt, start_year) {
+  dt <- dt[year(time) >= start_year]
+  return(dt)
+}
+
 del_dt_cols_args <- list(del_cols = c("rsds", "tasmax", "tasmin", "XLON", "YLAT", "PlgID_05", "PET", "Longitude", "Latitude"))
 
 clim_keep_cols <- c("PlgID","time","pr","tas","vpd", "BOKU_ID", "cell_300arcsec", "par", "co2")
-
+start_year <- "2010"
 
 # Define operations
 operations <- list(
@@ -238,6 +243,9 @@ operations <- list(
   list(fun = setnames_fun,
        args = list(old = "Date", new = "time")),
   
+  list(fun = filter_years,
+       args = list(start_year = start_year)),
+  
   list(fun = remove_feb_29,
        args = list(time_col = "time")),
   
@@ -264,7 +272,7 @@ output_base_path <- paste0("data/acc/output/", simulation_site)
 
 
 # Paths for siteID lookup creation
-selection_path <- "data/acc/input/test_sites/raw/grid/filtered_selection_fi_cell10.csv"
+selection_path <- paste0("data/acc/input/", simulation_site, "/raw/grid/filtered_selection_fi_cell10.csv")
 clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 
 
@@ -390,6 +398,9 @@ get_output_operations <- function(plgid,
     # Add Model, Country clim_scen, harv_scen and Canopy_layer
     list(fun = add_columns_to_dt,
          args = list(columns = add_cols)),
+    
+    list(fun = function(dt, start_year) dt[, year := as.integer(dt$year + (as.integer(start_year) - 1))],
+         args = list(start_year = start_year)),
     
     list(fun = set_output_names, 
          args = list(old = old_output_col_names, new = new_output_col_names, skip_absent = T)),

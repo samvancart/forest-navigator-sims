@@ -12,6 +12,8 @@ source(config$PATH_acc_sims_prepare_init_settings)
 acc_run_tables_list <- split(acc_run_table, by = c("plgid"))
 
 
+
+
 # Get output using run table
 output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
                                                  FUN = produce_acc_output_obj_from_run_table,
