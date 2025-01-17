@@ -35,6 +35,25 @@ save_obj_list <- do.call(get_in_parallel, list(data = output_obj_list,
 
 
 
+# # ZIP OUTPUT
+# save_paths <- unlist(lapply(output_obj_list, function(obj) obj[["save_path"]]))
+# out_files <- list.files(save_paths)
+# full_paths <- file.path(save_paths, out_files)
+# 
+# 
+# zip_dt <- as.data.table(tstrsplit(out_files, split = "[_.]"))[, path := full_paths]
+# zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
+# zip_dt[, name := paste0(V3, "_", V4, ".zip")]
+# zip_path <- "data/acc/output/test_sites/zip"
+# zip_dt[, full_zip_path := file.path(zip_path, name)]
+# 
+# zip_dts <- split(zip_dt, by = c("zip_id"))
+# 
+# 
+# zip(zip_dt$full_zip_path[1], files = zip_dt$path)
+
+
+
 
 
 

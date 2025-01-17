@@ -14,9 +14,10 @@ simulation_site <- simulation_sites[simulation_site_id]
 # Load tree data
 boku_data_path <- paste0("data/acc/input/", simulation_site, "/raw")
 assert_directory_exists(boku_data_path)
-aaa_file <- list.files(boku_data_path, pattern = "AAA", full.names = T, recursive = T)
+aaa_file <- list.files(boku_data_path, pattern = "AAA", full.names = T, recursive = T)[1]
 assert_file_exists(aaa_file)
-init_files <- list.files(config$PATH_data, "FIN_", full.names = T, recursive = T)
+init_files_list <- list.files(config$PATH_data, "FIN_", full.names = T, recursive = T)
+init_files <- grep(simulation_site, init_files_list, value = T) 
 assert_character(init_files, len = 64)
 aaa_all <- fread(aaa_file)
 
@@ -163,7 +164,7 @@ dest_path <- file.path(climate_7z_dir, "unzipped")
 
 # Define functions
 # PAR <- swRad*0.48*4.6*0.08640000224 #mol PPFD m-2 d-1
-# par_fun <- function(x) x * 0.48 * 4.6/1000
+# par_fun <- function(x) x * 0.48 * 4.6/1000 # OLD
 # PAR from https://nature.berkeley.edu/biometlab/pdf/Ruimy%20et%20al%201995%20Adv%20Ecol%20Research.pdf
 par_fun <- function(x) x * 0.48 * 4.6 * 0.08640000224
 kelvin_to_c <- function(x) x - 273.15
@@ -214,6 +215,12 @@ start_year <- "2010"
 
 # Define operations
 operations <- list(
+  list(fun = setnames_fun,
+       args = list(old = "Date", new = "time")),
+  
+  list(fun = filter_years,
+       args = list(start_year = start_year)),
+  
   list(col_name = "par", 
        fun = par_fun, 
        cols = "rsds",
@@ -239,12 +246,6 @@ operations <- list(
   list(col_name = "co2",
        fun = function(dt) dt[, co2 := 380],
        args = list()),
-  
-  list(fun = setnames_fun,
-       args = list(old = "Date", new = "time")),
-  
-  list(fun = filter_years,
-       args = list(start_year = start_year)),
   
   list(fun = remove_feb_29,
        args = list(time_col = "time")),
