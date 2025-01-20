@@ -469,6 +469,61 @@ get_dcast_matrices_list_from_dt <- function(dt,
 }
 
 
+#' Add Accumulated CO2 Data
+#'
+#' This function adds accumulated CO2 data to a climate data table based on the given name and configuration.
+#'
+#' @param clim_dt data.table. The climate data table.
+#' @param name Character. The name indicating the type of data.
+#' @param config List. The configuration containing paths to CO2 data files.
+#'
+#' @return data.table. The climate data table with accumulated CO2 data added.
+#' @import data.table checkmate
+#' @export
+#'
+#' @examples
+#' config <- list(VAR_acc_co2_files = list(gwl3 = "/path/to/co2_data/rcp85.csv"))
+#' clim_dt <- data.table(time = as.Date(c("2020-01-01", "2021-01-01")), co2 = c(NA, NA))
+#' add_acc_co2(clim_dt, "gwl3", config)
+add_acc_co2 <- function(clim_dt, name, config) {
+  # Validate inputs
+  assert_data_table(clim_dt, any.missing = FALSE, min.rows = 1)
+  assert_names(names(clim_dt), must.include = "time")
+  assert_character(name, any.missing = FALSE, len = 1)
+  assert_list(config, any.missing = FALSE)
+  assert_names(names(config), must.include = "VAR_acc_co2_files")
+  assert_list(config$VAR_acc_co2_files, types = "character", any.missing = FALSE)
+  assert_true(name %in% c("historical", "detrended", "gwl2", "gwl3", "gwl4"))
+  
+  print(paste0("Creating CO2 for ", name, "..."))
+  
+  if (name %in% c("detrended", "historical")) {
+    return(clim_dt)
+  }
+  
+  co2_file_path <- config$VAR_acc_co2_files[[name]]
+  
+  # Validate the CO2 file path
+  assert_file_exists(co2_file_path)
+  
+  # Read the CO2 data
+  co2_dt <- fread(co2_file_path)
+  
+  # Validate the CO2 data table
+  assert_data_table(co2_dt, any.missing = FALSE, min.rows = 1)
+  assert_names(names(co2_dt), must.include = c("Year", "CO2"))
+  
+  # Copy and modify the climate data table
+  clim_dt_copy <- data.table::copy(clim_dt)
+  clim_dt_copy[, co2 := NULL]
+  clim_dt_copy[, Year := year(time)]
+  clim_dt_copy <- merge(clim_dt_copy, co2_dt, by = "Year")
+  setnames(clim_dt_copy, old = "CO2", new = "co2")
+  clim_dt_copy[, Year := NULL]
+  
+  return(clim_dt_copy)
+}
+
 
 
 #' Get Accumulated Initial Climate Object
@@ -487,7 +542,7 @@ get_dcast_matrices_list_from_dt <- function(dt,
 #' operations <- list(operation1 = "mean", operation2 = "sum") # Example operations
 #' result <- get_acc_init_clim_object(clim_path, aaa_file, operations)
 #' @export
-get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, operations = list(), suffix_str = "Tran") {
+get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, config, operations = list(), suffix_str = "Tran") {
   
   # Validate inputs
   assert_file_exists(clim_path)
@@ -508,7 +563,8 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
   
   filtered_clim_dt <- filter_data_by_tree_data_cells(clim_path, aaa_file)
   transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
-  tranMatrices <- get_dcast_matrices_list_from_dt(transformed_clim_dt, suffix_str = suffix_str)
+  transformed_clim_dt_co2 <- add_acc_co2(transformed_clim_dt, name, config)
+  tranMatrices <- get_dcast_matrices_list_from_dt(transformed_clim_dt_co2, suffix_str = suffix_str)
   
   # Get save path
   save_dir <- file.path("climate", name)
@@ -1278,11 +1334,13 @@ get_acc_out_obj_from_run_table_row <- function(row, out_dt) {
   acc_out_obj <- with(row, {
     
     # Create name according to output template
+    clim_scen <- ifelse(clim_scen=="detrended", "historical", clim_scen)
     output_template_vector <- c(model, plgid, clim_scen, man_scen)
     name <- str_c(output_template_vector, collapse = "_")
     
     # Get save path
-    save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
+    # save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
+    save_path <- file.path(output_base_path, "output_files")
     
     list(name = name, plgid = plgid, data = list(out_dt), save_path = save_path)
   })  
@@ -1355,6 +1413,82 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
 
 
 
+
+
+
+
+# Zip output
+
+
+# Helper to create list of dts for zipping files
+get_split_grouped_output_dt <- function(output_base_path, output_folder_name = "output_files", zip_folder_name = "zip") {
+  
+  output_folder <- file.path(output_base_path, output_folder_name)
+  out_files <- list.files(output_folder, full.names = F)
+  full_paths <- list.files(output_folder, full.names = T)
+  
+  
+  zip_dt <- as.data.table(tstrsplit(out_files, split = "[_.]"))
+  zip_dt[, path := full_paths]
+  zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
+  zip_dt[, name := paste0(V3, "_", V4, ".zip")]
+  zip_folder_name <- "zip"
+  zip_folder_path <- file.path(output_base_path, zip_folder_name)
+  zip_dt[, full_zip_path := file.path(zip_folder_path, name)]
+  
+  return(split(zip_dt, by = c("zip_id")))
+}
+
+
+# Helper to execute zip_output_files in parallel
+zip_output_files_from_dt <- function(zip_dt, ...) {
+  zip_dt[, zip_output_files(unique(full_zip_path), path, ...), by = zip_id]
+}
+
+
+
+
+#' Zip Output Files
+#'
+#' This function creates a zip archive containing specified files, ensuring that 
+#' only the filenames (without their full paths) are included in the archive.
+#'
+#' @param full_zip_path Character. The full path to the zip file to be created.
+#' @param file_paths Character vector. A vector of file paths to include in the zip archive.
+#' @param original_wrkdir Character. The original working directory. Defaults to the current working directory.
+#'
+#' @return Creates a zip archive at the specified location.
+#' @import checkmate
+#' @export
+#'
+#' @examples
+#' full_zip_path <- "/path/to/your/output/archive.zip"
+#' file_paths <- c("/path/to/your/output_files/file1.txt", "/path/to/your/output_files/file2.txt")
+#' zip_output_files(full_zip_path, file_paths)
+zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd()) {
+  # Validate inputs
+  assert_character(file_paths, any.missing = FALSE, min.len = 1)
+  assert_directory_exists(dirname(full_zip_path))
+  
+  wrkdir <- original_wrkdir
+  on.exit(setwd(wrkdir))
+  zip_to_path <- file.path(wrkdir, full_zip_path)
+  
+  # Extract directory paths and filenames
+  zip_files_dir <- unique(dirname(file_paths))
+  zip_files <- basename(file_paths)
+  
+  # Validate that all file paths have the same directory
+  assert_true(length(zip_files_dir) == 1)
+  
+  setwd(zip_files_dir)
+  
+  # Zip
+  zip(zip_to_path, files = basename(zip_files))
+
+  # Validate that the zip file was created
+  assert_file_exists(zip_to_path)
+}
 
 
 

@@ -21,7 +21,8 @@ init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
                                                     FUN = get_acc_init_clim_object,
                                                     FUN_args = list(aaa_file = aaa_file, 
                                                                     operations = operations,
-                                                                    clean_data_base_path = clean_data_base_path),
+                                                                    clean_data_base_path = clean_data_base_path,
+                                                                    config = config),
                                                     cores = cores,
                                                     type = type))
 
@@ -35,11 +36,24 @@ save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,
 
 
 
+
+
+
+
+
 # init_clim_obj_list[[1]]$data[[1]][1:70,]
 
 
 
 # clim <- fread(clim_paths[4])
+# filtered <- filter_data_by_tree_data_cells(clim, aaa_file)
+# filtered_op <- transform_and_add_columns(filtered, operations)
+# filtered_op_co2 <- add_acc_co2(filtered_op, "detrended", config)
+# 
+# 
+# co2_file_path <- config$VAR_acc_co2_files[["gwl3"]]
+
+
 # 
 # class(clim$time)
 # 

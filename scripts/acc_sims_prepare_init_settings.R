@@ -203,8 +203,8 @@ filter_dt_cols <- function(dt, keep_cols) {
   return(dt[, ..clim_keep_cols])
 }
 
-filter_years <- function(dt, start_year) {
-  dt <- dt[year(time) >= start_year]
+filter_years <- function(dt, start_year, end_year) {
+  dt <- dt[year(time) >= start_year & year(time) <= end_year]
   return(dt)
 }
 
@@ -212,6 +212,8 @@ del_dt_cols_args <- list(del_cols = c("rsds", "tasmax", "tasmin", "XLON", "YLAT"
 
 clim_keep_cols <- c("PlgID","time","pr","tas","vpd", "BOKU_ID", "cell_300arcsec", "par", "co2")
 start_year <- "2010"
+end_year <- "2099"
+
 
 # Define operations
 operations <- list(
@@ -219,7 +221,7 @@ operations <- list(
        args = list(old = "Date", new = "time")),
   
   list(fun = filter_years,
-       args = list(start_year = start_year)),
+       args = list(start_year = start_year, end_year = end_year)),
   
   list(col_name = "par", 
        fun = par_fun, 
@@ -242,9 +244,9 @@ operations <- list(
   list(col_name = "vpd", 
        fun = function(dt) dt[, vpd := vpd/1000],
        args = list()),
-  
+  # Default CO2 for detrended scenario = 2010 value from co2_historic_annual-1980_2010.txt.
   list(col_name = "co2",
-       fun = function(dt) dt[, co2 := 380],
+       fun = function(dt) dt[, co2 := 388.76],
        args = list()),
   
   list(fun = remove_feb_29,
