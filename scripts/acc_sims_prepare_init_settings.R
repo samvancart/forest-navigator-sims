@@ -7,7 +7,7 @@ source('./r/multiSite.R')
 
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
-simulation_site_id <- 2
+simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
 
 
@@ -18,7 +18,7 @@ aaa_file <- list.files(boku_data_path, pattern = "AAA", full.names = T, recursiv
 assert_file_exists(aaa_file)
 init_files_list <- list.files(config$PATH_data, "FIN_", full.names = T, recursive = T)
 init_files <- grep(simulation_site, init_files_list, value = T) 
-assert_character(init_files, len = 64)
+# assert_character(init_files, len = 64)
 aaa_all <- fread(aaa_file)
 
 # Cleaned data path

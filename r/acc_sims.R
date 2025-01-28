@@ -364,10 +364,7 @@ transform_and_add_columns <- function(dt, operations = list()) {
 #' result2 <- handle_data_input(data_dt)
 #' @export
 handle_data_input <- function(data) {
-  # Load necessary libraries
-  library(checkmate)
-  library(data.table)
-  
+
   # Validate input
   if (is.character(data)) {
     assert_file_exists(data, access = "r")

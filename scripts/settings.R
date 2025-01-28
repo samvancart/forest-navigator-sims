@@ -17,7 +17,7 @@ rm(vPREBAS, RprebassoFolder)
 
 
 
-
+require(aws.s3)
 require(bit64)
 require(archive)
 require(checkmate)
