@@ -90,10 +90,10 @@ read_and_process_file <- function(path, threshold, seed, del_cols, add_cols) {
 #' @examples
 #' dts <- process_treedata_files(aaa, "path/to/data", 123, del_cols = c("cum_sum"), add_cols = c("cell"))
 #' @export
-process_treedata_files <- function(aaa, boku_data_path, seed, del_cols = NULL, add_cols = NULL) {
+process_treedata_files <- function(aaa, init_files_path, seed, del_cols = NULL, add_cols = NULL) {
   # Input validations
   assertDataFrame(aaa)
-  assertCharacter(boku_data_path, len = 1)
+  assertCharacter(init_files_path, len = 1)
   assertInt(seed)
   assertCharacter(del_cols, null.ok = TRUE)
   assertCharacter(add_cols, null.ok = TRUE)
@@ -102,7 +102,7 @@ process_treedata_files <- function(aaa, boku_data_path, seed, del_cols = NULL, a
   dts <- lapply(seq_len(nrow(aaa)), function(i) {
     row <- aaa[i, ]
     filename <- paste0(row[["InitFileName"]], "_01.csv")
-    path <- file.path(boku_data_path, filename)
+    path <- file.path(init_files_path, filename)
     threshold <- as.numeric(row[["ba"]])
     
     # Prepare columns to add

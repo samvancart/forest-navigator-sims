@@ -15,9 +15,9 @@ source(config$PATH_acc_sims_prepare_init_settings)
 #######################################
 
 
-
 # Get all sampled_dt lists
 tree_data_dts <- do.call(get_in_parallel, get_in_parallel_tree_data_args)
+
 
 
 # Assign ids for each 1 ha forest then unlist into a single list and finally merge speciesIDs
@@ -47,12 +47,18 @@ all_clusters_dt <- rbindlist(
 
 
 # Aggregate clustered dt
-aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight), b = sum(ba), age = as.integer(mean(age))),
+aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100, b = sum(ba), age = as.integer(mean(age))),
                                     by = .(cell_300arcsec, cell, forested_ha_id, speciesID, cluster_id)]
 
+# # Height from cm to m
+# aggr_clusters_dt[, h := h/100]
 
-# Height from cm to m
-aggr_clusters_dt[, h := h/100]
+
+# Split for saving
+split_aggr_clusters_dt <- split(aggr_clusters_dt, by = "cell_300arcsec")
+
+
+
 
 #######################################
 
@@ -61,11 +67,19 @@ aggr_clusters_dt[, h := h/100]
 #######################################
 
 
+
 # Save
-filename <- paste0("clustered_", cells_10[cells_10_id], ".rdata")
-save_path <- file.path(boku_data_path, "clustered", filename)
-print(paste0("Saving into ", save_path))
-save(aggr_clusters_dt, file = save_path)
+invisible(mclapply(seq_along(split_aggr_clusters_dt), function(i) {
+  name <- names(split_aggr_clusters_dt)[i]
+  aggr_dt <- split_aggr_clusters_dt[[i]]
+  filename <- paste0("clustered_", name, ".rdata")
+  save_path <- file.path(boku_data_path, "clustered", filename)
+  print(paste0("Saving into ", save_path))
+  save(aggr_dt, file = save_path)
+  print("Done.")
+  cat("\n")
+}, mc.cores = cores))
+
 
 
 

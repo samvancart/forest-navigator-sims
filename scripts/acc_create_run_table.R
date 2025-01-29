@@ -98,7 +98,7 @@ acc_static_vars_table <- data.table(clean_data_base_path = clean_data_base_path,
                                     aaa_file = aaa_file,
                                     conversions_path = conversions_path,
                                     output_base_path = output_base_path,
-                                    species_lookup_path = species_lookup_path,
+                                    species_lookup_path = species_codes_lookup_path,
                                     varOutID = list(varOutID),
                                     vHarv = list(vHarv))
 

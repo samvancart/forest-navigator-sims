@@ -47,7 +47,14 @@ invisible(mclapply(seq_along(files_7z_paths), function(i) {
 # # aaa_all_filtered <- aaa_all[Country_Code == "FI"]
 # # unique(aaa_all_filtered$forest_type)
 # # length(unique(aaa_all_filtered[grep("FIN", forest_type)]$cell_300arcsec))
-# 
+
+
+
+
+
+
+
+# ### PRE-PROCESS AAA FILE
 # 
 # sel <- fread("data/acc/input/simulation_sites_200/raw/grid/prebas_selected_reduced_1km.csv")[, c("PlgID", "PlgID_05", "XLON", "YLAT")]
 # 
@@ -57,13 +64,19 @@ invisible(mclapply(seq_along(files_7z_paths), function(i) {
 # sel_bokuID <- merge(sel, bokuIDs[, c("PlgID_05", "BOKU_ID")], by = "PlgID_05")
 # 
 # 
-# length(unique(aaa_filtered$PlgID))
-# 
-# 
 # aaa_filtered <- merge(aaa_all, sel_bokuID, by.x = "cell", by.y = "BOKU_ID")
+# 
+# length(unique(aaa_filtered$PlgID))
 # 
 # aaa_filtered[!complete.cases(aaa_filtered)]
 # 
+# # fwrite(aaa_filtered, file = file.path(boku_tree_data_path, "aaa", "AAA_cell1kmForestTypeList_filtered"))
+
+
+
+
+
+
 # unique(aaa_filtered$Country_Code)
 # 
 # folder <- "detrended"
