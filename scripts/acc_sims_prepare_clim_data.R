@@ -11,10 +11,34 @@
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
+slurm_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
+
+
+
 # Clim files to process
-clim_paths <- list.files(dest_path, full.names = T)
-# paths_dt <- as.data.table(tstrsplit(clim_paths, split = "[/_]", keep = 9))[, id := .GRP, by = "V1"][, path := clim_paths][, c("id", "path")]
-# split(paths_dt, by = "id")
+# clim_paths <- list.files(dest_path, full.names = T)
+
+# Get climate paths from allas and filter by grid file PlgIDs
+bucket_name <- "2000994-forest_navigator"
+region <- Sys.getenv("AWS_REGION")
+bucket_list <- as.data.table(get_bucket_df(bucket_name, region = region))$Key
+allas_clim_paths <- bucket_list[!grepl(pattern = ".keep", bucket_list)]
+allas_clim_paths_dt <- as.data.table(tstrsplit(allas_clim_paths, split = "[/]", keep = 3))[, id := .GRP, by = "V1"][, path := allas_clim_paths][, c("id", "path")]
+plgids <- as.integer(str_extract(allas_clim_paths, "(?<=plgid_)[0-9]+"))
+allas_clim_paths_dt[, PlgID := plgids]
+grid_dt <- fread(grid_file_path)
+filtered_clim_paths <- allas_clim_paths_dt[PlgID %in% unique(grid_dt$PlgID)]
+split_clim_dts <- split(filtered_clim_paths, by = "id")
+
+
+print(paste0("SLURM_ID: ", slurm_id))
+
+
+# Get clim paths for id
+clim_paths <- split_clim_dts[[slurm_id]]$path
+
+
+
 
 # Get list of acc objects
 init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
@@ -22,9 +46,15 @@ init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
                                                     FUN_args = list(aaa_file = aaa_file, 
                                                                     operations = operations,
                                                                     clean_data_base_path = clean_data_base_path,
-                                                                    config = config),
+                                                                    config = config,
+                                                                    allas_opts = list(bucket = bucket_name,
+                                                                                      FUN = fread,
+                                                                                      opts = list(region = region))),
                                                     cores = cores,
                                                     type = type))
+
+
+
 
 # Save all acc objects
 save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,

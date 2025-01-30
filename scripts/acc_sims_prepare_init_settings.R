@@ -8,7 +8,7 @@ source('./r/multiSite.R')
 initSeedling.def
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
-simulation_site_id <- 1
+simulation_site_id <- 2
 simulation_site <- simulation_sites[simulation_site_id]
 
 
@@ -19,30 +19,40 @@ assert_directory_exists(boku_data_path)
 assert_directory_exists(boku_tree_data_path)
 
 # AAA
-aaa_file <- list.files(file.path(boku_tree_data_path, "aaa"), pattern = "AAA", full.names = T, recursive = T)[1]
+aaa_file <- list.files(file.path(boku_tree_data_path, "aaa"), 
+                       pattern = paste0("AAA_cell1kmForestTypeList_filtered_", simulation_site_id,".csv"), 
+                       full.names = T, 
+                       recursive = T)
+
 assert_file_exists(aaa_file)
+aaa_all <- fread(aaa_file)
+
+
 
 # Init files
-init_files <- list.files(file.path(boku_tree_data_path, "init_files"), full.names = T)
+init_files_path <- file.path(boku_tree_data_path, "init_files")
+init_files <- list.files(init_files_path, full.names = T)
 # assert_character(init_files, len = 64)
-aaa_all <- fread(aaa_file)
+
+
 
 # Cleaned data path
 clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
 # Get species codes lookup
+species_codes_name <- paste0("species_codes_lookup_", simulation_site_id,".csv")
 species_codes_path <- file.path(boku_tree_data_path, "species_codes")
 species_codes_cols <- c("code", "speciesID")
-species_codes_lookup_path <- list.files(species_codes_path, full.names = T)[1]
+species_codes_lookup_path <- file.path(species_codes_path, species_codes_name)
 codes_with_speciesID_dt <- fread(file = species_codes_lookup_path)[, ..species_codes_cols]
 assert_names(names(codes_with_speciesID_dt), must.include = species_codes_cols)
 
 
 # Select one 10km cell
 cells_10 <- unique(aaa_all$cell_300arcsec)
-cells_10_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
-# cells_10_id <- 2
+# cells_10_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
+cells_10_id <- 2
 aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 
@@ -63,16 +73,17 @@ seeds <- sample(c(1:1000000), num_sample_runs) # List of seeds to use
 # TREE DATA
 
 # Split by 10km id for parallel processing
-split_aaa <- split(aaa_all, by = "cell_300arcsec")
+aaa_split_col <- "PlgID"
+split_aaa <- split(aaa_all, by = aaa_split_col)
 
 
 
 tree_data_seed <- seeds
 tree_data_path <- file.path(boku_data_path, "tree_data")
 process_treedata_files_args <- list(seed = tree_data_seed,
-                 init_files_path = tree_data_path,
+                 init_files_path = init_files_path,
                  del_cols = c("cum_sum"),
-                 add_cols = c("cell", "cell_300arcsec"))
+                 add_cols = c("cell", "cell_300arcsec", "PlgID"))
 
 # Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
 process_treedata_files_FUN <- process_treedata_files
@@ -111,7 +122,7 @@ get_in_parallel_all_clusters_dts_args <- list(FUN = perform_clustering_by_group_
 ### multiInitVar
 
 grid_file_path <- list.files(file.path(boku_data_path, "grid"), 
-                             pattern = "filtered_selection_cell10\\.csv", 
+                             pattern = paste0("filtered_selection_cell10_", simulation_site_id,"\\.csv"), 
                              recursive = T, 
                              full.names = T)
 
@@ -136,7 +147,7 @@ create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
 
 
 soil_file_path <- list.files(file.path(boku_data_path, "soil"), 
-                             pattern = "selection_fi_soil_data\\.csv", 
+                             pattern = paste0("selection_soil_data_", simulation_site_id,"\\.csv"), 
                              recursive = T, 
                              full.names = T)
 
@@ -192,11 +203,7 @@ setnames_fun <- function(dt, old = NULL, new) {
   if(is.null(old)) {
     setnames(dt, old = colnames(dt), new = new)
   } else {
-    if(old %in% names(dt)) {
-      setnames(dt, old = old, new = new) 
-    } else {
-      dt 
-    }
+    setnames(dt, old = old, new = new, skip_absent = T) 
   }
 }
 
@@ -210,8 +217,8 @@ del_dt_cols <- function(dt, del_cols) {
 
 
 filter_dt_cols <- function(dt, keep_cols) {
-  assert_subset(keep_cols, names(dt))
-  return(dt[, ..clim_keep_cols])
+  filtered_cols <- keep_cols[keep_cols %in% names(dt)]
+  return(dt[, ..filtered_cols])
 }
 
 filter_years <- function(dt, start_year, end_year) {
@@ -221,7 +228,7 @@ filter_years <- function(dt, start_year, end_year) {
 
 del_dt_cols_args <- list(del_cols = c("rsds", "tasmax", "tasmin", "XLON", "YLAT", "PlgID_05", "PET", "Longitude", "Latitude"))
 
-clim_keep_cols <- c("PlgID","time","pr","tas","vpd", "BOKU_ID", "cell_300arcsec", "par", "co2")
+clim_keep_cols <- c("PlgID","time","pr","tas","vpd", "BOKU_ID", "PlgID_05", "cell_300arcsec", "par", "co2")
 start_year <- "2010"
 end_year <- "2099"
 

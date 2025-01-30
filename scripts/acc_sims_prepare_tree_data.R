@@ -15,6 +15,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 #######################################
 
 
+
 # Get all sampled_dt lists
 tree_data_dts <- do.call(get_in_parallel, get_in_parallel_tree_data_args)
 
@@ -55,7 +56,7 @@ aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100,
 
 
 # Split for saving
-split_aggr_clusters_dt <- split(aggr_clusters_dt, by = "cell_300arcsec")
+split_aggr_clusters_dt <- split(aggr_clusters_dt, by = aaa_split_col)
 
 
 

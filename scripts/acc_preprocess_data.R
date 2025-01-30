@@ -23,6 +23,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # aaa_filtered[!complete.cases(aaa_filtered)]
 # 
 
+# aaa_filtered <- data.table::copy(aaa_all)
 filtered_sel <- sel_bokuID[BOKU_ID %in% aaa_filtered$cell]
 filtered_sel10 <- merge(filtered_sel, aaa_filtered[, c("cell", "cell_300arcsec")], by.x = "BOKU_ID", by.y = "cell")
 fwrite(filtered_sel10, file = "data/acc/input/simulation_sites_200/raw/grid/filtered_selection_cell10.csv")
@@ -32,6 +33,11 @@ fwrite(filtered_sel10, file = "data/acc/input/simulation_sites_200/raw/grid/filt
 init_files_path <- file.path(boku_tree_data_path, "init_files")
 init_files_filtered <- unique(aaa_filtered$InitFileID)
 init_filenames <- file.path(init_files_path, paste0(init_files_filtered, "_01.csv"))
+
+# REMOVE UNNECESSARY INIT_FILES
+# all_init_files <- list.files(init_files_path, full.names = T)
+# del_init_files <- all_init_files[!all_init_files %in% init_filenames]
+# file.remove(del_init_files)
 
 # # fwrite(aaa_filtered, file = file.path(boku_tree_data_path, "aaa", "AAA_cell1kmForestTypeList_filtered"))
 
@@ -97,13 +103,16 @@ sim_sites_200_species_lookup <- merge(filtered_species_codes_lookup_dt, speciesI
 
 
 
+# FILTER SOIL (BECAUSE BOKU_ID NOT PRESENT). Could otherwise filter in acc_sims_prepare_siteInfo.R and keep original file unchanged.
+soil <- fread("data/acc/input/simulation_sites_200/raw/soil/prebas_selected_reduced_1km_soil_data.csv")
+soil_t <- fread("data/acc/input/test_sites/raw/soil/selection_fi_soil_data.csv")
 
 
+filtered_sel10 <- fread(grid_file_path)
+filtered_soil <- soil[PlgID_05 %in% unique(filtered_sel10$PlgID_05)]
+filtered_soil_bokuID <- merge(filtered_sel10[, .(BOKU_ID, PlgID_05)], soil, by = "PlgID_05")
 
-
-
-
-
+# fwrite(filtered_soil_bokuID, file = "data/acc/input/simulation_sites_200/raw/soil/selection_soil_data_1.csv")
 
 
 

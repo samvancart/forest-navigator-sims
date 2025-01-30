@@ -404,16 +404,16 @@ filter_data_by_tree_data_cells <- function(data, tree_data) {
   assert_true(all(!is.na(data_dt)))
   assert_data_table(tree_dt)
   
-  cells_dt <- tree_dt[which(cell %in% unique(data_dt$BOKU_ID))][, .(cell, cell_300arcsec)]
+  cells_dt <- tree_dt[which(PlgID_05 %in% unique(data_dt$PlgID_05))][, .(PlgID_05, cell_300arcsec)]
   cell_10 <- unique(cells_dt$cell_300arcsec)
   assert_integer(cell_10, len = 1)
-  cells_1 <- cells_dt$cell
-  assert_integer(cells_1, min.len = 1)
+  cells_1 <- cells_dt$PlgID_05
+  assert_integerish(cells_1, min.len = 1)
   
   print(paste0("10km-by-10km cell id: ", cell_10))
   print(paste0("Found ", length(cells_1), " 1km-by-1km cell(s)."))
   
-  data_dt <- data_dt[which(BOKU_ID %in% cells_1)]
+  data_dt <- data_dt[which(PlgID_05 %in% cells_1)]
   data_dt[, cell_300arcsec := cell_10]
   
   return(data_dt)
@@ -532,6 +532,7 @@ add_acc_co2 <- function(clim_dt, name, config) {
 #' @param clean_data_base_path character. Base path to the clean data.
 #' @param operations A list of operations to be applied to transform the climate data. Defaults to an empty list.
 #' @param suffix_str A string to append to the names of the matrices in the list. Defaults to "Tran".
+#' @param allas_opts A list of parameters for the s3_read_using function if clim_path is in an s3 bucket. Default is list().
 #' @return A list containing the name, plgid, and transformed matrices.
 #' @examples
 #' clim_path <- "/path/to/climate_data.csv"
@@ -539,13 +540,16 @@ add_acc_co2 <- function(clim_dt, name, config) {
 #' operations <- list(operation1 = "mean", operation2 = "sum") # Example operations
 #' result <- get_acc_init_clim_object(clim_path, aaa_file, operations)
 #' @export
-get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, config, operations = list(), suffix_str = "Tran") {
+get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, config, operations = list(), suffix_str = "Tran", allas_opts = list()) {
   
   # Validate inputs
-  assert_file_exists(clim_path)
+  if(length(allas_opts) == 0) {
+    assert_file_exists(clim_path)
+  }
   assert_file_exists(aaa_file)
   assert_list(operations)
   assert_character(suffix_str, len = 1)
+  assert_list(allas_opts)
   
   print(paste0("Creating init clim data object..."))
   cat("\n")
@@ -557,6 +561,10 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
   print(paste0("name is ", name))
   print(paste0("plgid is ", plgid))
   cat("\n")
+  
+  if(!length(allas_opts) == 0) {
+    clim_path <- do.call(s3read_using, c(allas_opts, list(object = clim_path)))
+  }
   
   filtered_clim_dt <- filter_data_by_tree_data_cells(clim_path, aaa_file)
   transformed_clim_dt <- transform_and_add_columns(filtered_clim_dt, operations)
@@ -607,15 +615,22 @@ get_multiInitVar_object <- function(clustered_path, grid_file_path, clean_data_b
   grid_dt <- fread(grid_file_path)
   assert_data_frame(grid_dt, min.rows = 1, col.names = "strict")
   
-  # Extract boku_cell_10 from clustered_path
-  boku_cell_10 <- str_extract(clustered_path, "(?<=_)[0-9]+")
+  # Get plgid from clustered path or NA if not exists
+  plgid <- as.integer(str_extract(clustered_path, "(?<=plgid_)[0-9]+"))
   
-  # Validate boku_cell_10 is not missing
-  assert_character(boku_cell_10, any.missing = FALSE)
+  # Get plgid from grid if it is NA
+  if(is.na(plgid)) {
+    # Extract boku_cell_10 from clustered_path
+    boku_cell_10 <- str_extract(clustered_path, "(?<=_)[0-9]+")
+    
+    # Validate boku_cell_10 is not missing
+    assert_character(boku_cell_10, any.missing = FALSE)
+    
+    # Extract plgid
+    plgid <- unique(grid_dt[cell_300arcsec == boku_cell_10]$PlgID)
+  }
   
-  # Extract plgid
-  plgid <- unique(grid_dt[cell_300arcsec == boku_cell_10]$PlgID)
-  
+
   # Get save path
   save_path <- get_acc_input_save_path(plgid, "tree_data", clean_data_base_path)
   
