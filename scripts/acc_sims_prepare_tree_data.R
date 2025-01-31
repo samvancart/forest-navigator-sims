@@ -6,13 +6,22 @@
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
-
-
 #######################################
 
 ############ TREE DATA
 
 #######################################
+
+t <- system.time(
+  clustered_acc_init_obj_list <- create_acc_clustered_tree_data(plgid = c(8149995, 7813006),
+                                 aaa_file = aaa_all,
+                                 clean_data_base_path = clean_data_base_path,
+                                 acc_input_obj = tree_data_acc_input_obj, 
+                                 get_in_parallel_args = general_get_in_parallel_args)
+)
+print(t)
+
+
 
 
 
@@ -23,7 +32,7 @@ tree_data_dts <- do.call(get_in_parallel, get_in_parallel_tree_data_args)
 
 # Assign ids for each 1 ha forest then unlist into a single list and finally merge speciesIDs
 dts <- assign_and_merge(tree_data_dts, id_columns, separator = "_", 
-                        id_column_name = "forested_ha_id", fin_codes_with_speciesID_dt,
+                        id_column_name = "forested_ha_id", codes_with_speciesID_dt,
                         by.x = "species", by.y = "code")
 
 rm(tree_data_dts)
@@ -49,7 +58,7 @@ all_clusters_dt <- rbindlist(
 
 # Aggregate clustered dt
 aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100, b = sum(ba), age = as.integer(mean(age))),
-                                    by = .(cell_300arcsec, cell, forested_ha_id, speciesID, cluster_id)]
+                                    by = .(cell_300arcsec, PlgID, cell, forested_ha_id, speciesID, cluster_id)]
 
 # # Height from cm to m
 # aggr_clusters_dt[, h := h/100]

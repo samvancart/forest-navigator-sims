@@ -17,7 +17,8 @@ site_info_obj_list <- lapply(names(split_soil_dts), function(id) {
                            clean_data_base_path, 
                            group_id_name,
                            species_id_name,
-                           rep_times = as.integer(num_sample_runs))
+                           rep_times = as.integer(num_sample_runs),
+                           clim_scen = "gwl2")
 
 })
 
@@ -33,7 +34,7 @@ invisible(lapply(site_info_obj_list, function(acc_obj) {
 
 
 
-
+save_acc_data
 
 
 

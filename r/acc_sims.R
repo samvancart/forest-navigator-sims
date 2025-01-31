@@ -971,7 +971,8 @@ get_site_info_acc_object <- function(soil_dt,
                                      species_id_name,
                                      site_type_probs = c(.1, .3, .5, .7, .9),
                                      site_types = c(5, 4, 3, 2, 1),
-                                     rep_times = 1) {
+                                     rep_times = 1,
+                                     clim_scen = "historical") {
   
   # Validate inputs using checkmate
   assert_data_table(soil_dt, min.cols = 1)
@@ -1004,7 +1005,7 @@ get_site_info_acc_object <- function(soil_dt,
   base_clim_path <- file.path(clean_data_base_path, paste0("plgid_", plgid), "climate")
   clim_dirs <- list.files(base_clim_path)
   clim_dir_paths <- file.path(base_clim_path, clim_dirs)
-  clim_dir_path <- grep("historical", clim_dir_paths, value = TRUE)
+  clim_dir_path <- grep(clim_scen, clim_dir_paths, value = TRUE)
   clim_file_path <- list.files(clim_dir_path, full.names = TRUE)[1]
   
   

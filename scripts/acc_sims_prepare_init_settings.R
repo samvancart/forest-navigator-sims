@@ -60,6 +60,7 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 # Cores and parallelisation type
 cores <- max(1, availableCores() - 1)
 type <- "FORK"
+general_get_in_parallel_args <- list(cores = cores, type = type)
 
 
 # Seed for creating reproducable list of seeds
@@ -98,6 +99,10 @@ get_in_parallel_tree_data_args <- list(data = split_aaa,
 id_columns <- c("i", "j", "cell", "cell_300arcsec")
 
 
+assign_and_merge_args <- list(id_columns = id_columns, separator = "_",id_column_name = "forested_ha_id", 
+                              species_codes_dt = codes_with_speciesID_dt, by.x = "species", by.y = "code")
+
+
 # CLUSTERING
 
 
@@ -117,6 +122,18 @@ get_in_parallel_all_clusters_dts_args <- list(FUN = perform_clustering_by_group_
                                               FUN_args = perform_clustering_by_group_args,
                                               cores = cores, 
                                               type = type)
+
+
+
+# TREE DATA INPUT OBJ
+tree_data_acc_input_obj <- list(args = list(process_treedata_files = process_treedata_files_args,
+                                            assign_and_merge = assign_and_merge_args,
+                                            perform_clustering_by_group = perform_clustering_by_group_args,
+                                            aaa_split_col = aaa_split_col))
+
+
+
+
 
 
 ### multiInitVar
