@@ -5,11 +5,19 @@ source("r/utils.R")
 source("r/csc_utils.R")
 source('./r/multiSite.R')
 
-initSeedling.def
+
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
-simulation_site_id <- 2
+simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
+
+
+# Allas
+bucket_name <- "2000994-forest_navigator"
+region <- Sys.getenv("AWS_REGION")
+allas_options <- list(region = region)
+allas_read_FUN <- fread
+allas_opts <- list(FUN = allas_read_FUN, bucket = bucket_name, opts = allas_options)
 
 
 # Load tree data
@@ -126,9 +134,9 @@ get_in_parallel_all_clusters_dts_args <- list(FUN = perform_clustering_by_group_
 
 
 # TREE DATA INPUT OBJ
-tree_data_acc_input_obj <- list(args = list(process_treedata_files = process_treedata_files_args,
-                                            assign_and_merge = assign_and_merge_args,
-                                            perform_clustering_by_group = perform_clustering_by_group_args,
+tree_data_acc_input_obj <- list(args = list(process_treedata_files_args = process_treedata_files_args,
+                                            assign_and_merge_args = assign_and_merge_args,
+                                            perform_clustering_by_group_args = perform_clustering_by_group_args,
                                             aaa_split_col = aaa_split_col))
 
 
@@ -251,7 +259,7 @@ end_year <- "2099"
 
 
 # Define operations
-operations <- list(
+clim_operations <- list(
   list(fun = setnames_fun,
        args = list(old = "Date", new = "time")),
   
@@ -300,6 +308,10 @@ operations <- list(
        args = list())
 )
 
+
+# CLIM DATA INPUT OBJ
+clim_data_acc_input_obj <- list(args = list(clim_operations = clim_operations,
+                                            simulation_site = simulation_site))
 
 
 

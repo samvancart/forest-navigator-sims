@@ -12,14 +12,61 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 #######################################
 
+
+all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
+
+# Helper
+get_acc_clim_paths_run_dt <- function(all_clim_paths, 
+                                      clim_scen_pat = "(?<=/)[^/]+(?=_id_)", 
+                                      plgid_pat = "(?<=plgid_)[0-9]+") {
+  
+  plgid_vec <- str_extract(all_clim_paths, plgid_pat)
+  clim_scen_vec <- str_extract(all_clim_paths, clim_scen_pat)
+  
+  dt <- data.table(path = all_clim_paths, PlgID = plgid_vec, clim_scen = clim_scen_vec)
+  return(dt)
+}
+
+max_array_jobID <- 8
+array_jobID <- 1
+
+# Get all clim_paths as dt with PlgID and clim_scen cols
+all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
+run_dt_max_part_size <- floor(nrow(all_paths_run_dt)/max_array_jobID)
+
+# Split with constraint
+run_dt_splitID <- split_dt_equal_with_constraint(all_paths_run_dt, run_dt_max_part_size, c("PlgID","clim_scen"))
+
+# Filter by array jobID
+run_dt <- split(run_dt_splitID, by = "splitID")[[array_jobID]][1:2]
+
+plgid_vec <- as.integer(unique(run_dt$PlgID))
+clim_paths <- run_dt$path
+
+
+
+
+
 t <- system.time(
-  clustered_acc_init_obj_list <- create_acc_clustered_tree_data(plgid = c(8149995, 7813006),
-                                 aaa_file = aaa_all,
-                                 clean_data_base_path = clean_data_base_path,
-                                 acc_input_obj = tree_data_acc_input_obj, 
-                                 get_in_parallel_args = general_get_in_parallel_args)
+  clustered_acc_init_obj_list <- run_acc_for_plgid(plgid_vec = plgid_vec,
+                                                   aaa_file = aaa_file,
+                                                   clean_data_base_path = clean_data_base_path,
+                                                   tree_data_acc_input_obj = tree_data_acc_input_obj,
+                                                   clim_data_acc_input_obj = clim_data_acc_input_obj,
+                                                   config = config,
+                                                   allas_opts = allas_opts,
+                                                   clim_paths = clim_paths,
+                                                   get_in_parallel_args = general_get_in_parallel_args)
 )
 print(t)
+
+
+
+
+
+
+
+
 
 
 

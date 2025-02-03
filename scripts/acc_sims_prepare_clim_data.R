@@ -18,6 +18,12 @@ slurm_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
 # Clim files to process
 # clim_paths <- list.files(dest_path, full.names = T)
 
+
+
+
+
+
+
 # Get climate paths from allas and filter by grid file PlgIDs
 bucket_name <- "2000994-forest_navigator"
 region <- Sys.getenv("AWS_REGION")
@@ -44,7 +50,7 @@ clim_paths <- split_clim_dts[[slurm_id]]$path
 init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
                                                     FUN = get_acc_init_clim_object,
                                                     FUN_args = list(aaa_file = aaa_file, 
-                                                                    operations = operations,
+                                                                    operations = clim_operations,
                                                                     clean_data_base_path = clean_data_base_path,
                                                                     config = config,
                                                                     allas_opts = list(bucket = bucket_name,
