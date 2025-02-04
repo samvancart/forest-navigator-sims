@@ -52,14 +52,16 @@ get_grouped_proportions <- function(dt, group_col) {
 #' Read and Process Individual Tree Data File
 #'
 #' @param path The path to the data file.
-#' @param threshold The threshold value for the basal area.
+#' @param threshold The threshold value for the threshold_col.
 #' @param seed The seed value for reproducibility.
 #' @param del_cols Character vector of column names to delete after sampling.
 #' @param add_cols Named list of columns to add after sampling.
+#' @param threshold_col Name of the threshold column.
 #' @return A data.table with sampled data, deleted, and added columns.
-read_and_process_file <- function(path, threshold, seed, del_cols, add_cols) {
-  dt <- fread(path)
-  sampled_dt <- sample_until_global_threshold(dt, "ba", threshold, seed = seed)
+read_and_process_file <- function(path, threshold, seed, del_cols, add_cols, threshold_col = "ba") {
+  dt <- handle_data_input(path)
+  
+  sampled_dt <- sample_until_global_threshold(dt, threshold_col, threshold, seed = seed)
   
   # Delete specified columns
   if (!is.null(del_cols) && length(del_cols) > 0) {
@@ -76,6 +78,18 @@ read_and_process_file <- function(path, threshold, seed, del_cols, add_cols) {
   return(sampled_dt)
 }
 
+# Helper to get threshold from initFile if not present in AAA
+get_threshold_from_init_file <- function(init_file, threshold_col = "ba") {
+  
+  dt <- handle_data_input(init_file)
+  
+  assert_names(names(dt), must.include = threshold_col)
+  assert_numeric(dt[[threshold_col]])
+  
+  threshold <- sum(dt[[threshold_col]])
+  return(threshold)
+}
+
 #' Process Tree Data Files Until Basal Area Threshold Reached
 #'
 #' This function samples from all tree data files until the basal area (`ba`) reaches
@@ -86,30 +100,42 @@ read_and_process_file <- function(path, threshold, seed, del_cols, add_cols) {
 #' @param seed An integer representing the seed value for reproducibility.
 #' @param del_cols Character vector of column names to delete after sampling.
 #' @param add_cols Character vector of column names to add from `aaa` to the sampled data.
+#' @param init_file_col Character representing the column that has the initFile file names.
+#' @param threshold_col Character representing the column name of basal area.
 #' @return A list of data.tables with sampled data and added columns.
 #' @examples
 #' dts <- process_treedata_files(aaa, "path/to/data", 123, del_cols = c("cum_sum"), add_cols = c("cell"))
 #' @export
-process_treedata_files <- function(aaa, init_files_path, seed, del_cols = NULL, add_cols = NULL) {
+process_treedata_files <- function(aaa, init_files_path, seed, del_cols = NULL, add_cols = NULL, init_file_col = "InitFileName", threshold_col = "ba") {
   # Input validations
   assertDataFrame(aaa)
   assertCharacter(init_files_path, len = 1)
   assertInt(seed)
   assertCharacter(del_cols, null.ok = TRUE)
   assertCharacter(add_cols, null.ok = TRUE)
+  assert_names(names(aaa), must.include = init_file_col)
+  
+  threshold_col_exists <- threshold_col %in% names(aaa)
+  print(threshold_col_exists)
   
   # Sample from all tree data files until basal area reaches threshold
   dts <- lapply(seq_len(nrow(aaa)), function(i) {
     row <- aaa[i, ]
-    filename <- paste0(row[["InitFileName"]], "_01.csv")
+    filename <- paste0(row[[init_file_col]], "_01.csv")
     path <- file.path(init_files_path, filename)
-    threshold <- as.numeric(row[["ba"]])
+    
+    if(threshold_col_exists) {
+      threshold <- as.numeric(row[[threshold_col]])
+    } else {
+      path <- handle_data_input(path)
+      threshold <- get_threshold_from_init_file(path, threshold_col)
+    }
     
     # Prepare columns to add
     add_cols_list <- lapply(add_cols, function(col) row[[col]])
     names(add_cols_list) <- add_cols
     
-    read_and_process_file(path, threshold, seed, del_cols, add_cols_list)
+    read_and_process_file(path, threshold, seed, del_cols, add_cols_list, threshold_col)
 
   })
   

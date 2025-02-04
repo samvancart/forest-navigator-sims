@@ -61,7 +61,6 @@ init_clim_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
 
 
 
-
 # Save all acc objects
 save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,
                               FUN = create_dir_and_save_acc_obj,
@@ -72,9 +71,157 @@ save_obj_list <- do.call(get_in_parallel, list(data = init_clim_obj_list,
 
 
 
+acc_obj <- clustered_acc_init_obj_list[[1]]$data$parTran
+
+create_dir_and_save_acc_obj(acc_obj = acc_obj, test = F, write_allas = T, allas_opts = allas_opts)
+
+acc_obj$save_path
 
 
 
+Sys.getenv("TMP")
+
+s3write_using(acc_obj, FUN = fwrite, object = "data/parTran.csv", bucket = allas_opts$bucket, opts = allas_opts$opts)
+
+
+
+s3read_using(FUN = loadRDataFile, object = "data/parTran.rdata", bucket = allas_opts$bucket, opts = allas_opts$opts)
+
+s3saveRDS(acc_obj$data$parTran, object = "parTran.rds", bucket = allas_opts$bucket, region = allas_opts$opts$region)
+
+s3readRDS(object = "parTran.rds", bucket = allas_opts$bucket, region = allas_opts$opts$region)
+
+
+data <- clustered_acc_init_obj_list[[1]]$data
+save_path <- clustered_acc_init_obj_list[[1]]$save_path
+ext <- ".rdata"
+
+item_list <- get_acc_save_data_list(data, save_path)
+lapply(item_list, function(item) save_using(write_fun = FUN, x = item$item, file = item$save_path))
+
+match.fun(FUN)
+
+FUN = "save"
+item <- item_list[[1]]$item
+file = item_list[[1]]$save_path
+
+
+dir.create("data/acc/input/simulation_sites_200/clean/plgid_7302942/climate/detrended", recursive = T)
+save_using(item, FUN, file = file)
+
+# Helper
+save_using <- function(write_fun, ...) {
+  write_fun(...)
+}
+
+
+
+
+#' Create Directory and Save ACC Object
+#'
+#' This function creates a directory and saves the ACC object to a specified base path.
+#'
+#' @param acc_obj A list containing the ACC object. Must include elements "name", "plgid", "data", and "save_path".
+#' @param base_path A string representing the base path where the files will be saved.
+#' @param test A logical flag indicating whether to run in test mode (default is FALSE).
+#' @param ... Additional arguments to save_acc_data.
+#'
+#' @return NULL
+#' @import checkmate
+#' @examples
+#' acc_obj <- list(
+#'   name = "example",
+#'   plgid = "123",
+#'   data = list(matrix1 = matrix(1:4, 2, 2), matrix2 = matrix(5:8, 2, 2)),
+#'   save_path = "/path/to/save"
+#' )
+#' create_dir_and_save_acc_obj(acc_obj, "/path/to/base", test = TRUE)
+create_dir_and_save_acc_obj <- function(acc_obj, test = FALSE, write_allas = F, allas_opts = list(), FUN_name = "save", ...) {
+  
+  # Validate inputs
+  assert_list(acc_obj, min.len = 4)
+  assert_subset(c("name", "plgid", "data", "save_path"), names(acc_obj))
+  assert_character(acc_obj$name, len = 1)
+  assert_integer(acc_obj$plgid, len = 1)
+  assert_list(acc_obj$data, min.len = 1)
+  assert_character(acc_obj$save_path, len = 1)
+  assert_logical(test, len = 1)
+  
+  
+  name <- acc_obj$name
+  plgid <- acc_obj$plgid
+  data <- acc_obj$data
+  save_path <- acc_obj$save_path
+
+  
+  # Get items and paths obj for saving
+  item_list <- get_acc_save_data_list(data = data, save_path = save_path, default_name = name, FUN_name = FUN_name)
+
+
+  if(test) {
+    message("Test not saved! save_paths:")
+    lapply(item_list, function(item) print(paste0(item$save_path)))
+  } else {
+    FUN <- match.fun(FUN_name) 
+    if(write_allas) {
+      bucket <- allas_opts$bucket
+      opts <- allas_opts$opts
+      
+      print(paste0("Saving into bucket: ", bucket, "..."))
+      invisible(lapply(item_list, function(item) {
+        save_using(write_fun = s3write_using,
+                   x = item$item, 
+                   FUN = FUN, 
+                   file = item$save_path,
+                   object = item$save_path, 
+                   bucket = bucket, 
+                   opts = opts)
+        
+        print(paste0("Saved ", item$save_path))
+      }))
+      
+  } else {
+    if(!dir.exists(save_path)) dir.create(save_path, recursive = T)
+    assert_directory_exists(save_path, access = "w")
+    invisible(lapply(item_list, function(item) {
+      save_using(write_fun = FUN, x = item$item, file = item$save_path)
+      print(paste0("Saved ", item$save_path))
+    }))
+  }
+  
+}
+
+}
+
+
+
+
+get_acc_save_data_list <- function(data, save_path, default_name = "default", FUN_name = "save") {
+  
+  # Validate inputs
+  assert_list(data, min.len = 1)
+  assert_character(save_path, len = 1)
+  assert_character(default_name, len = 1)
+  assert_function(match.fun(FUN_name))
+  
+  ext = ".rdata"
+  
+  if(FUN_name != "save") {
+    ext = ".csv"
+  }
+  
+  item_list <- invisible(lapply(seq_along(data), function(index) {
+    item <- data[[index]]
+    name <- names(data)[index]
+    if (is.null(name) || name == "") {
+      name <- default_name
+    }
+    save_file_path <- file.path(save_path, paste0(name, ext))
+    list(item = item, save_path = save_file_path)
+  }))
+  
+  return(item_list)
+}
 
 
 

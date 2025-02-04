@@ -63,12 +63,21 @@ print(t)
 
 
 
+clustered_acc_init_obj <- run_acc_with_combine_args(FUN = create_acc_clustered_tree_data,
+                                                    acc_input_obj = tree_data_acc_input_obj,
+                                                    plgid_vec = plgid_vec,
+                                                    aaa_file = aaa_file,
+                                                    clean_data_base_path = clean_data_base_path,
+                                                    get_in_parallel_args = general_get_in_parallel_args)
 
 
 
 
 
 
+
+
+# ORIGINAL RUN
 
 
 

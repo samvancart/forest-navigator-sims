@@ -39,25 +39,25 @@ run_acc_for_plgid <- function(plgid_vec,
                               allas_opts,
                               clim_paths) {
   
-  # clustered_acc_init_obj <- run_acc_with_combine_args(FUN = create_acc_clustered_tree_data,
-  #                                                     acc_input_obj = tree_data_acc_input_obj,
-  #                                                     plgid_vec = plgid_vec,
-  #                                                     aaa_file = aaa_file,
-  #                                                     clean_data_base_path = clean_data_base_path,
-  #                                                     get_in_parallel_args = get_in_parallel_args)
+  clustered_acc_init_obj <- run_acc_with_combine_args(FUN = create_acc_clustered_tree_data,
+                                                      acc_input_obj = tree_data_acc_input_obj,
+                                                      plgid_vec = plgid_vec,
+                                                      aaa_file = aaa_file,
+                                                      clean_data_base_path = clean_data_base_path,
+                                                      get_in_parallel_args = get_in_parallel_args)
   
   
-  init_clim_obj_list <- run_acc_with_combine_args(FUN = create_acc_clim_data,
+  clim_acc_init_obj_list <- run_acc_with_combine_args(FUN = create_acc_clim_data,
                                                   acc_input_obj = clim_data_acc_input_obj,
-                                                  plgid_vec = plgid_vec, 
-                                                  aaa_file = aaa_file, 
-                                                  clean_data_base_path = clean_data_base_path, 
+                                                  plgid_vec = plgid_vec,
+                                                  aaa_file = aaa_file,
+                                                  clean_data_base_path = clean_data_base_path,
                                                   get_in_parallel_args = get_in_parallel_args,
                                                   config = config,
                                                   allas_opts = allas_opts,
                                                   clim_paths = clim_paths)
   
-  return(init_clim_obj_list)
+  return(clim_acc_init_obj_list)
 }
 
 
@@ -74,8 +74,6 @@ get_filtered_clim_paths_from_bucket <- function(grid_file_path, allas_opts, plgi
 is_regex_match <- function(str_vec, regex_pat, compare_to_str) {
   return(str_extract(str_vec, regex_pat) %in% compare_to_str)
 }
-
-
 
 
 
@@ -99,9 +97,12 @@ create_acc_clim_data <- function(acc_input_obj) {
     
     
     # Get list of acc objects
-    init_clim_obj_list <- do.call(get_in_parallel, process_clim_files_parallel_args)
+    clim_acc_init_obj_list <- do.call(get_in_parallel, process_clim_files_parallel_args)
     
-    return(init_clim_obj_list)
+    cat("\n")
+    print(paste0("Done."))
+    
+    return(clim_acc_init_obj_list)
   })
 }
 

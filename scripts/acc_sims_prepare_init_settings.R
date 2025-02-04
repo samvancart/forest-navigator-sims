@@ -18,6 +18,8 @@ region <- Sys.getenv("AWS_REGION")
 allas_options <- list(region = region)
 allas_read_FUN <- fread
 allas_opts <- list(FUN = allas_read_FUN, bucket = bucket_name, opts = allas_options)
+read_allas <- c(TRUE, FALSE)[simulation_site_id]
+write_allas <- c(TRUE, FALSE)[simulation_site_id]
 
 
 # Load tree data
@@ -40,6 +42,7 @@ aaa_all <- fread(aaa_file)
 # Init files
 init_files_path <- file.path(boku_tree_data_path, "init_files")
 init_files <- list.files(init_files_path, full.names = T)
+init_file_col <- c("InitFileID", "InitFileName")[simulation_site_id]
 # assert_character(init_files, len = 64)
 
 
@@ -92,7 +95,8 @@ tree_data_path <- file.path(boku_data_path, "tree_data")
 process_treedata_files_args <- list(seed = tree_data_seed,
                  init_files_path = init_files_path,
                  del_cols = c("cum_sum"),
-                 add_cols = c("cell", "cell_300arcsec", "PlgID"))
+                 add_cols = c("cell", "cell_300arcsec", "PlgID"),
+                 init_file_col = init_file_col)
 
 # Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
 process_treedata_files_FUN <- process_treedata_files
