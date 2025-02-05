@@ -689,7 +689,7 @@ save_acc_data <- function(data, save_path, default_name = "default", test = FALS
   assert_directory_exists(dirname(save_path), access = "w")
   assert_character(default_name, len = 1)
   assert_logical(test, len = 1)
-  assert_choice(ext, c(".csv", ".rdata"))
+  assert_choice(ext, c(".csv", ".rdata", ".rds"))
   
   # Save each item in the data list
   invisible(lapply(seq_along(data), function(index) {
@@ -742,7 +742,7 @@ save_file_by_extension <- function(data, file_path) {
   file_extension <- tolower(tools::file_ext(file_path))
   
   # Validate the file extension
-  valid_extensions <- c("csv", "rdata")
+  valid_extensions <- c("csv", "rdata", "rds")
   assert_choice(file_extension, valid_extensions)
   
   # Save the file based on the extension
@@ -751,6 +751,8 @@ save_file_by_extension <- function(data, file_path) {
     fwrite(data, file_path)
   } else if (file_extension == "rdata") {
     save(data, file = file_path)
+  } else if (file_extension == "rds"){
+    saveRDS(data, file = file_path)
   } else {
     stop("Unsupported file extension")
   }
@@ -906,20 +908,26 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
   clustered_dt <- loadRDataFile(clustered_path)
   clim_mat <- loadRDataFile(clim_file_path)
   
+  
+  lookup_col <- "PlgID_05"
+  
   # Create climID data.table
-  climID_dt <- data.table(cell = clim_mat[, 1])
-  climID_dt[, climID := .GRP, by = "cell"]
+  climID_dt <- data.table(COL = as.character(clim_mat[, 1]))
+  setnames(climID_dt, old = "COL", new = lookup_col)
+  climID_dt[, climID := .GRP, by = lookup_col]
   
   # Calculate nLayers and nSpecies
   nLayers <- clustered_dt[, .N, by = group_id_name]$N
   nSpecies <- clustered_dt[, .N, by = c(group_id_name, species_id_name)][, .N, by = group_id_name]$N
   
   # Create id_lookup table
-  id_lookup <- clustered_dt[!duplicated(clustered_dt[, c(..group_id_name)])][, c("cell", ..group_id_name)]
+  id_lookup <- clustered_dt[!duplicated(clustered_dt[, c(..group_id_name)])][, c(..lookup_col, ..group_id_name)]
+  id_lookup[, (lookup_col) := as.character(get(lookup_col))]
   assert_true(nrow(unique(id_lookup)) == nrow(id_lookup))
+
   
   # Merge to create id_lookup_climID
-  id_lookup_climID <- merge(climID_dt, id_lookup, by = "cell")
+  id_lookup_climID <- merge(climID_dt, id_lookup, by = lookup_col)
   
   # Extract siteID and climID
   siteID <- seq_along(id_lookup_climID[[group_id_name]])
@@ -1026,6 +1034,9 @@ get_site_info_acc_object <- function(soil_dt,
   grid <- fread(grid_file_path)
   cell_10 <- unique(grid[PlgID == plgid]$cell_300arcsec)
   clustered_path <- grep(as.character(cell_10), clustered_paths, value = TRUE)
+  if(length(clustered_path) == 0) {
+    clustered_path <- grep(as.character(plgid), clustered_paths, value = TRUE)
+  }
   
   # Determine climate directory path
   base_clim_path <- file.path(clean_data_base_path, paste0("plgid_", plgid), "climate")
@@ -1094,18 +1105,19 @@ get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ..
   clim_dir_paths <- file.path(base_clim_path, clim_dirs)
   clim_dir_path <- grep(clim_scen, clim_dir_paths, value = TRUE)
   
-  required_files <- c("parTran.rdata", "co2Tran.rdata", "tairTran.rdata", "vpdTran.rdata", "precipTran.rdata")
+  
+  required_files <- c("parTran", "co2Tran", "tairTran", "vpdTran", "precipTran")
   
   # Loading required files using lapply
   climate_data <- lapply(required_files, function(file) {
-    file_path <- file.path(clim_dir_path, file)
+    file_path <- list.files(clim_dir_path, pattern = file, full.names = T)[1]
     assertFileExists(file_path, access = "r")
     loadRDataFile(file_path)
   })
   names(climate_data) <- required_files
   
-  site_info_path <- file.path(base_path, "site", "siteInfo.rdata")
-  multi_init_var_path <- file.path(base_path, "tree_data", "multiInitVar.rdata")
+  site_info_path <- list.files(file.path(base_path, "site"), pattern = "siteInfo", full.names = T)[1]
+  multi_init_var_path <- list.files(file.path(base_path, "tree_data"), pattern = "multiInitVar", full.names = T)[1]
   
   # Additional input validations
   assertFileExists(site_info_path, access = "r")
@@ -1121,11 +1133,11 @@ get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ..
   initPrebas <- InitMultiSite(nYearsMS = rep(nYears, nSites),
                               siteInfo = as.matrix(siteInfo),
                               multiInitVar = multiInitVar,
-                              PAR = climate_data[["parTran.rdata"]][,-1], # Remove cell column (column was required for siteInfo)
-                              VPD = climate_data[["vpdTran.rdata"]][,-1],
-                              CO2 = climate_data[["co2Tran.rdata"]][,-1],
-                              Precip = climate_data[["precipTran.rdata"]][,-1],
-                              TAir = climate_data[["tairTran.rdata"]][,-1],
+                              PAR = climate_data[["parTran"]][,-1], # Remove cell column (column was required for siteInfo)
+                              VPD = climate_data[["vpdTran"]][,-1],
+                              CO2 = climate_data[["co2Tran"]][,-1],
+                              Precip = climate_data[["precipTran"]][,-1],
+                              TAir = climate_data[["tairTran"]][,-1],
                               ...)
   
   print("Done.")
@@ -1528,6 +1540,210 @@ zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(
   # Validate that the zip file was created
   assert_file_exists(zip_to_path)
 }
+
+
+
+
+
+
+# RUN CREATE_ACC_OBJ FUNCTIONS
+
+
+# Helper
+get_filtered_clim_paths_from_bucket <- function(grid_file_path, allas_opts, plgid_pat = "(?<=plgid_)[0-9]+") {
+  bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket, region = allas_opts$opts$region))$Key
+  plgid_vec <- unique(fread(grid_file_path)$PlgID)
+  clim_paths <- bucket_list[is_regex_match(bucket_list, plgid_pat, plgid_vec)]
+  
+  return(clim_paths)
+}
+
+# Helper
+is_regex_match <- function(str_vec, regex_pat, compare_to_str) {
+  return(str_extract(str_vec, regex_pat) %in% compare_to_str)
+}
+
+
+
+
+create_acc_clim_data <- function(acc_input_obj) {
+  
+  with(acc_input_obj$args, {
+    
+    print(paste0("Getting climate data..."))
+    
+    process_clim_files_parallel_args <- 
+      c(list(data = clim_paths,
+             FUN = get_acc_init_clim_object,
+             FUN_args = list(aaa_file = aaa_file, 
+                             operations = clim_operations,
+                             clean_data_base_path = clean_data_base_path,
+                             config = config,
+                             allas_opts = allas_opts)),
+        get_in_parallel_args)
+    
+    
+    
+    # Get list of acc objects
+    clim_acc_init_obj_list <- do.call(get_in_parallel, process_clim_files_parallel_args)
+    
+    cat("\n")
+    print(paste0("Done."))
+    
+    return(clim_acc_init_obj_list)
+  })
+}
+
+
+
+
+run_acc_with_combine_args <- function(FUN, acc_input_obj, ...) {
+  # Extract the list of arguments from the object
+  args_list <- acc_input_obj$args
+  
+  # Combine the list with additional arguments
+  combined_args <- c(args_list, list(...))
+  
+  # Update the object's args with the combined arguments
+  acc_input_obj$args <- combined_args
+  
+  # print(acc_input_obj)
+  
+  # Call FUN with object as argument
+  result <- do.call(FUN, list(acc_input_obj = acc_input_obj))
+  
+  
+  return(result)
+}
+
+
+
+
+create_acc_clustered_tree_data <- function(acc_input_obj) {
+  
+  with(acc_input_obj$args, {
+    
+    
+    # Validations
+    required_names <- c(
+      "process_treedata_files_args", 
+      "assign_and_merge_args", 
+      "perform_clustering_by_group_args",
+      "aaa_split_col",
+      "plgid_vec",
+      "aaa_file",
+      "clean_data_base_path",
+      "get_in_parallel_args"
+    )
+    
+    assert_list(acc_input_obj$args)
+    assert_names(names(acc_input_obj$args), must.include = required_names)
+    
+    
+    # Run
+    print(paste0("Getting tree_data..."))
+    
+    aaa_dt <- handle_data_input(aaa_file)
+    filtered_aaa_dt <- aaa_dt[PlgID %in% plgid_vec]
+    split_aaa <- split(filtered_aaa_dt, by = "PlgID")
+    
+    process_treedata_files_parallel_args <- 
+      c(list(data = split_aaa,
+             FUN = process_treedata_files,
+             FUN_args = process_treedata_files_args),
+        get_in_parallel_args)
+    
+    
+    tree_data_dts <- do.call(get_in_parallel, process_treedata_files_parallel_args)
+    
+    cat("\n")
+    cat("\n")
+    print(paste0("Merging..."))
+    
+    assign_and_merge_args$tree_data_dts <- tree_data_dts
+    dts <- do.call(assign_and_merge, assign_and_merge_args)
+    
+    
+    cat("\n")
+    print(paste0("Clustering..."))
+    
+    clustering_args <- c(list(data = dts, 
+                              FUN = perform_clustering_by_group, 
+                              FUN_args = perform_clustering_by_group_args), 
+                         get_in_parallel_args)
+    
+    # Get clusters in parallel and combine
+    all_clusters_dt <- rbindlist(
+      do.call(get_in_parallel, clustering_args)
+    )
+    
+    cat("\n")
+    cat("\n")
+    print(paste0("Aggregating..."))
+    
+    by_cols <- c(process_treedata_files_args$add_cols, perform_clustering_by_group_args$group_cols, "cluster_id")
+    
+    # Aggregate clustered dt
+    aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100, b = sum(ba), age = as.integer(mean(age))),
+                                        by = by_cols]
+    
+    
+    # Split for saving
+    split_aggr_clusters_dt <- split(aggr_clusters_dt, by = aaa_split_col)
+    
+    
+    cat("\n")
+    print(paste0("Creating clustered_acc_init_obj_list..."))
+    
+    # Create list of acc_init_objects
+    clustered_acc_init_obj_list <- lapply(seq_along(split_aggr_clusters_dt), function(i) {
+      
+      plgid <- as.integer(names(split_aggr_clusters_dt)[i])
+      clustered_dt <- split_aggr_clusters_dt[[i]]
+      
+      # Determine save path
+      save_path <- get_acc_input_save_path(plgid, "clustered_trees", clean_data_base_path)
+      
+      # Return the result
+      list(name = "clustered", plgid = plgid, data = list(clustered_dt), save_path = save_path)
+      
+    })
+    
+    cat("\n")
+    print(paste0("Done."))
+    
+    return(clustered_acc_init_obj_list)
+    
+  })
+}
+
+
+
+
+
+# GET RUN DT FROM CLIM PATHS
+
+# Helper
+get_acc_clim_paths_run_dt <- function(all_clim_paths, 
+                                      clim_scen_pat = "(?<=/)[^/]+(?=_id_)", 
+                                      plgid_pat = "(?<=plgid_)[0-9]+") {
+  
+  plgid_vec <- str_extract(all_clim_paths, plgid_pat)
+  clim_scen_vec <- str_extract(all_clim_paths, clim_scen_pat)
+  
+  dt <- data.table(path = all_clim_paths, PlgID = plgid_vec, clim_scen = clim_scen_vec)
+  return(dt)
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

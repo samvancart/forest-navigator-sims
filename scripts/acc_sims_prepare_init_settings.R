@@ -95,7 +95,7 @@ tree_data_path <- file.path(boku_data_path, "tree_data")
 process_treedata_files_args <- list(seed = tree_data_seed,
                  init_files_path = init_files_path,
                  del_cols = c("cum_sum"),
-                 add_cols = c("cell", "cell_300arcsec", "PlgID"),
+                 add_cols = c("cell", "cell_300arcsec", "PlgID", "PlgID_05"),
                  init_file_col = init_file_col)
 
 # Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
@@ -307,6 +307,9 @@ clim_operations <- list(
   
   list(fun = setnames_fun,
        args = list(new = c("PlgID", "time", "precip", "tair", "vpd", "cell", "cell_300arcsec", "par", "co2"))),
+  
+  list(fun = function(dt) dt[, cell := as.character(cell)], # Cell is actually PlgID_05. Check and fix!
+       args = list()),
 
   list(fun = function(dt) dt[, day := .GRP, by = c("time")],
        args = list())

@@ -287,8 +287,14 @@ get_or_create_path <- function(pathVarName, defaultDir, subDir="") {
 #'
 #' @export
 loadRDataFile <- function(RDataFile) {
-  temp_env <- new.env()
-  obj <- get(load(RDataFile), temp_env)
+  file_ext <- tools::file_ext(RDataFile)
+  FUN <- switch (file_ext,
+    "rdata" = get(load(RDataFile)),
+    "rds"   = readRDS(RDataFile)
+  )
+  
+  # temp_env <- new.env()
+  obj <- FUN
   return(obj)
 }
 
