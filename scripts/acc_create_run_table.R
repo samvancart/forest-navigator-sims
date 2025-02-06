@@ -47,7 +47,8 @@ create_table_from_vars <- function(id_vars, value_vars_list, result_name = "resu
 
 
 
-table_output_files <- grep("plgid", list.files(output_base_path), value = T)
+# table_output_files <- grep("plgid", list.files(output_base_path), value = T)
+table_output_files <- grep("plgid", list.files(clean_data_base_path), value = T)
 plgid <- as.integer(unlist(tstrsplit(table_output_files, split = "_", keep = 2)))
 clim_scen <- c("detrended", "gwl2", "gwl3", "gwl4")
 man_scen <- c("noman")
@@ -93,8 +94,7 @@ acc_base_man_table <- merge.data.table(acc_base_table, acc_man_table, by = c("cl
 
 
 acc_static_vars_table <- data.table(clean_data_base_path = clean_data_base_path,
-                                    selection_path = selection_path, 
-                                    clustered_base_path = clustered_base_path, 
+                                    selection_path = selection_path,
                                     aaa_file = aaa_file,
                                     conversions_path = conversions_path,
                                     output_base_path = output_base_path,

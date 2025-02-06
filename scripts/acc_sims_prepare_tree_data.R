@@ -16,8 +16,11 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # Get PlgIDs to run from clim_paths
 all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
 all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
-plgid_vec <- as.integer(unique(all_paths_run_dt$PlgID))[1:2]
+plgid_vec <- as.integer(unique(all_paths_run_dt$PlgID))
 
+
+# TEST
+# plgid_vec <- as.integer(unlist(tstrsplit(list.files(clean_data_base_path), split = "_", keep = 2)))
 
 
 

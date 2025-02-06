@@ -862,116 +862,7 @@ get_nYears_from_acc_tran <- function(tran_dir_path) {
 
 
 
-#' Get Site Information Data Table
-#'
-#' This function generates a data.table containing site information based on the provided soil data, cluster data, and climate data.
-#' 
-#' @param filtered_soil_dt data.table containing soil data with columns `soil_depth`, `FC`, and `WP`.
-#' @param clustered_path character. Path to the clustered data file.
-#' @param clim_dir_path character. Path to the climate data directory.
-#' @param plgid integer. Seed for random number generation.
-#' @param group_id_name character. Name of the grouping column in clustered data.
-#' @param species_id_name character. Name of the species column in clustered data.
-#' @param site_type_probs numeric vector. Probabilities for site types. Default is c(.1, .3, .5, .7, .9).
-#' @param site_types numeric vector. Site types. Default is c(5, 4, 3, 2, 1).
-#' 
-#' @return data.table with site information.
-#' @export
-#' 
-#' @examples
-#' # Example usage
-#' # get_site_info_dt(filtered_soil_dt, clustered_path, clim_dir_path, plgid, group_id_name, species_id_name)
-get_acc_site_info_dt <- function(filtered_soil_dt,
-                                 clustered_path,
-                                 clim_file_path,
-                                 plgid,
-                                 group_id_name,
-                                 species_id_name,
-                                 site_type_probs = c(.1, .3, .5, .7, .9),
-                                 site_types = c(5, 4, 3, 2, 1),
-                                 rep_times = 1) {
-  
-  # Validate inputs using checkmate
-  assert_data_table(filtered_soil_dt, min.cols = 3)
-  assert_file_exists(clustered_path)
-  assert_file_exists(clim_file_path)
-  assert_integer(plgid, lower = 1)
-  assert_character(group_id_name, len = 1)
-  assert_character(species_id_name, len = 1)
-  assert_numeric(site_type_probs, lower = 0, upper = 1, len = length(site_types))
-  assert_numeric(site_types, len = length(site_type_probs))
-  assert_integer(rep_times, lower = 1)
-  
-  print(paste0("Creating siteInfo for PlgID ", plgid, "..."))
-  
-  # Load data
-  clustered_dt <- loadRDataFile(clustered_path)
-  clim_mat <- loadRDataFile(clim_file_path)
-  
-  
-  lookup_col <- "PlgID_05"
-  
-  # Create climID data.table
-  climID_dt <- data.table(COL = as.character(clim_mat[, 1]))
-  setnames(climID_dt, old = "COL", new = lookup_col)
-  climID_dt[, climID := .GRP, by = lookup_col]
-  
-  # Calculate nLayers and nSpecies
-  nLayers <- clustered_dt[, .N, by = group_id_name]$N
-  nSpecies <- clustered_dt[, .N, by = c(group_id_name, species_id_name)][, .N, by = group_id_name]$N
-  
-  # Create id_lookup table
-  id_lookup <- clustered_dt[!duplicated(clustered_dt[, c(..group_id_name)])][, c(..lookup_col, ..group_id_name)]
-  id_lookup[, (lookup_col) := as.character(get(lookup_col))]
-  assert_true(nrow(unique(id_lookup)) == nrow(id_lookup))
 
-  
-  # Merge to create id_lookup_climID
-  id_lookup_climID <- merge(climID_dt, id_lookup, by = lookup_col)
-  
-  # Extract siteID and climID
-  siteID <- seq_along(id_lookup_climID[[group_id_name]])
-  climID <- id_lookup_climID[["climID"]]
-  nSites <- length(siteID)
-  
-  print(paste0("nSites is ", nSites))
-  
-  # Sample site types
-  set.seed(plgid)
-  site_type <- sample(site_types, prob = site_type_probs, size = nSites, replace = TRUE)
-  
-  # Calculate soil-related variables
-  soil_depth_div <- filtered_soil_dt$soil_depth * 10
-  fc <- rep(filtered_soil_dt$FC / soil_depth_div, rep_times)
-  wp <- rep(filtered_soil_dt$WP / soil_depth_div, rep_times)
-  soil_depth <- rep(soil_depth_div, rep_times)
-  
-  # Initialize other variables
-  SWinit <- rep(160, nSites)
-  CWinit <- rep(0, nSites)
-  SOGinit <- rep(0, nSites)
-  Sinit <- rep(20, nSites)
-  
-  # Create the data.table
-  site_info_dt <- data.table(
-    siteID = siteID,
-    climID = climID,
-    siteType = site_type,
-    SWinit = SWinit,
-    CWinit = CWinit,
-    SOGinit = SOGinit,
-    Sinit = Sinit,
-    nLayers = nLayers,
-    nSpecies = nSpecies,
-    soildepth = soil_depth,
-    effective_field_capacity = fc,
-    permanent_wilting_point = wp
-  )
-  
-  print("Done.")
-  
-  return(site_info_dt)
-}
 
 
 
@@ -989,6 +880,8 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
 #' @param species_id_name character. Name of the species column in clustered data.
 #' @param site_type_probs numeric vector. Probabilities for site types. Default is c(.1, .3, .5, .7, .9).
 #' @param site_types numeric vector. Site types. Default is c(5, 4, 3, 2, 1).
+#' @param rep_times numeric. Number of repetitions in soil calculations.
+#' @param rep_times character. Climate scenario.
 #' 
 #' @return list containing the name, plgid, data, and save_path.
 #' @export
@@ -1068,7 +961,116 @@ get_site_info_acc_object <- function(soil_dt,
 
 
 
-
+#' Get Site Information Data Table
+#'
+#' This function generates a data.table containing site information based on the provided soil data, cluster data, and climate data.
+#' 
+#' @param filtered_soil_dt data.table containing soil data with columns `soil_depth`, `FC`, and `WP`.
+#' @param clustered_path character. Path to the clustered data file.
+#' @param clim_dir_path character. Path to the climate data directory.
+#' @param plgid integer. Seed for random number generation.
+#' @param group_id_name character. Name of the grouping column in clustered data.
+#' @param species_id_name character. Name of the species column in clustered data.
+#' @param site_type_probs numeric vector. Probabilities for site types. Default is c(.1, .3, .5, .7, .9).
+#' @param site_types numeric vector. Site types. Default is c(5, 4, 3, 2, 1).
+#' 
+#' @return data.table with site information.
+#' @export
+#' 
+#' @examples
+#' # Example usage
+#' # get_site_info_dt(filtered_soil_dt, clustered_path, clim_dir_path, plgid, group_id_name, species_id_name)
+get_acc_site_info_dt <- function(filtered_soil_dt,
+                                 clustered_path,
+                                 clim_file_path,
+                                 plgid,
+                                 group_id_name,
+                                 species_id_name,
+                                 site_type_probs = c(.1, .3, .5, .7, .9),
+                                 site_types = c(5, 4, 3, 2, 1),
+                                 rep_times = 1) {
+  
+  # Validate inputs using checkmate
+  assert_data_table(filtered_soil_dt, min.cols = 3)
+  assert_file_exists(clustered_path)
+  assert_file_exists(clim_file_path)
+  assert_integer(plgid, lower = 1)
+  assert_character(group_id_name, len = 1)
+  assert_character(species_id_name, len = 1)
+  assert_numeric(site_type_probs, lower = 0, upper = 1, len = length(site_types))
+  assert_numeric(site_types, len = length(site_type_probs))
+  assert_integer(rep_times, lower = 1)
+  
+  print(paste0("Creating siteInfo for PlgID ", plgid, "..."))
+  
+  # Load data
+  clustered_dt <- loadRDataFile(clustered_path)
+  clim_mat <- loadRDataFile(clim_file_path)
+  
+  
+  lookup_col <- "PlgID_05"
+  
+  # Create climID data.table
+  climID_dt <- data.table(COL = as.character(clim_mat[, 1]))
+  setnames(climID_dt, old = "COL", new = lookup_col)
+  climID_dt[, climID := .GRP, by = lookup_col]
+  
+  # Calculate nLayers and nSpecies
+  nLayers <- clustered_dt[, .N, by = group_id_name]$N
+  nSpecies <- clustered_dt[, .N, by = c(group_id_name, species_id_name)][, .N, by = group_id_name]$N
+  
+  # Create id_lookup table
+  id_lookup <- clustered_dt[!duplicated(clustered_dt[, c(..group_id_name)])][, c(..lookup_col, ..group_id_name)]
+  id_lookup[, (lookup_col) := as.character(get(lookup_col))]
+  assert_true(nrow(unique(id_lookup)) == nrow(id_lookup))
+  
+  
+  # Merge to create id_lookup_climID
+  id_lookup_climID <- merge(climID_dt, id_lookup, by = lookup_col)
+  
+  # Extract siteID and climID
+  siteID <- seq_along(id_lookup_climID[[group_id_name]])
+  climID <- id_lookup_climID[["climID"]]
+  nSites <- length(siteID)
+  
+  print(paste0("nSites is ", nSites))
+  
+  # Sample site types
+  set.seed(plgid)
+  site_type <- sample(site_types, prob = site_type_probs, size = nSites, replace = TRUE)
+  
+  # Calculate soil-related variables
+  soil_depth_div <- filtered_soil_dt$soil_depth * 10
+  fc <- rep(filtered_soil_dt$FC / soil_depth_div, rep_times)
+  wp <- rep(filtered_soil_dt$WP / soil_depth_div, rep_times)
+  soil_depth <- rep(soil_depth_div, rep_times)
+  
+  # Initialize other variables
+  SWinit <- rep(160, nSites)
+  CWinit <- rep(0, nSites)
+  SOGinit <- rep(0, nSites)
+  Sinit <- rep(20, nSites)
+  
+  # Create the data.table
+  site_info_dt <- data.table(
+    siteID = siteID,
+    climID = climID,
+    siteType = site_type,
+    SWinit = SWinit,
+    CWinit = CWinit,
+    SOGinit = SOGinit,
+    Sinit = Sinit,
+    nLayers = nLayers,
+    nSpecies = nSpecies,
+    soildepth = soil_depth,
+    effective_field_capacity = fc,
+    permanent_wilting_point = wp
+  )
+  
+  print("Done.")
+  
+  return(site_info_dt)
+}
 
 
 
@@ -1203,16 +1205,17 @@ get_modOut <- function(FUN, initPrebas, ...) {
 
 get_siteID_lookup <- function(plgid, 
                               filtered_selection_path, 
-                              clustered_base_path, 
+                              clean_data_base_path, 
                               aaa_path, 
                               id_col_name = "forested_ha_id",
+                              use_id = "PlgID_05",
                               sep = "_",
                               keep = 2) {
   
   # Input validations using checkmate
   assert_number(plgid, finite = TRUE)
   assert_file_exists(filtered_selection_path, access = "r")
-  assert_directory_exists(clustered_base_path)
+  assert_directory_exists(clean_data_base_path)
   assert_file_exists(aaa_path, access = "r")
   assert_string(id_col_name)
   assert_string(sep)
@@ -1222,31 +1225,27 @@ get_siteID_lookup <- function(plgid,
   selection_plgid_dt <- fread(filtered_selection_path)[PlgID == plgid]
   if (nrow(selection_plgid_dt) == 0) stop("No data found for the given PlgID")
   
-  # Extract unique cell identifier
-  cell_10 <- unique(selection_plgid_dt$cell_300arcsec)
-  if (length(cell_10) != 1) stop("Expected a single unique cell identifier")
-  
   # Load the clustered data
-  clustered_dt <- loadRDataFile(file.path(clustered_base_path, paste0("clustered_", cell_10, ".rdata")))
+  # clustered_dt <- loadRDataFile(file.path(clean_data_base_path, paste0("clustered_", cell_10, ".rdata")))
+  clustered_path <- list.files(clean_data_base_path, 
+                               pattern = paste0("clustered_plgid_", plgid), full.names = T, recursive = T)[1]
+  clustered_dt <- loadRDataFile(clustered_path)
   if (is.null(clustered_dt) || nrow(clustered_dt) == 0) stop("No clustered data found")
   
+  
   # Create a lookup table and extract necessary columns
-  clustered_dt_lookup <- unique(clustered_dt[, c(1:3)])
+  assert_names(names(clustered_dt), must.include = c(use_id, id_col_name))
+  clustered_dt_lookup <- unique(clustered_dt[, c(..use_id, ..id_col_name)])
   clustered_dt_lookup[, site := as.integer(unlist(tstrsplit(get(id_col_name), split = sep, keep = keep)))]
   
   # Read the AAA data
   aaa_all <- fread(aaa_path)
   if (is.null(aaa_all) || nrow(aaa_all) == 0) stop("No AAA data found")
   
-  # Merge the lookup table with the selection data
-  siteID_selection_lookup <- merge(clustered_dt_lookup, selection_plgid_dt, 
-                                   by.x = c("cell", "cell_300arcsec"), 
-                                   by.y = c("BOKU_ID", "cell_300arcsec"))
-  
   # Merge with AAA data to include forest type
-  siteID_all_lookup <- merge(siteID_selection_lookup, 
-                             aaa_all[cell_300arcsec == cell_10][, c("cell", "cell_300arcsec", "forest_type")], 
-                             by = c("cell", "cell_300arcsec"))
+  siteID_all_lookup <- merge(clustered_dt_lookup, 
+                             aaa_all[PlgID == plgid][, c(..use_id, "forest_type")], 
+                             by = c(use_id))
   
   # Select final columns for the output
   siteID_lookup <- siteID_all_lookup[, .(site, PlgID_05, forest_type)]
@@ -1337,14 +1336,14 @@ get_multiOut_from_run_table_row <- function(row) {
 
 # Helper
 get_acc_output_dt_from_run_table_row <- function(row, multiOut, selection_path, 
-                                                 clustered_base_path, aaa_file, 
+                                                 clean_data_base_path, aaa_file, 
                                                  conversions_path,
                                                  species_lookup_path) {
   # Check input validity
   assert_list(row)
   assert_array(multiOut, d = 5)
   assert_character(selection_path, len = 1)
-  assert_character(clustered_base_path, len = 1)
+  assert_character(clean_data_base_path, len = 1)
   assert_character(aaa_file, len = 1)
   assert_character(conversions_path, len = 1)
   assert_character(species_lookup_path, len = 1)
@@ -1354,7 +1353,8 @@ get_acc_output_dt_from_run_table_row <- function(row, multiOut, selection_path,
   out_dt_melted <- with(row, {
     
     # Load lookup files
-    siteID_lookup <- get_siteID_lookup(plgid, selection_path, clustered_base_path, aaa_file)
+    siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
+    print(siteID_lookup)
     conversions_dt <- fread(conversions_path)
     species_lookup <- fread(species_lookup_path)
     
@@ -1430,7 +1430,7 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
   assert_data_table(acc_run_table)
   required_columns <- c("plgid", "model", "country", "clim_scen", "man_scen", 
                         "canopy_layer", "man_init_args", "clean_data_base_path", 
-                        "selection_path", "clustered_base_path", "aaa_file", 
+                        "selection_path", "aaa_file", 
                         "conversions_path", "output_base_path", 
                         "species_lookup_path", "varOutID", "vHarv")
   assert_true(all(required_columns %in% names(acc_run_table)))
@@ -1446,7 +1446,7 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
       
       # Get output dt
       out_dt_melted <- get_acc_output_dt_from_run_table_row(row, multiOut, selection_path, 
-                                                            clustered_base_path, aaa_file, 
+                                                            clean_data_base_path, aaa_file, 
                                                             conversions_path,
                                                             species_lookup_path)
       

@@ -329,7 +329,7 @@ output_base_path <- paste0("data/acc/output/", simulation_site)
 
 
 # Paths for siteID lookup creation
-selection_path <- paste0("data/acc/input/", simulation_site, "/raw/grid/filtered_selection_fi_cell10.csv")
+selection_path <- grid_file_path
 clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 
 

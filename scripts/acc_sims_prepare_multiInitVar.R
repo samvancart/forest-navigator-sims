@@ -11,6 +11,8 @@ source(config$PATH_acc_sims_prepare_init_settings)
 clustered_paths <- list.files(clean_data_base_path, pattern = "clustered",  recursive = T, full.names = T)
 
 
+
+
 # Get acc objects
 multiInitVar_obj_list <- do.call(get_in_parallel, list(data = clustered_paths,
                                       FUN = get_multiInitVar_object,

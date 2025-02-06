@@ -10,7 +10,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 # GET RUN TABLE FROM acc_create_run_table
-acc_run_tables_list <- split(acc_run_table, by = c("plgid"))
+acc_run_tables_list <- split(acc_run_table, by = c("plgid"))[1]
 
 
 # Get output using run table
@@ -21,6 +21,9 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
                                                  type = type)), recursive = F)
 
 
+
+
+output_obj <- produce_acc_output_obj_from_run_table(acc_run_tables_list[[1]])
 
 
 # Save all acc objects
