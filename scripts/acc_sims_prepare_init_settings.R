@@ -60,6 +60,7 @@ codes_with_speciesID_dt <- fread(file = species_codes_lookup_path)[, ..species_c
 assert_names(names(codes_with_speciesID_dt), must.include = species_codes_cols)
 
 
+
 # Select one 10km cell
 cells_10 <- unique(aaa_all$cell_300arcsec)
 # cells_10_id <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
@@ -344,7 +345,6 @@ conversions_dt <- fread(conversions_path)
 
 # lookup for species IDs
 species_lookup <- fread(species_codes_lookup_path)
-
 
 
 

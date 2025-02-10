@@ -4,6 +4,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 # clustered_paths <- list.files(boku_data_path, pattern = "clustered",  recursive = T, full.names = T)
 clustered_paths <- list.files(clean_data_base_path, pattern = "clustered",  recursive = T, full.names = T)
+plgid_vec <- as.integer(unlist(tstrsplit(clustered_paths, split = "[/_]", keep = 9)))
 soil_dt <- fread(soil_file_path)[PlgID %in% plgid_vec]
 setnames(soil_dt, old = "soil depth", new = "soil_depth")
 

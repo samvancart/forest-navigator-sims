@@ -851,7 +851,7 @@ create_dir_and_save_acc_obj <- function(acc_obj, base_path, test = FALSE, ...) {
 
 get_nYears_from_acc_tran <- function(tran_dir_path) {
   assert_directory(tran_dir_path)
-  parTran_path <- file.path(tran_dir_path, "parTran.rdata")
+  parTran_path <- list.files(tran_dir_path, pattern = "par", full.names = T)
   assert_file_exists(parTran_path)
   
   parTran <- loadRDataFile(parTran_path)
@@ -1114,8 +1114,10 @@ get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ..
   climate_data <- lapply(required_files, function(file) {
     file_path <- list.files(clim_dir_path, pattern = file, full.names = T)[1]
     assertFileExists(file_path, access = "r")
-    loadRDataFile(file_path)
+    mat <- loadRDataFile(file_path)
+    mat <- apply(mat, 2, as.numeric)
   })
+  
   names(climate_data) <- required_files
   
   site_info_path <- list.files(file.path(base_path, "site"), pattern = "siteInfo", full.names = T)[1]
@@ -1354,10 +1356,9 @@ get_acc_output_dt_from_run_table_row <- function(row, multiOut, selection_path,
     
     # Load lookup files
     siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
-    print(siteID_lookup)
     conversions_dt <- fread(conversions_path)
     species_lookup <- fread(species_lookup_path)
-    
+
     # Get multiOut as dt
     out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
     out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
@@ -1472,15 +1473,10 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
 
 
 # Helper to create list of dts for zipping files
-get_split_grouped_output_dt <- function(output_base_path, output_folder_name = "output_files", zip_folder_name = "zip") {
+get_split_grouped_output_dt <- function(output_paths, zip_folder_name = "zip") {
   
-  output_folder <- file.path(output_base_path, output_folder_name)
-  out_files <- list.files(output_folder, full.names = F)
-  full_paths <- list.files(output_folder, full.names = T)
-  
-  
-  zip_dt <- as.data.table(tstrsplit(out_files, split = "[_.]"))
-  zip_dt[, path := full_paths]
+  zip_dt <- as.data.table(tstrsplit(basename(output_paths), split = "[_.]"))
+  zip_dt[, path := output_paths]
   zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
   zip_dt[, name := paste0(V3, "_", V4, ".zip")]
   zip_folder_name <- "zip"
