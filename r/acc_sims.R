@@ -1472,6 +1472,43 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
 # Zip output
 
 
+# FROM ALLAS
+
+# Save an s3 object into a provided tempdir and zip. Delete the file after (but not the tempdir).
+zip_s3_output_file <- function(full_zip_path, file_path, allas_opts, temp_dir = tempdir(), ...) {
+  
+  file <- basename(file_path)
+  
+  temp_path <- file.path(temp_dir, file)
+  on.exit(unlink(temp_path))
+  
+  save_object(object =  file_path, bucket = allas_opts$bucket, file = temp_path, region = allas_opts$opts$region)
+  
+  zip_output_files(full_zip_path, temp_path, ...)
+  
+}
+
+
+# Create tempdir and zip files from s3 storage one based on a data.table. Additional args can be passed
+# to both zip_s3_output_file and mclapply respectively.
+zip_s3_output_file_from_dt <- function(zip_dt, allas_opts, ...) {
+  
+  temp_dir <- tempdir()
+  on.exit(unlink(temp_dir, recursive = T))
+  
+  full_zip_paths <- zip_dt$full_zip_path
+  file_paths <- zip_dt$path
+  
+  mclapply(seq(full_zip_paths), function(i) {
+    full_zip_path <- full_zip_paths[i]
+    file_path <- file_paths[i]
+    zip_args <- list(full_zip_path = full_zip_path, file_path = file_path, allas_opts = allas_opts)
+    do.call(zip_s3_output_file, c(zip_args, ...))
+  }, ...)
+}
+
+
+
 # Helper to create list of dts for zipping files
 get_split_grouped_output_dt <- function(output_paths, zip_folder_name = "zip") {
   
@@ -1512,7 +1549,7 @@ zip_output_files_from_dt <- function(zip_dt, ...) {
 #' full_zip_path <- "/path/to/your/output/archive.zip"
 #' file_paths <- c("/path/to/your/output_files/file1.txt", "/path/to/your/output_files/file2.txt")
 #' zip_output_files(full_zip_path, file_paths)
-zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd()) {
+zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(), ...) {
   # Validate inputs
   assert_character(file_paths, any.missing = FALSE, min.len = 1)
   assert_directory_exists(dirname(full_zip_path))
@@ -1730,7 +1767,6 @@ get_acc_clim_paths_run_dt <- function(all_clim_paths,
   dt <- data.table(path = all_clim_paths, PlgID = plgid_vec, clim_scen = clim_scen_vec)
   return(dt)
 }
-
 
 
 
