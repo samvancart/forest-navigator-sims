@@ -1510,13 +1510,14 @@ zip_s3_output_file_from_dt <- function(zip_dt, allas_opts, ...) {
 
 
 # Helper to create list of dts for zipping files
-get_split_grouped_output_dt <- function(output_paths, zip_folder_name = "zip") {
+get_split_grouped_output_dt <- function(output_paths, 
+                                        output_base_path = "data/acc/output/simulation_sites_200", 
+                                        zip_folder_name = "zip") {
   
   zip_dt <- as.data.table(tstrsplit(basename(output_paths), split = "[_.]"))
   zip_dt[, path := output_paths]
   zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
   zip_dt[, name := paste0(V3, "_", V4, ".zip")]
-  zip_folder_name <- "zip"
   zip_folder_path <- file.path(output_base_path, zip_folder_name)
   zip_dt[, full_zip_path := file.path(zip_folder_path, name)]
   
@@ -1556,7 +1557,7 @@ zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(
   
   wrkdir <- original_wrkdir
   on.exit(setwd(wrkdir))
-  zip_to_path <- file.path(wrkdir, full_zip_path)
+  zip_to_path <- file.path(full_zip_path)
   
   # Extract directory paths and filenames
   zip_files_dir <- unique(dirname(file_paths))
@@ -1568,14 +1569,38 @@ zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(
   setwd(zip_files_dir)
   
   # Zip
-  zip(zip_to_path, files = basename(zip_files))
+  utils::zip(zip_to_path, files = basename(zip_files))
 
   # Validate that the zip file was created
   assert_file_exists(zip_to_path)
 }
 
 
-
+zip_output_files_using <- function(FUN, zipfile, extra_FUN_args = list(), files, original_wrkdir = getwd(), ...) {
+  # Validate inputs
+  assert_character(files, any.missing = FALSE, min.len = 1)
+  assert_directory_exists(dirname(zipfile))
+  
+  wrkdir <- original_wrkdir
+  on.exit(setwd(wrkdir))
+  zip_to_path <- file.path(zipfile)
+  
+  # Extract directory paths and filenames
+  zip_files_dir <- unique(dirname(files))
+  zip_files <- basename(files)
+  
+  # Validate that all file paths have the same directory
+  assert_true(length(zip_files_dir) == 1)
+  
+  setwd(zip_files_dir)
+  
+  args <- c(list(zipfile = zipfile, files = zip_files), extra_FUN_args)
+  
+  do.call(FUN, args)
+  
+  # Validate that the zip file was created
+  assert_file_exists(zip_to_path)
+}
 
 
 
