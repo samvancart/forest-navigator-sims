@@ -31,7 +31,7 @@ zip_file_name <- zip_dt$name[1]
 
 
 
-
+# Modify to accept save_object or put_object FUN
 load_file_from_allas <- function(object, base_dir, allas_opts, ...) {
   file <- file.path(base_dir, basename(object))
   save_object(object =  object,
@@ -43,11 +43,24 @@ load_file_from_allas <- function(object, base_dir, allas_opts, ...) {
 }
 
 
-# Load files, zip them and finally move the files to a location. 
-# Note: zipfile_base_path defaults to "." which is the temp_dir that will be created instead of
-# the directory returned by getwd(). If you want to write the zip file directly into a directory then
-# zipfile_base_path must be an absolute path to that directory.
-load_zip_move <- function(zipfile, files, zip_opts = list(), zipfile_base_path = ".", ...) {
+
+
+### Load files from allas, zip them and finally move the files to a location (Allas or filesystem).
+#
+# When move_to_path is provided and is a path the zipped file will be written into the Allas bucket provided in allas_opts
+# using move_to_path as the object key. If zipfile is an absolute path to a existing directory and move_to_path
+# is a path then the file will be written to both zipfile and Allas.
+#
+# Note: When zipfile is not an absolute path, it is viewed as a relative path to the temporary directory path that is 
+# created by the function. If you want the zipfile to be written directly into a directory then you must
+# specify the absolute path to the directory.
+#
+load_zip_move <- function(zipfile, 
+                          files, 
+                          zip_opts = list(),
+                          move_to_path = NULL,
+                          allas_opts = list(),
+                          ...) {
 
   temp_dir <- tempdir()
   print(temp_dir)
@@ -57,10 +70,8 @@ load_zip_move <- function(zipfile, files, zip_opts = list(), zipfile_base_path =
   
   
   
-  
-
-  # Get files from allas
-  zip_files <- unlist(do.call(get_in_parallel, c(list(data = files,
+  # Get files from allas. Specify cores and type to run in parallel.
+  files <- unlist(do.call(get_in_parallel, c(list(data = files,
                                                       FUN = load_file_from_allas,
                                                       FUN_args = list(base_dir = temp_dir,
                                                                       allas_opts = allas_opts)),
@@ -68,21 +79,17 @@ load_zip_move <- function(zipfile, files, zip_opts = list(), zipfile_base_path =
 
   
     
-  print(zip_files)
+  print(files)
   cat("\n")
   print(list.files(temp_dir))
   
-  
-  if(zipfile_base_path == ".") {
-    zipfile <- file.path(temp_dir, zipfile)
-  }
   
   assert_directory_exists(dirname(zipfile))
   
   print(paste0("Zipping to ", zipfile))
 
   # Zip the files
-  zip_args <- c(list(zipfile = zipfile, files = zip_files), zip_opts)
+  zip_args <- c(list(zipfile = zipfile, files = files), zip_opts)
   t <- system.time(
     do.call(zip_output_files_using, zip_args)
   )
@@ -97,14 +104,18 @@ load_zip_move <- function(zipfile, files, zip_opts = list(), zipfile_base_path =
 
 
 
+
 zipfile <- basename(zip_dt$full_zip_path[1])
 zipfile <- file.path(getwd(), zip_dt$full_zip_path[1])
+
+
 
 load_zip_move(zipfile = zipfile, 
                         files = zip_dt$path,
                         zip_opts = list(FUN = utils::zip,
                                         extra_FUN_args = list(flags = "-u")),
-                        zipfile_base_path = ".",
+                        move_to_path = NULL,
+                        allas_opts = allas_opts,
                         cores = 3,
                         type = type)
 
