@@ -1472,39 +1472,100 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
 # Zip output
 
 
-# FROM ALLAS
-
-# Save an s3 object into a provided tempdir and zip. Delete the file after (but not the tempdir).
-zip_s3_output_file <- function(full_zip_path, file_path, allas_opts, temp_dir = tempdir(), ...) {
+# FUN is either save_object or put_object from the aws.S3 lib. 
+# Object is the full allas object Key. base_dir is the directory to save to/load from.
+save_or_put_allas <- function(FUN, base_dir, object, ...) {
   
-  file <- basename(file_path)
+  # Input validation
+  assert_function(FUN)
   
-  temp_path <- file.path(temp_dir, file)
-  on.exit(unlink(temp_path))
-  
-  save_object(object =  file_path, bucket = allas_opts$bucket, file = temp_path, region = allas_opts$opts$region)
-  
-  zip_output_files(full_zip_path, temp_path, ...)
-  
+  file <- file.path(base_dir, basename(object))
+  args <- c(list(object =  object, file = file), ...)
+  do.call(FUN, args)
+  return(file)
 }
 
 
-# Create tempdir and zip files from s3 storage one based on a data.table. Additional args can be passed
-# to both zip_s3_output_file and mclapply respectively.
-zip_s3_output_file_from_dt <- function(zip_dt, allas_opts, ...) {
+
+
+### Load files from allas, zip them and finally move the files to a location (Allas/filesystem/both).
+#
+# When move_to_path is provided and is a path, the zipped file will be written into the Allas bucket provided in 
+# save_or_put_opts using <move_to_path/basename(zipfile)> as the object key. If zipfile is an absolute path to a 
+# existing directory and move_to_path is a path then the file will be written to both zipfile and Allas.
+#
+# Note: When zipfile is not an absolute path, it is viewed as a path relative to the temporary directory path that is 
+# created by the function. This directory is deleted on exiting the function. 
+# If you want the zipfile to be written directly into a directory then you must specify the absolute path to the directory.
+#
+load_zip_move <- function(zipfile, 
+                          files, 
+                          zip_opts = list(),
+                          move_to_path = NULL,
+                          save_or_put_opts = list(),
+                          ...) {
+  
   
   temp_dir <- tempdir()
-  on.exit(unlink(temp_dir, recursive = T))
+  on.exit(
+    if(dir.exists(temp_dir)) unlink(temp_dir, recursive = T)
+  )
   
-  full_zip_paths <- zip_dt$full_zip_path
-  file_paths <- zip_dt$path
   
-  mclapply(seq(full_zip_paths), function(i) {
-    full_zip_path <- full_zip_paths[i]
-    file_path <- file_paths[i]
-    zip_args <- list(full_zip_path = full_zip_path, file_path = file_path, allas_opts = allas_opts)
-    do.call(zip_s3_output_file, c(zip_args, ...))
-  }, ...)
+  # Get files from Allas. Specify cores and type inside ... to run in parallel.
+  files <- unlist(do.call(get_in_parallel, c(list(data = files,
+                                                  FUN = save_or_put_allas,
+                                                  FUN_args = c(list(FUN = save_object,
+                                                                    base_dir = temp_dir), 
+                                                               save_or_put_opts)),
+                                             ...)))
+  
+  # Check that all the files were created
+  invisible(sapply(files, assert_file_exists))
+  
+  # Check zipfile dir exists if not temp_dir
+  if(dirname(zipfile) != ".") {
+    assert_directory_exists(dirname(zipfile))
+    print(paste0("Zipping to ", zipfile, "..."))
+  } else {
+    print(paste0("Zipping to tempdir..."))
+  }
+  
+  
+  # Zip the files
+  zip_args <- c(list(zipfile = zipfile, files = files), zip_opts)
+  t <- system.time(
+    do.call(zip_output_files_using, zip_args)
+  )
+  
+  print(t)
+  
+  cat("\n")
+  
+  
+  # Put object to Allas
+  if(!is.null(move_to_path)) {
+    object <- file.path(move_to_path, basename(zipfile))
+    
+    message(paste0("Saving into Allas path: ", object, "..."))
+    
+    # Set default base_dir
+    base_dir <- dirname(zipfile)
+    
+    # Where to look for the object to put. Either temp_dir or zipfile dir.
+    zipfile_in_temp <- file.exists(file.path(temp_dir, basename(zipfile)))
+    if(zipfile_in_temp) {
+      base_dir <- temp_dir
+    }
+    
+    # Save to Allas
+    save_or_put_allas(FUN = put_object,
+                      base_dir = base_dir,
+                      object = object,
+                      save_or_put_opts)
+  }
+  
+  
 }
 
 
