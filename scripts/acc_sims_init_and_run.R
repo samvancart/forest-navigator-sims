@@ -1,5 +1,5 @@
 # This script is for initialising and running PREBAS using the regionPrebas function.
-# A run_table is required for running this script.
+# A run_table is required for running this script as well as a named list of the required paths.
 # The output is processed according to the ForestNav output template and saved.
 
 source('scripts/settings.R')
@@ -17,7 +17,7 @@ array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
 max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
 
 
-# max_array_jobID <- 31
+max_array_jobID <- 31
 # array_jobID <- 1
 
 run_dt_max_part_size <- floor(nrow(acc_run_table)/max_array_jobID)
@@ -37,29 +37,74 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
-# Get output using run table
-output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
-                                                 FUN = produce_acc_output_obj_from_run_table,
-                                                 FUN_args = list(),
-                                                 cores = cores,
-                                                 type = type)), recursive = F)
+
+#### TEST ##########
+
+acc_run_test <- acc_run_tables_list[[1]]
+
+
+
+acc_run_table_vals <- acc_run_test[, c(1:7, 14:15)]
+acc_run_table_paths <- acc_run_test[, 8:13]
+
+acc_run_table_vals[, model := as.character(model)]
+acc_run_table_vals[, country := as.character(country)]
+
+vals <- as.list(acc_run_table_vals)
+paths <- as.list(acc_run_table_paths)
+
+vals$model <- as.character(vals$model) 
+class(vals$model)
+
+
+
+acc_output_obj <- acc_run_table_controller(acc_run_table_vals, paths, produce_acc_output_obj)
+
+
+
+#### END TEST ##########
 
 
 
 
 
 
-# Save to allas
-allas_output_path <- "output/simulation_sites_200/output_files"
-invisible(lapply(output_obj_list, function(item) {
-  dt <- item$data[[1]]
-  print(paste0("Saving ", item$name, " to ", allas_output_path, " in allas..."))
-  s3write_using(x = dt,
-                FUN = fwrite,
-                object = file.path(allas_output_path, paste0(item$name, ".csv")),
-                bucket = allas_opts$bucket,
-                opts = c(list(multipart = T), allas_opts$opts))
-}))
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # Get output using run table
+# output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
+#                                                  FUN = produce_acc_output_obj_from_run_table,
+#                                                  FUN_args = list(),
+#                                                  cores = cores,
+#                                                  type = type)), recursive = F)
+# 
+# 
+# 
+# 
+# 
+# 
+# # Save to allas
+# allas_output_path <- "output/simulation_sites_200/output_files"
+# invisible(lapply(output_obj_list, function(item) {
+#   dt <- item$data[[1]]
+#   print(paste0("Saving ", item$name, " to ", allas_output_path, " in allas..."))
+#   s3write_using(x = dt,
+#                 FUN = fwrite,
+#                 object = file.path(allas_output_path, paste0(item$name, ".csv")),
+#                 bucket = allas_opts$bucket,
+#                 opts = c(list(multipart = T), allas_opts$opts))
+# }))
 
 
 

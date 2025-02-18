@@ -1314,88 +1314,77 @@ merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv 
 # OUTPUT
 
 
-
-# Helper
-get_multiOut_from_run_table_row <- function(row) {
-  # Check input validity
-  assert_list(row)
-  assert_true(all(c("plgid", "clim_scen", "clean_data_base_path", "man_init_args") %in% names(row)))
+# Wrapper to call the function that runs the model and gets the acc_output_obj.
+# The run_table contains the varying values. Paths contains the static values (the paths).
+# FUN is the function to call. The function is called sequentially for run_table rows.
+# Returns a list of the objects returned from each call to FUN.
+acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_obj) {
   
-  multiOut <- with(row, {
-    # Init model
-    init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
-    initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
-    modOut <- get_modOut(regionPrebas, initPrebas)
-    multiOut <- modOut$multiOut
-    multiOut
+  assert_data_table(run_table, min.rows = 1)
+  assert_list(paths)
+  assert_function(FUN)
+  
+  result_list <- apply(run_table, 1, function(row) {
+    
+    vals <- as.list(row)
+    args <- c(vals, paths)
+    
+    do.call(FUN, args)
   })
   
-  return(multiOut)
+  return(result_list)
 }
 
 
-
-
-# Helper
-get_acc_output_dt_from_run_table_row <- function(row, multiOut, selection_path, 
-                                                 clean_data_base_path, aaa_file, 
-                                                 conversions_path,
-                                                 species_lookup_path) {
-  # Check input validity
-  assert_list(row)
+# Transform multiOut to melted output table
+get_acc_output_dt <- function(plgid, model, country, 
+                              clim_scen, man_scen, canopy_layer,
+                              vHarv, varOutID, multiOut, selection_path,
+                              clean_data_base_path, aaa_file,
+                              conversions_path,
+                              species_lookup_path, ...) {
+  
+  
   assert_array(multiOut, d = 5)
-  assert_character(selection_path, len = 1)
-  assert_character(clean_data_base_path, len = 1)
-  assert_character(aaa_file, len = 1)
-  assert_character(conversions_path, len = 1)
-  assert_character(species_lookup_path, len = 1)
-  assert_true(all(c("plgid", "model", "country", "clim_scen", "man_scen", "canopy_layer") %in% names(row)))
   
+  # Load lookup files
+  siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
+  conversions_dt <- fread(conversions_path)
+  species_lookup <- fread(species_lookup_path)
   
-  out_dt_melted <- with(row, {
-    
-    # Load lookup files
-    siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
-    conversions_dt <- fread(conversions_path)
-    species_lookup <- fread(species_lookup_path)
-
-    # Get multiOut as dt
-    out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
-    out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
-    
-    add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen, 
-                     Management_scenario = man_scen, Canopy_layer = canopy_layer)
-    # Get operations
-    output_operations <- get_output_operations(plgid, multiOut, conversions_dt, siteID_lookup, species_lookup, add_cols)
-    
-    # Get output dt
-    transform_and_add_columns(out_dt_wide, output_operations)
-  })
+  # Get multiOut as dt
+  out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
+  out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
   
-  return(out_dt_melted)
+  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
+                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
+  # Get operations
+  output_operations <- get_output_operations(plgid, multiOut, conversions_dt, siteID_lookup, species_lookup,
+                                             model, country, clim_scen, man_scen, canopy_layer, vHarv, ...)
+  
+  # Get output dt
+  return(transform_and_add_columns(out_dt_wide, output_operations))
 }
 
 
-# Helper
-get_acc_out_obj_from_run_table_row <- function(row, out_dt) {
+# Construct table name and save path then combine with data and plgid into 
+# acc object for saving 
+get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, 
+                            man_scen, output_base_path) {
   # Check input validity
-  assert_list(row)
-  assert_true(all(c("model", "plgid", "clim_scen", "man_scen", "output_base_path") %in% names(row)))
   assert_data_table(out_dt)
   
-  acc_out_obj <- with(row, {
-    
-    # Create name according to output template
-    clim_scen <- ifelse(clim_scen=="detrended", "historical", clim_scen)
-    output_template_vector <- c(model, plgid, clim_scen, man_scen)
-    name <- str_c(output_template_vector, collapse = "_")
-    
-    # Get save path
-    # save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
-    save_path <- file.path(output_base_path, "output_files")
-    
-    list(name = name, plgid = plgid, data = list(out_dt), save_path = save_path)
-  })  
+  
+  # Create name according to output template
+  clim_scen <- ifelse(clim_scen=="detrended", "historical", clim_scen)
+  output_template_vector <- c(model, plgid, clim_scen, man_scen)
+  name <- str_c(output_template_vector, collapse = "_")
+  
+  # Get save path
+  # save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
+  save_path <- file.path(output_base_path, "output_files")
+  
+  acc_out_obj <- list(name = name, plgid = plgid, data = list(out_dt), save_path = save_path)
   
   return(acc_out_obj)
 }
@@ -1403,63 +1392,72 @@ get_acc_out_obj_from_run_table_row <- function(row, out_dt) {
 
 
 
-#' Produce ACC Output Objects from Run Table
-#'
-#' This function processes each row of the `acc_run_table` to produce ACC output objects.
-#' It performs various steps including initializing models, creating output data tables,
-#' and creating ACC output objects.
-#'
-#' @param acc_run_table A data.table containing the run table data with required columns.
-#' @return A list of ACC output objects.
-#' @import data.table
-#' @import checkmate
-#' @export
-#' @examples
-#' \dontrun{
-#' acc_run_table <- data.table(plgid = 1:2, model = c("model1", "model2"), country = c("FI", "SE"),
-#'                             clim_scen = c("scenario1", "scenario2"), man_scen = c("man1", "man2"),
-#'                             canopy_layer = c("layer1", "layer2"), man_init_args = list(),
-#'                             clean_data_base_path = c("path1", "path2"), selection_path = c("path3", "path4"),
-#'                             clustered_base_path = c("path5", "path6"), aaa_file = c("file1", "file2"),
-#'                             conversions_path = c("path7", "path8"), output_base_path = c("path9", "path10"),
-#'                             species_lookup_path = c("path11", "path12"), varOutID = list(1:2, 3:4),
-#'                             vHarv = list(1:2, 3:4))
-#' produce_acc_output_obj_from_run_table(acc_run_table)
-#' }
-produce_acc_output_obj_from_run_table <- function(acc_run_table) {
-  # Check input validity
-  assert_data_table(acc_run_table)
-  required_columns <- c("plgid", "model", "country", "clim_scen", "man_scen", 
-                        "canopy_layer", "man_init_args", "clean_data_base_path", 
-                        "selection_path", "aaa_file", 
-                        "conversions_path", "output_base_path", 
-                        "species_lookup_path", "varOutID", "vHarv")
-  assert_true(all(required_columns %in% names(acc_run_table)))
+# Get initPrebas and run regionPrebas to get multiOut then process into 
+# acc output data.table using output_operations.
+# Return acc_output_obj that is used for saving the data.
+produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
+                                   canopy_layer, man_init_args,
+                                   varOutID, vHarv,
+                                   clean_data_base_path,
+                                   selection_path, aaa_file,
+                                   conversions_path, output_base_path,
+                                   species_lookup_path, ...) {
   
-  output_objects <- apply(acc_run_table, 1, function(row) {
-    with(row, {
-      print(paste0("Creating output for plgid ", plgid, "..."))
-      
-      # Get multiOut
-      multiOut <- get_multiOut_from_run_table_row(row)
-      
-      print(paste0("Creating output from multiOut..."))
-      
-      # Get output dt
-      out_dt_melted <- get_acc_output_dt_from_run_table_row(row, multiOut, selection_path, 
-                                                            clean_data_base_path, aaa_file, 
-                                                            conversions_path,
-                                                            species_lookup_path)
-      
-      print("Done.")
-      print("Creating acc output object...")
-      get_acc_out_obj_from_run_table_row(row, out_dt_melted)
-    })
-  })
+  
+  # Check input validity
+  # Values
+  assert_integer(plgid, len = 1)
+  assert_character(model, len = 1)
+  assert_character(country, len = 1)
+  assert_character(clim_scen, len = 1)
+  assert_character(man_scen, len = 1)
+  assert_numeric(canopy_layer, len = 1)
+  assert_list(man_init_args, min.len = 0)
+  assert_numeric(vHarv)
+  assert_numeric(varOutID)
+  
+  # Paths
+  assert_directory_exists(clean_data_base_path)
+  assert_file_exists(selection_path)
+  assert_file_exists(aaa_file)
+  assert_file_exists(conversions_path)
+  assert_directory_exists(output_base_path)
+  assert_file_exists(species_lookup_path)
+  
+  
+  
+  print(paste0("Creating output for plgid ", plgid, "..."))
+  
+  # Get initPrebas
+  init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
+  initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
+  
+  # Get modOut
+  modOut <- get_modOut(regionPrebas, initPrebas)
+  
+  # Get multiOut
+  multiOut <- modOut$multiOut
+  
+  print(paste0("Creating output from multiOut..."))
+  
+  # Get output dt
+  out_dt_melted <- get_acc_output_dt(plgid, model, country, clim_scen, 
+                                     man_scen, canopy_layer,
+                                     vHarv, varOutID, multiOut, selection_path,
+                                     clean_data_base_path, aaa_file,
+                                     conversions_path,
+                                     species_lookup_path, ...)
   
   print("Done.")
   
-  return(output_objects)
+  print("Creating acc output object...")
+  
+  output_object <- get_acc_out_obj(out_dt_melted, model, plgid, 
+                                   clim_scen, man_scen, output_base_path)
+  
+  print("Done.")
+  
+  return(output_object)
 }
 
 
@@ -1471,9 +1469,9 @@ produce_acc_output_obj_from_run_table <- function(acc_run_table) {
 
 # Zip output
 
-
+# Load or put object
 # FUN is either save_object or put_object from the aws.S3 lib. 
-# Object is the full allas object Key. base_dir is the directory to save to/load from.
+# Object is the full allas object key. base_dir is the directory to save to/load from.
 save_or_put_allas <- function(FUN, base_dir, object, ...) {
   
   # Input validation

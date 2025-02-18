@@ -404,7 +404,11 @@ get_output_operations <- function(plgid,
                                   conversions_dt,
                                   siteID_lookup,
                                   species_lookup,
-                                  add_cols,
+                                  model,
+                                  country,
+                                  clim_scen,
+                                  man_scen,
+                                  canopy_layer,
                                   vHarv = c(30,2), 
                                   stem_cols = c("Wstem", "Wbranch"), 
                                   root_cols = c("WfineRoots", "W_croot"),
@@ -413,6 +417,11 @@ get_output_operations <- function(plgid,
                                   del_output_cols = c("site", "species"),
                                   output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", 
                                                        "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value")) {
+  
+  
+  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
+                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
+  
   
   output_operations <- list(
     # Get stem and root biomasses
