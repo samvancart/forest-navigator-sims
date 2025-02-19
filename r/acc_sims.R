@@ -1,3 +1,12 @@
+# This file has all the functions required for the acc sims (except the ones for
+# data transformation operations that are in the acc_sims_prepare_init_settings.R file).
+# The code is organised in sections:
+# Controller functions are functions that call (possibly multiple) worker functions.
+
+# treeData_worker ---------------------------------------------------------
+
+
+
 #' Sample rows until a cumulative sum threshold is reached
 #'
 #' @description This function shuffles a `data.table`, calculates the cumulative sum of a specified column, and selects rows until the cumulative sum reaches or exceeds a given threshold.
@@ -284,6 +293,108 @@ assign_and_merge <- function(tree_data_dts, id_columns, separator = "", id_colum
   return(dts)
 }
 
+# treeData_controller ---------------------------------------------------------
+
+create_acc_clustered_tree_data <- function(acc_input_obj) {
+  
+  with(acc_input_obj$args, {
+    
+    
+    # Validations
+    required_names <- c(
+      "process_treedata_files_args", 
+      "assign_and_merge_args", 
+      "perform_clustering_by_group_args",
+      "aaa_split_col",
+      "plgid_vec",
+      "aaa_file",
+      "clean_data_base_path",
+      "get_in_parallel_args"
+    )
+    
+    assert_list(acc_input_obj$args)
+    assert_names(names(acc_input_obj$args), must.include = required_names)
+    
+    
+    # Run
+    print(paste0("Getting tree_data..."))
+    
+    aaa_dt <- handle_data_input(aaa_file)
+    filtered_aaa_dt <- aaa_dt[PlgID %in% plgid_vec]
+    split_aaa <- split(filtered_aaa_dt, by = "PlgID")
+    
+    process_treedata_files_parallel_args <- 
+      c(list(data = split_aaa,
+             FUN = process_treedata_files,
+             FUN_args = process_treedata_files_args),
+        get_in_parallel_args)
+    
+    
+    tree_data_dts <- do.call(get_in_parallel, process_treedata_files_parallel_args)
+    
+    cat("\n")
+    cat("\n")
+    print(paste0("Merging..."))
+    
+    assign_and_merge_args$tree_data_dts <- tree_data_dts
+    dts <- do.call(assign_and_merge, assign_and_merge_args)
+    
+    
+    cat("\n")
+    print(paste0("Clustering..."))
+    
+    clustering_args <- c(list(data = dts, 
+                              FUN = perform_clustering_by_group, 
+                              FUN_args = perform_clustering_by_group_args), 
+                         get_in_parallel_args)
+    
+    # Get clusters in parallel and combine
+    all_clusters_dt <- rbindlist(
+      do.call(get_in_parallel, clustering_args)
+    )
+    
+    cat("\n")
+    cat("\n")
+    print(paste0("Aggregating..."))
+    
+    by_cols <- c(process_treedata_files_args$add_cols, perform_clustering_by_group_args$group_cols, "cluster_id")
+    
+    # Aggregate clustered dt
+    aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100, b = sum(ba), age = as.integer(mean(age))),
+                                        by = by_cols]
+    
+    
+    # Split for saving
+    split_aggr_clusters_dt <- split(aggr_clusters_dt, by = aaa_split_col)
+    
+    
+    cat("\n")
+    print(paste0("Creating clustered_acc_init_obj_list..."))
+    
+    # Create list of acc_init_objects
+    clustered_acc_init_obj_list <- lapply(seq_along(split_aggr_clusters_dt), function(i) {
+      
+      plgid <- as.integer(names(split_aggr_clusters_dt)[i])
+      clustered_dt <- split_aggr_clusters_dt[[i]]
+      
+      # Determine save path
+      save_path <- get_acc_input_save_path(plgid, "clustered_trees", clean_data_base_path)
+      
+      # Return the result
+      list(name = "clustered", plgid = plgid, data = list(clustered_dt), save_path = save_path)
+      
+    })
+    
+    cat("\n")
+    print(paste0("Done."))
+    
+    return(clustered_acc_init_obj_list)
+    
+  })
+}
+
+
+# dtTransformations_controller --------------------------------------------
 
 
 #' Apply Transformations and Add Columns to a Data Table
@@ -372,7 +483,7 @@ transform_and_add_columns <- function(dt, operations = list()) {
 
 
 
-
+# inputHandler_worker ------------------------------------------------------
 
 
 #' Handle Data Input
@@ -404,6 +515,10 @@ handle_data_input <- function(data) {
   
   return(dt)
 }
+
+
+# filterData_worker -------------------------------------------------------
+
 
 #' Filter Data by Tree Data Cells
 #'
@@ -448,7 +563,19 @@ filter_data_by_tree_data_cells <- function(data, tree_data) {
 
 
 
+# climData_worker ---------------------------------------------------------
 
+
+
+get_nYears_from_acc_tran <- function(tran_dir_path) {
+  assert_directory(tran_dir_path)
+  parTran_path <- list.files(tran_dir_path, pattern = "par", full.names = T)
+  assert_file_exists(parTran_path)
+  
+  parTran <- loadRDataFile(parTran_path)
+  
+  return(floor(ncol(parTran)/365))
+}
 
 #' Get Dcast Matrices List from Data Table
 #'
@@ -548,6 +675,9 @@ add_acc_co2 <- function(clim_dt, name, config) {
 }
 
 
+# climData_controller -----------------------------------------------------
+
+
 
 #' Get Accumulated Initial Climate Object
 #'
@@ -608,6 +738,9 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
 }
 
 
+# multiInitVar_controller -------------------------------------------------
+
+
 
 #' Get multiInitVar Object
 #'
@@ -662,6 +795,9 @@ get_multiInitVar_object <- function(clustered_path, grid_file_path, clean_data_b
   
   return(list(name = "multiInitVar", plgid = plgid, data = list(multiInitVar), save_path = save_path))
 }
+
+
+# saveData_worker ---------------------------------------------------------
 
 
 
@@ -797,6 +933,9 @@ get_acc_input_save_path <- function(plgid, save_dir, base_path) {
 
 
 
+# saveData_controller -----------------------------------------------------
+
+
 #' Create Directory and Save ACC Object
 #'
 #' This function creates a directory and saves the ACC object to a specified base path.
@@ -845,26 +984,7 @@ create_dir_and_save_acc_obj <- function(acc_obj, base_path, test = FALSE, ...) {
 }
 
 
-
-
-
-
-get_nYears_from_acc_tran <- function(tran_dir_path) {
-  assert_directory(tran_dir_path)
-  parTran_path <- list.files(tran_dir_path, pattern = "par", full.names = T)
-  assert_file_exists(parTran_path)
-  
-  parTran <- loadRDataFile(parTran_path)
-  
-  return(floor(ncol(parTran)/365))
-}
-
-
-
-
-
-
-
+# siteInfo_controller -----------------------------------------------------
 
 
 #' Get Site Information ACC Object
@@ -959,6 +1079,7 @@ get_site_info_acc_object <- function(soil_dt,
 
 
 
+# siteInfo_worker ---------------------------------------------------------
 
 
 #' Get Site Information Data Table
@@ -1075,6 +1196,14 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
 
 
 
+
+
+
+
+
+
+
+# produceOutput_worker ----------------------------------------------------
 
 #' Initialize Prebas Model for a Given PLG ID
 #'
@@ -1259,83 +1388,6 @@ get_siteID_lookup <- function(plgid,
 
 
 
-
-#' Merge MultiOut Species and Harvest with Out Data Table
-#'
-#' This function merges species and harvest data from a multi-dimensional array into an existing data.table.
-#'
-#' @param out_dt Data.table. The existing data.table to which the species and harvest data will be merged.
-#' @param multiOut Array. A multi-dimensional array containing the data.
-#' @param vHarv Integer vector of length 2. Specifies the indices for harvest data. Default is c(30, 2).
-#'
-#' @return A merged data.table containing the combined output, species, and harvest information.
-#' @import data.table
-#' @import checkmate
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#' merge_multiOut_species_and_harv_with_out_dt(
-#'   out_dt = data.table(id = 1:5),
-#'   multiOut = array(data = rnorm(1000), dim = c(10, 10, 10, 10)),
-#'   vHarv = c(30, 2)
-#' )
-#' }
-
-merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv = c(30, 2)) {
-  
-  # Input validations using checkmate
-  assert_data_table(out_dt)  # Ensure out_dt is a data.table
-  assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
-  assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
-  
-  # Convert multi-dimensional arrays to data.table and melt them
-  species <- as.data.table(melt(multiOut[,,4,,1]))
-  v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
-  
-  # Rename columns for clarity
-  setnames(species, old = "value", new = "species")
-  
-  # Merge datasets
-  out_dt_species <- merge(out_dt, species, by = intersect(names(out_dt), names(species)))
-  v_harv_species <- merge(v_harv, species, by = intersect(names(v_harv), names(species)))
-  v_harv_species[, variable := "harv"]
-  
-  # Combine data.tables
-  out_dt_all <- rbind(out_dt_species, v_harv_species)
-  
-  # Return the final data.table
-  return(out_dt_all)
-}
-
-
-
-
-# OUTPUT
-
-
-# Wrapper to call the function that runs the model and gets the acc_output_obj.
-# The run_table contains the varying values. Paths contains the static values (the paths).
-# FUN is the function to call. The function is called sequentially for run_table rows.
-# Returns a list of the objects returned from each call to FUN.
-acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_obj) {
-  
-  assert_data_table(run_table, min.rows = 1)
-  assert_list(paths)
-  assert_function(FUN)
-  
-  result_list <- apply(run_table, 1, function(row) {
-    
-    vals <- as.list(row)
-    args <- c(vals, paths)
-    
-    do.call(FUN, args)
-  })
-  
-  return(result_list)
-}
-
-
 # Transform multiOut to melted output table
 get_acc_output_dt <- function(plgid, model, country, 
                               clim_scen, man_scen, canopy_layer,
@@ -1389,6 +1441,29 @@ get_acc_out_obj <- function(out_dt, model, plgid, clim_scen,
   return(acc_out_obj)
 }
 
+
+# produceOutput_controller ------------------------------------------------
+
+# Wrapper to call the function that runs the model and gets the acc_output_obj.
+# The run_table contains the varying values. Paths contains the static values (the paths).
+# FUN is the function to call. The function is called sequentially for run_table rows.
+# Returns a list of the objects returned from each call to FUN.
+acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_obj) {
+  
+  assert_data_table(run_table, min.rows = 1)
+  assert_list(paths)
+  assert_function(FUN)
+  
+  result_list <- apply(run_table, 1, function(row) {
+    
+    vals <- as.list(row)
+    args <- c(vals, paths)
+    
+    do.call(FUN, args)
+  })
+  
+  return(result_list)
+}
 
 
 
@@ -1462,12 +1537,8 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
 
 
 
+# zip_worker --------------------------------------------------------------
 
-
-
-
-
-# Zip output
 
 # Load or put object
 # FUN is either save_object or put_object from the aws.S3 lib. 
@@ -1484,6 +1555,102 @@ save_or_put_allas <- function(FUN, base_dir, object, ...) {
 }
 
 
+# Helper to create list of dts for zipping files
+get_split_grouped_output_dt <- function(output_paths, 
+                                        output_base_path = "data/acc/output/simulation_sites_200", 
+                                        zip_folder_name = "zip") {
+  
+  zip_dt <- as.data.table(tstrsplit(basename(output_paths), split = "[_.]"))
+  zip_dt[, path := output_paths]
+  zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
+  zip_dt[, name := paste0(V3, "_", V4, ".zip")]
+  zip_folder_path <- file.path(output_base_path, zip_folder_name)
+  zip_dt[, full_zip_path := file.path(zip_folder_path, name)]
+  
+  return(split(zip_dt, by = c("zip_id")))
+}
+
+
+# Helper to execute zip_output_files in parallel
+zip_output_files_from_dt <- function(zip_dt, ...) {
+  zip_dt[, zip_output_files(unique(full_zip_path), path, ...), by = zip_id]
+}
+
+
+
+
+#' Zip Output Files
+#'
+#' This function creates a zip archive containing specified files, ensuring that 
+#' only the filenames (without their full paths) are included in the archive.
+#'
+#' @param full_zip_path Character. The full path to the zip file to be created.
+#' @param file_paths Character vector. A vector of file paths to include in the zip archive.
+#' @param original_wrkdir Character. The original working directory. Defaults to the current working directory.
+#'
+#' @return Creates a zip archive at the specified location.
+#' @import checkmate
+#' @export
+#'
+#' @examples
+#' full_zip_path <- "/path/to/your/output/archive.zip"
+#' file_paths <- c("/path/to/your/output_files/file1.txt", "/path/to/your/output_files/file2.txt")
+#' zip_output_files(full_zip_path, file_paths)
+zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(), ...) {
+  # Validate inputs
+  assert_character(file_paths, any.missing = FALSE, min.len = 1)
+  assert_directory_exists(dirname(full_zip_path))
+  
+  wrkdir <- original_wrkdir
+  on.exit(setwd(wrkdir))
+  zip_to_path <- file.path(full_zip_path)
+  
+  # Extract directory paths and filenames
+  zip_files_dir <- unique(dirname(file_paths))
+  zip_files <- basename(file_paths)
+  
+  # Validate that all file paths have the same directory
+  assert_true(length(zip_files_dir) == 1)
+  
+  setwd(zip_files_dir)
+  
+  # Zip
+  utils::zip(zip_to_path, files = basename(zip_files))
+  
+  # Validate that the zip file was created
+  assert_file_exists(zip_to_path)
+}
+
+
+zip_output_files_using <- function(FUN, zipfile, extra_FUN_args = list(), files, original_wrkdir = getwd(), ...) {
+  # Validate inputs
+  assert_character(files, any.missing = FALSE, min.len = 1)
+  assert_directory_exists(dirname(zipfile))
+  
+  wrkdir <- original_wrkdir
+  on.exit(setwd(wrkdir))
+  zip_to_path <- file.path(zipfile)
+  
+  # Extract directory paths and filenames
+  zip_files_dir <- unique(dirname(files))
+  zip_files <- basename(files)
+  
+  # Validate that all file paths have the same directory
+  assert_true(length(zip_files_dir) == 1)
+  
+  setwd(zip_files_dir)
+  
+  args <- c(list(zipfile = zipfile, files = zip_files), extra_FUN_args)
+  
+  do.call(FUN, args)
+  
+  # Validate that the zip file was created
+  assert_file_exists(zip_to_path)
+}
+
+
+
+# zip_controller ----------------------------------------------------------
 
 
 ### Load files from allas, zip them and finally move the files to a location (Allas/filesystem/both).
@@ -1568,295 +1735,20 @@ load_zip_move <- function(zipfile,
 
 
 
-# Helper to create list of dts for zipping files
-get_split_grouped_output_dt <- function(output_paths, 
-                                        output_base_path = "data/acc/output/simulation_sites_200", 
-                                        zip_folder_name = "zip") {
+
+# speciesLookup_worker ----------------------------------------------------
+
+
+get_prebas_species_codes_from_pCROB <- function(pCROB) {
+  prebas_species_lookup <- data.table(
+    prebas_species_name = names(pCROB[1,]),
+    prebas_latin_name = c("Pinus sylvestris", "Picea abies", "Betula alba", "Fagus sylvatica", "Pinus pinaster", "Eucalyptus globulus", "Robinia pseudoacacia", "Populus tremula", "Eucalyptus gunnii", "Picea abies (DE)", "Quercus ilex", "Fagus sylvatica (Boreal)"),
+    prebas_species_code = c("Pinsyl", "Picabi", "Betalb", "Fagsyl", "Pinpin", "Eucglo", "Robpse", "Poptre", "Eucgun", "Picabi", "Queile", "Fagsyl")
+  )
   
-  zip_dt <- as.data.table(tstrsplit(basename(output_paths), split = "[_.]"))
-  zip_dt[, path := output_paths]
-  zip_dt[, zip_id := .GRP, by = c("V3", "V4")]
-  zip_dt[, name := paste0(V3, "_", V4, ".zip")]
-  zip_folder_path <- file.path(output_base_path, zip_folder_name)
-  zip_dt[, full_zip_path := file.path(zip_folder_path, name)]
-  
-  return(split(zip_dt, by = c("zip_id")))
+  prebas_species_lookup[, speciesID := .GRP, by = c("prebas_species_name")]
+  return(prebas_species_lookup)
 }
-
-
-# Helper to execute zip_output_files in parallel
-zip_output_files_from_dt <- function(zip_dt, ...) {
-  zip_dt[, zip_output_files(unique(full_zip_path), path, ...), by = zip_id]
-}
-
-
-
-
-#' Zip Output Files
-#'
-#' This function creates a zip archive containing specified files, ensuring that 
-#' only the filenames (without their full paths) are included in the archive.
-#'
-#' @param full_zip_path Character. The full path to the zip file to be created.
-#' @param file_paths Character vector. A vector of file paths to include in the zip archive.
-#' @param original_wrkdir Character. The original working directory. Defaults to the current working directory.
-#'
-#' @return Creates a zip archive at the specified location.
-#' @import checkmate
-#' @export
-#'
-#' @examples
-#' full_zip_path <- "/path/to/your/output/archive.zip"
-#' file_paths <- c("/path/to/your/output_files/file1.txt", "/path/to/your/output_files/file2.txt")
-#' zip_output_files(full_zip_path, file_paths)
-zip_output_files <- function(full_zip_path, file_paths, original_wrkdir = getwd(), ...) {
-  # Validate inputs
-  assert_character(file_paths, any.missing = FALSE, min.len = 1)
-  assert_directory_exists(dirname(full_zip_path))
-  
-  wrkdir <- original_wrkdir
-  on.exit(setwd(wrkdir))
-  zip_to_path <- file.path(full_zip_path)
-  
-  # Extract directory paths and filenames
-  zip_files_dir <- unique(dirname(file_paths))
-  zip_files <- basename(file_paths)
-  
-  # Validate that all file paths have the same directory
-  assert_true(length(zip_files_dir) == 1)
-  
-  setwd(zip_files_dir)
-  
-  # Zip
-  utils::zip(zip_to_path, files = basename(zip_files))
-
-  # Validate that the zip file was created
-  assert_file_exists(zip_to_path)
-}
-
-
-zip_output_files_using <- function(FUN, zipfile, extra_FUN_args = list(), files, original_wrkdir = getwd(), ...) {
-  # Validate inputs
-  assert_character(files, any.missing = FALSE, min.len = 1)
-  assert_directory_exists(dirname(zipfile))
-  
-  wrkdir <- original_wrkdir
-  on.exit(setwd(wrkdir))
-  zip_to_path <- file.path(zipfile)
-  
-  # Extract directory paths and filenames
-  zip_files_dir <- unique(dirname(files))
-  zip_files <- basename(files)
-  
-  # Validate that all file paths have the same directory
-  assert_true(length(zip_files_dir) == 1)
-  
-  setwd(zip_files_dir)
-  
-  args <- c(list(zipfile = zipfile, files = zip_files), extra_FUN_args)
-  
-  do.call(FUN, args)
-  
-  # Validate that the zip file was created
-  assert_file_exists(zip_to_path)
-}
-
-
-
-# RUN CREATE_ACC_OBJ FUNCTIONS
-
-
-# Helper
-get_filtered_clim_paths_from_bucket <- function(grid_file_path, allas_opts, plgid_pat = "(?<=plgid_)[0-9]+") {
-  bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket, region = allas_opts$opts$region))$Key
-  plgid_vec <- unique(fread(grid_file_path)$PlgID)
-  clim_paths <- bucket_list[is_regex_match(bucket_list, plgid_pat, plgid_vec)]
-  
-  return(clim_paths)
-}
-
-# Helper
-is_regex_match <- function(str_vec, regex_pat, compare_to_str) {
-  return(str_extract(str_vec, regex_pat) %in% compare_to_str)
-}
-
-
-
-
-create_acc_clim_data <- function(acc_input_obj) {
-  
-  with(acc_input_obj$args, {
-    
-    print(paste0("Getting climate data..."))
-    
-    process_clim_files_parallel_args <- 
-      c(list(data = clim_paths,
-             FUN = get_acc_init_clim_object,
-             FUN_args = list(aaa_file = aaa_file, 
-                             operations = clim_operations,
-                             clean_data_base_path = clean_data_base_path,
-                             config = config,
-                             allas_opts = allas_opts)),
-        get_in_parallel_args)
-    
-    
-    
-    # Get list of acc objects
-    clim_acc_init_obj_list <- do.call(get_in_parallel, process_clim_files_parallel_args)
-    
-    cat("\n")
-    print(paste0("Done."))
-    
-    return(clim_acc_init_obj_list)
-  })
-}
-
-
-
-
-run_acc_with_combine_args <- function(FUN, acc_input_obj, ...) {
-  # Extract the list of arguments from the object
-  args_list <- acc_input_obj$args
-  
-  # Combine the list with additional arguments
-  combined_args <- c(args_list, list(...))
-  
-  # Update the object's args with the combined arguments
-  acc_input_obj$args <- combined_args
-  
-  # print(acc_input_obj)
-  
-  # Call FUN with object as argument
-  result <- do.call(FUN, list(acc_input_obj = acc_input_obj))
-  
-  
-  return(result)
-}
-
-
-
-
-create_acc_clustered_tree_data <- function(acc_input_obj) {
-  
-  with(acc_input_obj$args, {
-    
-    
-    # Validations
-    required_names <- c(
-      "process_treedata_files_args", 
-      "assign_and_merge_args", 
-      "perform_clustering_by_group_args",
-      "aaa_split_col",
-      "plgid_vec",
-      "aaa_file",
-      "clean_data_base_path",
-      "get_in_parallel_args"
-    )
-    
-    assert_list(acc_input_obj$args)
-    assert_names(names(acc_input_obj$args), must.include = required_names)
-    
-    
-    # Run
-    print(paste0("Getting tree_data..."))
-    
-    aaa_dt <- handle_data_input(aaa_file)
-    filtered_aaa_dt <- aaa_dt[PlgID %in% plgid_vec]
-    split_aaa <- split(filtered_aaa_dt, by = "PlgID")
-    
-    process_treedata_files_parallel_args <- 
-      c(list(data = split_aaa,
-             FUN = process_treedata_files,
-             FUN_args = process_treedata_files_args),
-        get_in_parallel_args)
-    
-    
-    tree_data_dts <- do.call(get_in_parallel, process_treedata_files_parallel_args)
-    
-    cat("\n")
-    cat("\n")
-    print(paste0("Merging..."))
-    
-    assign_and_merge_args$tree_data_dts <- tree_data_dts
-    dts <- do.call(assign_and_merge, assign_and_merge_args)
-    
-    
-    cat("\n")
-    print(paste0("Clustering..."))
-    
-    clustering_args <- c(list(data = dts, 
-                              FUN = perform_clustering_by_group, 
-                              FUN_args = perform_clustering_by_group_args), 
-                         get_in_parallel_args)
-    
-    # Get clusters in parallel and combine
-    all_clusters_dt <- rbindlist(
-      do.call(get_in_parallel, clustering_args)
-    )
-    
-    cat("\n")
-    cat("\n")
-    print(paste0("Aggregating..."))
-    
-    by_cols <- c(process_treedata_files_args$add_cols, perform_clustering_by_group_args$group_cols, "cluster_id")
-    
-    # Aggregate clustered dt
-    aggr_clusters_dt <- all_clusters_dt[, .(d = mean(dbh), h = mean(treeheight)/100, b = sum(ba), age = as.integer(mean(age))),
-                                        by = by_cols]
-    
-    
-    # Split for saving
-    split_aggr_clusters_dt <- split(aggr_clusters_dt, by = aaa_split_col)
-    
-    
-    cat("\n")
-    print(paste0("Creating clustered_acc_init_obj_list..."))
-    
-    # Create list of acc_init_objects
-    clustered_acc_init_obj_list <- lapply(seq_along(split_aggr_clusters_dt), function(i) {
-      
-      plgid <- as.integer(names(split_aggr_clusters_dt)[i])
-      clustered_dt <- split_aggr_clusters_dt[[i]]
-      
-      # Determine save path
-      save_path <- get_acc_input_save_path(plgid, "clustered_trees", clean_data_base_path)
-      
-      # Return the result
-      list(name = "clustered", plgid = plgid, data = list(clustered_dt), save_path = save_path)
-      
-    })
-    
-    cat("\n")
-    print(paste0("Done."))
-    
-    return(clustered_acc_init_obj_list)
-    
-  })
-}
-
-
-
-
-
-# GET RUN DT FROM CLIM PATHS
-
-# Helper
-get_acc_clim_paths_run_dt <- function(all_clim_paths, 
-                                      clim_scen_pat = "(?<=/)[^/]+(?=_id_)", 
-                                      plgid_pat = "(?<=plgid_)[0-9]+") {
-  
-  plgid_vec <- str_extract(all_clim_paths, plgid_pat)
-  clim_scen_vec <- str_extract(all_clim_paths, clim_scen_pat)
-  
-  dt <- data.table(path = all_clim_paths, PlgID = plgid_vec, clim_scen = clim_scen_vec)
-  return(dt)
-}
-
-
-
-
-
-
 
 
 

@@ -1,3 +1,9 @@
+
+# This script contains the general settings for the acc sims.
+# All required sources, paths and variables should be here.
+
+# sourceFiles -------------------------------------------------------------
+
 source("r/acc_sims.R")
 source("r/clusters_dt.R")
 source("r/parallel_process.R")
@@ -6,11 +12,14 @@ source("r/csc_utils.R")
 source('./r/multiSite.R')
 
 
+# simSites_vars ----------------------------------------------------------
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
 simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
 
+
+# allas_opts ---------------------------------------------------------------
 
 # Allas
 bucket_name <- "2000994-forest_navigator"
@@ -20,6 +29,9 @@ allas_read_FUN <- fread
 allas_opts <- list(FUN = allas_read_FUN, bucket = bucket_name, opts = allas_options)
 read_allas <- c(TRUE, FALSE)[simulation_site_id]
 write_allas <- c(TRUE, FALSE)[simulation_site_id]
+
+
+# treeData_paths -----------------------------------------------------------
 
 
 # Load tree data
@@ -46,9 +58,17 @@ init_file_col <- c("InitFileID", "InitFileName")[simulation_site_id]
 # assert_character(init_files, len = 64)
 
 
+# cleanData_path -----------------------------------------------------------
+
+
 
 # Cleaned data path
 clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
+
+
+
+# speciesLookup_vars -----------------------------------------------------------
+
 
 
 # Get species codes lookup
@@ -59,6 +79,16 @@ species_codes_lookup_path <- file.path(species_codes_path, species_codes_name)
 codes_with_speciesID_dt <- fread(file = species_codes_lookup_path)[, ..species_codes_cols]
 assert_names(names(codes_with_speciesID_dt), must.include = species_codes_cols)
 
+# lookup for species IDs
+species_lookup <- fread(species_codes_lookup_path)
+
+# # Pre-processing step to merge PREBAS codes 
+# prebas_species_lookup <- get_prebas_species_codes_from_pCROB(pCROB)
+# species_lookup_prebas <- merge(species_lookup, prebas_species_lookup, by = "speciesID")
+
+
+
+# cells10_vars -----------------------------------------------------------------
 
 
 # Select one 10km cell
@@ -69,10 +99,17 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 
 
+# parallel_opts ------------------------------------------------------------
+
+
 # Cores and parallelisation type
 cores <- max(1, availableCores() - 1)
 type <- "FORK"
 general_get_in_parallel_args <- list(cores = cores, type = type)
+
+
+
+# seed_opts -----------------------------------------------------------------
 
 
 # Seed for creating reproducable list of seeds
@@ -80,6 +117,9 @@ seed <- 123
 set.seed(seed)
 num_sample_runs <- 1
 seeds <- sample(c(1:1000000), num_sample_runs) # List of seeds to use
+
+
+# treeData_vars ----------------------------------------------------------------
 
 
 
@@ -148,13 +188,15 @@ tree_data_acc_input_obj <- list(args = list(process_treedata_files_args = proces
 
 
 
-
-### multiInitVar
+# gridFile_path ------------------------------------------------------------
 
 grid_file_path <- list.files(file.path(boku_data_path, "grid"), 
                              pattern = paste0("filtered_selection_cell10_", simulation_site_id,"\\.csv"), 
                              recursive = T, 
                              full.names = T)
+
+
+# multiInitVar_vars ------------------------------------------------------------
 
 
 cluster_data_col_names = list(
@@ -173,7 +215,10 @@ create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
 
 
 
-# Site info
+
+
+# soil_path ----------------------------------------------------------------
+
 
 
 soil_file_path <- list.files(file.path(boku_data_path, "soil"), 
@@ -182,12 +227,18 @@ soil_file_path <- list.files(file.path(boku_data_path, "soil"),
                              full.names = T)
 
 
+# siteInfo_vars ----------------------------------------------------------------
+
+
 nYears_lookup <- c(detrended = 121, gwl2 = 110, gwl3 = 110, gwl4 = 110, historical = 72)
 
 site_type_probs <- c(.1, .3, .5, .7, .9)
 site_types <- c(5, 4, 3, 2, 1)
 
 
+
+
+# clim_paths ---------------------------------------------------------------
 
 
 
@@ -207,7 +258,7 @@ dest_path <- file.path(climate_7z_dir, "unzipped")
 
 
 
-
+# clim_vars ----------------------------------------------------------------
 
 
 
@@ -324,32 +375,70 @@ clim_data_acc_input_obj <- list(args = list(clim_operations = clim_operations,
 
 
 
-# OUTPUT
+
+# output_paths ------------------------------------------------------------------
 
 output_base_path <- paste0("data/acc/output/", simulation_site)
 
 
+
+
+
+
+# selection_path -----------------------------------------------------------
+
 # Paths for siteID lookup creation
 selection_path <- grid_file_path
+
+# clusteredBase_path -------------------------------------------------------
+
+
 clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 
 
-# Output IDs
-varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
-vHarv <- c(30,2)
+
+# conversions_path ---------------------------------------------------------
 
 # Lookup for converting names and units
 conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
 conversions_dt <- fread(conversions_path)
 
 
-# lookup for species IDs
-species_lookup <- fread(species_codes_lookup_path)
+# output_vars --------------------------------------------------------------
 
 
-
+# Output IDs
+varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
+vHarv <- c(30,2)
 
 # Operations
+
+
+merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv = c(30, 2)) {
+  
+  # Input validations using checkmate
+  assert_data_table(out_dt)  # Ensure out_dt is a data.table
+  assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
+  assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
+  
+  # Convert multi-dimensional arrays to data.table and melt them
+  species <- as.data.table(melt(multiOut[,,4,,1]))
+  v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
+  
+  # Rename columns for clarity
+  setnames(species, old = "value", new = "species")
+  
+  # Merge datasets
+  out_dt_species <- merge(out_dt, species, by = intersect(names(out_dt), names(species)))
+  v_harv_species <- merge(v_harv, species, by = intersect(names(v_harv), names(species)))
+  v_harv_species[, variable := "harv"]
+  
+  # Combine data.tables
+  out_dt_all <- rbind(out_dt_species, v_harv_species)
+  
+  # Return the final data.table
+  return(out_dt_all)
+}
 
 sum_bioms <- function(dt, name, sum_cols, by = c("year", "site", "layer")) {
   dt[, (name) := sum(unlist(.SD)), by = by, .SDcols = sum_cols]
@@ -485,9 +574,12 @@ get_output_operations <- function(plgid,
 
 
 
+# print_vars --------------------------------------------------------------
 
 
-############ PRINT ################
+
+
+
 
 # Get variables as named list
 all_vars <- get_named_list(simulation_site,

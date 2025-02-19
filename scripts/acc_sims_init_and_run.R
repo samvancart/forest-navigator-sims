@@ -8,7 +8,6 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-
 # GET RUN TABLE FROM acc_create_run_table
 acc_run_table <- loadRDataFile("data/acc/docs/run_table_sim200_noMan.rds")
 
