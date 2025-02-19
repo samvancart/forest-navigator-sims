@@ -1408,11 +1408,21 @@ get_acc_output_dt <- function(plgid, model, country,
   out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
   out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
   
-  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
-                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
   # Get operations
-  output_operations <- get_output_operations(plgid, multiOut, conversions_dt, siteID_lookup, species_lookup,
-                                             model, country, clim_scen, man_scen, canopy_layer, vHarv, ...)
+  output_operations <- get_output_operations(
+    plgid = plgid,
+    multiOut = multiOut,
+    conversions_dt = conversions_dt,
+    siteID_lookup = siteID_lookup,
+    species_lookup = species_lookup,
+    model = model,
+    country = country,
+    clim_scen = clim_scen,
+    man_scen = man_scen,
+    canopy_layer = canopy_layer,
+    vHarv = vHarv,
+    ...
+  )
   
   # Get output dt
   return(transform_and_add_columns(out_dt_wide, output_operations))
@@ -1571,14 +1581,6 @@ get_split_grouped_output_dt <- function(output_paths,
 }
 
 
-# Helper to execute zip_output_files in parallel
-zip_output_files_from_dt <- function(zip_dt, ...) {
-  zip_dt[, zip_output_files(unique(full_zip_path), path, ...), by = zip_id]
-}
-
-
-
-
 #' Zip Output Files
 #'
 #' This function creates a zip archive containing specified files, ensuring that 
@@ -1733,7 +1735,10 @@ load_zip_move <- function(zipfile,
   
 }
 
-
+# # Helper to execute zip_output_files in parallel
+# zip_output_files_from_dt <- function(zip_dt, ...) {
+#   zip_dt[, zip_output_files(unique(full_zip_path), path, ...), by = zip_id]
+# }
 
 
 # speciesLookup_worker ----------------------------------------------------
@@ -1754,5 +1759,55 @@ get_prebas_species_codes_from_pCROB <- function(pCROB) {
 
 
 
+
+
+
+# countryCodes_worker -----------------------------------------------------
+get_acc_country_codes_lookup <- function(aaa, country_codes, aaa_cols = c("PlgID", "Country_Code"), ...) {
+  aaa_country_codes <- aaa_all[, ..aaa_cols]
+  aaa_country_codes <- aaa_country_codes[!duplicated(aaa_country_codes)]
+  country_codes_lookup <- merge(country_codes, aaa_country_codes, ...)
+  assert_true(nrow(aaa_country_codes) == nrow(country_codes_lookup))
+  country_codes_lookup
+}
+
+
+# runTable_worker ---------------------------------------------------------
+
+expand_vectors_to_dt <- function(vectors_list) {
+  # Create expanded grid
+  expanded_grid <- expand.grid(vectors_list)
+  
+  # Convert to data.table
+  result_dt <- as.data.table(expanded_grid)
+  
+  # Set column names
+  setnames(result_dt, names(vectors_list))
+  
+  return(result_dt)
+}
+
+
+# For creating management table with management params as list and id_vars that 
+# can be merged with another table. In this case the table with the other run table vars.
+create_table_from_vars <- function(id_vars, value_vars_list, result_name = "result") {
+  # Check input validity
+  assert_list(id_vars)
+  assert_true(all(vapply(id_vars, is.vector, logical(1))))
+  assert_list(value_vars_list)
+  assert_true(all(vapply(value_vars_list, length, integer(1)) == 1))
+  assert_character(result_name, len = 1)
+  
+  # Create a data.table with id_vars
+  dt <- as.data.table(id_vars)
+  
+  # Combine value_vars into a single list
+  combined_value_vars <- list(value_vars_list)
+  
+  # Add the combined value_vars list as a new column
+  dt[, (result_name) := combined_value_vars]
+  
+  return(dt)
+}
 
 

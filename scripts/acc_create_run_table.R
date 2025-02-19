@@ -1,51 +1,22 @@
+
+# This script is to create a run table for producing the output for acc sims.
+# A base table is constructed with all combinations of climate scenario, management scenario
+# and plgid to run as well as attaching country codes. 
+# Then a list of management params is created and merged with the base table.
+
+
+
+# sourceFiles -------------------------------------------------------------
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
+# baseRunTable ---------------------------------------------------------------
 
 
 
-
-
-
-
-expand_vectors_to_dt <- function(vectors_list) {
-  # Create expanded grid
-  expanded_grid <- expand.grid(vectors_list)
-  
-  # Convert to data.table
-  result_dt <- as.data.table(expanded_grid)
-  
-  # Set column names
-  setnames(result_dt, names(vectors_list))
-  
-  return(result_dt)
-}
-
-
-
-create_table_from_vars <- function(id_vars, value_vars_list, result_name = "result") {
-  # Check input validity
-  assert_list(id_vars)
-  assert_true(all(vapply(id_vars, is.vector, logical(1))))
-  assert_list(value_vars_list)
-  assert_true(all(vapply(value_vars_list, length, integer(1)) == 1))
-  assert_character(result_name, len = 1)
-  
-  # Create a data.table with id_vars
-  dt <- as.data.table(id_vars)
-  
-  # Combine value_vars into a single list
-  combined_value_vars <- list(value_vars_list)
-  
-  # Add the combined value_vars list as a new column
-  dt[, (result_name) := combined_value_vars]
-  
-  return(dt)
-}
-
-
-
+country_codes_lookup <- get_acc_country_codes_lookup(aaa_all, country_codes)
 
 # table_output_files <- grep("plgid", list.files(output_base_path), value = T)
 table_output_files <- grep("plgid", list.files(clean_data_base_path), value = T)
@@ -53,17 +24,29 @@ plgid <- as.integer(unlist(tstrsplit(table_output_files, split = "_", keep = 2))
 clim_scen <- c("detrended", "gwl2", "gwl3", "gwl4")
 man_scen <- c("noman")
 model <- c("PREBAS")
-country <- c("Finland")
+# country <- c("Finland")
 canopy_layer <- c(1)
 
 acc_vectors_list <- list(plgid = plgid, 
                          clim_scen = clim_scen, 
                          man_scen = man_scen, 
                          model = model, 
-                         country = country, 
+                         # country = country, 
                          canopy_layer = canopy_layer)
 
 acc_base_table <- expand_vectors_to_dt(acc_vectors_list)
+
+acc_base_table[, model := as.character(model)]
+
+# Add country codes col
+acc_base_table_country <- merge(acc_base_table, 
+                                country_codes_lookup[, c("PlgID", "country")], 
+                                by.x = "plgid", by.y = "PlgID")
+
+
+
+# managementTable ---------------------------------------------------------
+
 
 
 ####management parameters
@@ -89,26 +72,22 @@ acc_man_table <- rbindlist(lapply(clim_scen, function(cs) {
 
 
 
-acc_base_man_table <- merge.data.table(acc_base_table, acc_man_table, by = c("clim_scen", "man_scen"))
+acc_base_man_table <- merge.data.table(acc_base_table_country, acc_man_table, by = c("clim_scen", "man_scen"))
 
 
 
-acc_static_vars_table <- data.table(clean_data_base_path = clean_data_base_path,
-                                    selection_path = selection_path,
-                                    aaa_file = aaa_file,
-                                    conversions_path = conversions_path,
-                                    output_base_path = output_base_path,
-                                    species_lookup_path = species_codes_lookup_path,
-                                    varOutID = list(varOutID),
-                                    vHarv = list(vHarv))
+# staticVarsTable --------------------------------------------------------------
 
+
+acc_static_vars_table <- data.table(varOutID = list(varOutID), vHarv = list(vHarv))
 acc_static_vars_expanded_table <- rbindlist(replicate(nrow(acc_base_man_table), acc_static_vars_table, simplify = FALSE))
 
 
 
+
+# runTable ----------------------------------------------------------------
+
 acc_run_table <- cbind(acc_base_man_table, acc_static_vars_expanded_table)
-
-
 
 
 

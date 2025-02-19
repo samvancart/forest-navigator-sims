@@ -2,14 +2,17 @@
 # A run_table is required for running this script as well as a named list of the required paths.
 # The output is processed according to the ForestNav output template and saved.
 
+
+
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
+acc_run_table_path <- run_table_sim200_noman_path
 
 # GET RUN TABLE FROM acc_create_run_table
-acc_run_table <- loadRDataFile("data/acc/docs/run_table_sim200_noMan.rds")
+acc_run_table <- loadRDataFile(acc_run_table_path)
 
 
 array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
@@ -42,30 +45,33 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 acc_run_test <- acc_run_tables_list[[1]]
 
 
-
-acc_run_table_vals <- acc_run_test[, c(1:7, 14:15)]
-acc_run_table_paths <- acc_run_test[, 8:13]
-
-acc_run_table_vals[, model := as.character(model)]
-acc_run_table_vals[, country := as.character(country)]
-
-vals <- as.list(acc_run_table_vals)
-paths <- as.list(acc_run_table_paths)
-
-vals$model <- as.character(vals$model) 
-class(vals$model)
+acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj)
 
 
-
-acc_output_obj <- acc_run_table_controller(acc_run_table_vals, paths, produce_acc_output_obj)
-
+acc_output_obj[[1]]$data
 
 
 #### END TEST ##########
 
 
 
+#### TEST PARALLEL ##########
 
+acc_run_test_dts <- acc_run_tables_list[c(1,10,20)]
+
+output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_test_dts,
+                                                 FUN = acc_run_table_controller,
+                                                 FUN_args = list(paths = produce_output_paths,
+                                                                 FUN = produce_acc_output_obj),
+                                                 cores = cores,
+                                                 type = type)), recursive = F)
+
+
+
+acc_output_obj[[1]]$data
+
+
+#### END TEST PARALLEL ##########
 
 
 

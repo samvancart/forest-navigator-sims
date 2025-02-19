@@ -88,6 +88,14 @@ species_lookup <- fread(species_codes_lookup_path)
 
 
 
+# countryCodes_vars -------------------------------------------------------
+
+# Create the data.table with European countries and their 2-letter codes
+country_codes <- data.table(
+  # Names are specifically designed to support further processing
+  country = c("Albania", "Andorra", "Armenia", "Austria", "Azerbaijan", "Belarus", "Belgium", "Bosnia and Herzegovina", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Kazakhstan", "Kosovo", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malta", "Moldova", "Monaco", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland", "Portugal", "Romania", "Russia", "San Marino", "Serbia", "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine", "United Kingdom", "Vatican City"),
+  Country_Code = c("AL", "AD", "AM", "AT", "AZ", "BY", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "GE", "DE", "GR", "HU", "IS", "IE", "IT", "KZ", "XK", "LV", "LI", "LT", "LU", "MT", "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU", "SM", "RS", "SK", "SI", "ES", "SE", "CH", "TR", "UA", "GB", "VA")
+)
 # cells10_vars -----------------------------------------------------------------
 
 
@@ -376,15 +384,6 @@ clim_data_acc_input_obj <- list(args = list(clim_operations = clim_operations,
 
 
 
-# output_paths ------------------------------------------------------------------
-
-output_base_path <- paste0("data/acc/output/", simulation_site)
-
-
-
-
-
-
 # selection_path -----------------------------------------------------------
 
 # Paths for siteID lookup creation
@@ -404,8 +403,24 @@ conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions
 conversions_dt <- fread(conversions_path)
 
 
+# output_paths ------------------------------------------------------------------
+
+output_base_path <- paste0("data/acc/output/", simulation_site)
+
+
+
+
+
+
 # output_vars --------------------------------------------------------------
 
+
+produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
+                             selection_path = selection_path,
+                             aaa_file = aaa_file,
+                             conversions_path = conversions_path,
+                             output_base_path = output_base_path,
+                             species_lookup_path = species_codes_lookup_path)
 
 # Output IDs
 varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
@@ -501,11 +516,12 @@ get_output_operations <- function(plgid,
                                   vHarv = c(30,2), 
                                   stem_cols = c("Wstem", "Wbranch"), 
                                   root_cols = c("WfineRoots", "W_croot"),
-                                  old_output_col_names = c("Units", "forest_type", "value", "year", "variable"),
-                                  new_output_col_names = c("Unit", "Mixture_type", "Value", "Year", "Variable"),
+                                  old_output_col_names = c("Units", "forest_type", "value", "year", "variable", "layer"),
+                                  new_output_col_names = c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer"),
                                   del_output_cols = c("site", "species"),
                                   output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", 
-                                                       "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value")) {
+                                                       "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value"),
+                                  ...) {
   
   
   add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
@@ -544,7 +560,7 @@ get_output_operations <- function(plgid,
     list(fun = merge.data.table,
          args = list(y = siteID_lookup, by = c("site"))),
     # Get species codes
-    list(fun = function(dt) dt[species_lookup[, c("speciesID", "species_code")], on = .(species = speciesID), Species := i.species_code],
+    list(fun = function(dt) dt[species_lookup[, c("speciesID", "prebas_species_code")], on = .(species = speciesID), Species := i.prebas_species_code],
          args = list()),
     # Layer to int
     list(fun = function(dt) dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))],
@@ -574,6 +590,11 @@ get_output_operations <- function(plgid,
 
 
 
+# runTable_paths ----------------------------------------------------------
+
+run_table_base_path <- "data/acc/docs/run_table"
+run_table_sim200_noman_path <- file.path(run_table_base_path, "run_table_sim200_noMan.rds")
+
 # print_vars --------------------------------------------------------------
 
 
@@ -600,6 +621,8 @@ all_vars <- get_named_list(simulation_site,
 txt_vec <- get_named_list_as_txt(all_vars, sep_text = ": ")
 
 print(txt_vec)
+
+
 
 
 
