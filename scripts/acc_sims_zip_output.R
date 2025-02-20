@@ -1,8 +1,8 @@
-# This script is for zipping files from Allas. Each zip file is
-# created from all the files belonging to a combination of clim_scen and man_scen.
-# Each unique combination can be a separate array job. Currently paralellisation
-# is not supported for the compression phase but only for loading the files to 
-# zip from ALlas. 
+# This script is for zipping files that are stored in Allas. 
+# The files belonging to a unique combination of climate scenario and management scenario
+# are grouped together. Each group can be processed as a separate array job. 
+# Currently paralellisation is not supported for the compression phase but only
+# for loading the files to zip from ALlas.
 
 
 
