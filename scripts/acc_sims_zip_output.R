@@ -1,16 +1,41 @@
 # This script is for zipping files from Allas. Each zip file is
-# created from all files belonging to a combination of clim_scen and man_scen.
+# created from all the files belonging to a combination of clim_scen and man_scen.
 # Each unique combination can be a separate array job. Currently paralellisation
 # is not supported for the compression phase but only for loading the files to 
 # zip from ALlas. 
+
+
+
+# sourceFiles -------------------------------------------------------------
+
 
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
+
+# createTestZipPath -------------------------------------------------------------
+
+
+
 zip_file_path <- file.path(output_base_path, "zip_test")
 if(!dir.exists(zip_file_path)) dir.create(zip_file_path)
+
+
+
+# arrayJobParams ----------------------------------------------------------
+
+
+array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
+max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
+
+print(paste0("Array job: ", array_jobID))
+print(paste0("Max array jobs: ", max_array_jobID))
+
+# getFilesToZip -----------------------------------------------------------
+
+
 
 # List all output files that are in Allas
 bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket, 
@@ -19,38 +44,50 @@ bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket,
                                            prefix = "output"))$Key
 
 
-# Create run tables
+
+# CreateSplitRunTables ------------------------------------------------------------
+
+
+
+# Split run tables into groups by combination of clim_scen and man_scen
 zip_dts <- get_split_grouped_output_dt(bucket_list, zip_folder_name =  "zip_test")
 
 
-array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
-max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
-
-
-# Get output file to zip
+# Select one table from zip_dts
 zip_dt <- zip_dts[[array_jobID]]
 
+## For testing
 # zip_dt <- head(zip_dts[[array_jobID]], n = 50)
 
 
-# Determine zipfile
+
+# setZipParams ------------------------------------------------------------
+
+
+
+# When writing to allas zipfile should be the basename of full_zip_path
 zipfile <- basename(zip_dt$full_zip_path[1])
 
-# aws.S3 function args
+# aws.S3 function args for save_object and put_object
 save_or_put_opts <- list(bucket = allas_opts$bucket, region = allas_opts$opts$region, multipart = TRUE)
 
-# Allas object key
+# move_to_path is the s3 object key without the filename (In other words the "directory path" inside the S3 bucket)
 move_to_path <- file.path("output", simulation_site, "zip")
+
+
+
+# run ---------------------------------------------------------------------
 
 # Load files to temp_dir, zip and then write
 load_zip_move(zipfile = zipfile, 
                         files = zip_dt$path,
                         zip_opts = list(FUN = utils::zip,
-                                        extra_FUN_args = list(flags = "-u")),
+                                        extra_FUN_args = list(flags = "-u")), # Faster with -u (update) flag
                         move_to_path = move_to_path,
                         save_or_put_opts = save_or_put_opts,
                         cores = cores,
                         type = type)
+
 
 
 

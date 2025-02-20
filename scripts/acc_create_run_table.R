@@ -1,7 +1,7 @@
 
 # This script is to create a run table for producing the output for acc sims.
 # A base table is constructed with all combinations of climate scenario, management scenario
-# and plgid to run as well as attaching country codes. 
+# and plgid to run. Country codes are added too. 
 # Then a list of management params is created and merged with the base table.
 
 

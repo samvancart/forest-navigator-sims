@@ -9,7 +9,12 @@ RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
             "/projappl/project_2000994/Rpackages/project_rpackages",
             .libPaths()))
 
-install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+tryCatch({
+  install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+}, error = function(e) {
+  message("",e)
+})
+
 
 rm(vPREBAS, RprebassoFolder)
 
