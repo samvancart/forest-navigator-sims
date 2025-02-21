@@ -1,6 +1,6 @@
 
 # This script contains the general settings for the acc sims.
-# All required sources, paths and variables should be here.
+# All required sources, paths and variables should be stored here.
 
 # sourceFiles -------------------------------------------------------------
 

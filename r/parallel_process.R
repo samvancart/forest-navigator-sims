@@ -1,4 +1,5 @@
 
+
 #' Execute a function in parallel across a list of items
 #'
 #' @description This function utilizes parallel processing to execute a given function (`FUN`) across a list of data frames (`data`) using the specified number of cores.
@@ -6,7 +7,7 @@
 #' @param data A list of items to be processed in parallel.
 #' @param FUN A function to be applied to each item in the list.
 #' @param FUN_args A list of additional arguments to be passed to `FUN`.
-#' @param df_name An optional character name for `data` when passing the it to `FUN` with. If NULL `data` is passed as the first argument.
+#' @param df_name An optional character name for `data` when it is not the first argument of `FUN`. If NULL `data` is passed as the first argument.
 #' @param cores An integer specifying the number of cores to use for parallel processing. Defaults to 1.
 #' @param type A character string specifying the cluster type. Defaults to "PSOCK".
 #' @param ... Additional arguments to be passed to `foreach`.
@@ -31,6 +32,7 @@ get_in_parallel <- function(data, FUN, FUN_args, df_name = NULL, cores = 1, type
   checkmate::assert_int(cores, lower = 1)
   checkmate::assert_choice(type, choices = c("PSOCK", "FORK"))
   
+  
   tryCatch(
     {
       cat("Processing on" , cores, "core(s)...", "\n")
@@ -40,13 +42,14 @@ get_in_parallel <- function(data, FUN, FUN_args, df_name = NULL, cores = 1, type
       on.exit(parallel::stopCluster(cl))  # Stop cluster on exit
       registerDoParallel(cl)
       
+      # Define args_FUN outside foreach
+      args_FUN <- get_parallel_args
+      
       t <- system.time(
         result <- foreach(df = data, ...) %dopar% {
-          args <- if (is.null(df_name)) {
-            c(list(df), FUN_args)
-          } else {
-            c(setNames(list(df), df_name), FUN_args)
-          }
+          # Check if df_name should be used
+          args <- do.call(args_FUN, list(df = df, FUN_args = FUN_args, df_name = df_name))
+          
           do.call(FUN, args) # Call function with constructed arguments
         }
       )
@@ -57,5 +60,20 @@ get_in_parallel <- function(data, FUN, FUN_args, df_name = NULL, cores = 1, type
       stop(e)
     }
   )
+}
+
+
+
+
+# Get args from df_name if not NULL
+get_parallel_args <- function(df, FUN_args, df_name = NULL) {
+  
+  args <- if (is.null(df_name)) {
+    c(list(df), FUN_args)
+  } else {
+    c(setNames(list(df), df_name), FUN_args)
+  }
+  
+  return(args)
 }
 

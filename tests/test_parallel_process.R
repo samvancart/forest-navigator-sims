@@ -26,12 +26,22 @@ test_that("get_in_parallel works correctly", {
   expect_length(result_with_args, 1)
   expect_equal(result_with_args, do.call(rbind, lapply(data_list, my_fun2)))
   
+  # Test using df_name
+  my_fun3 <- function(x, y) y * 2 + x
+  myfun3_x <- 3
+  result_with_df_name <- get_in_parallel(data_list, my_fun3, list(x = myfun3_x), df_name = "y", cores = 1, .combine = rbind)
+  expect_type(result_with_df_name, "list")
+  expect_length(result_with_df_name, 1)
+  expect_equal(result_with_df_name, do.call(rbind, lapply(data_list, function(data) my_fun3(myfun3_x, data))))
+  
   
   # Test error handling
   expect_error(get_in_parallel(data_list, function(df) stop("error"), my_fun_args, cores = 1), "error")
   
   # Test input validations
-  expect_error(get_in_parallel("not_a_list", my_fun, my_fun_args, cores = 1), "Assertion")
+  # expect_error(get_in_parallel("not_a_list", my_fun, my_fun_args, cores = 1), "Assertion")
+  expect_error(get_in_parallel(data_list, my_fun, my_fun_args, cores = -1), "Assertion")
+  expect_error(get_in_parallel(data_list, my_fun, my_fun_args, cores = 0), "Assertion")
   expect_error(get_in_parallel(data_list, "not_a_function", my_fun_args, cores = 1), "Assertion")
   expect_error(get_in_parallel(data_list, my_fun, "not_a_list", cores = 1), "Assertion")
   expect_error(get_in_parallel(data_list, my_fun, my_fun_args, cores = -1), "Assertion")

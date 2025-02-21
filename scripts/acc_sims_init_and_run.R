@@ -3,6 +3,8 @@
 # The output is processed according to the ForestNav output template and saved.
 # Manually determine number (num_split_parts) of data.tables to split into for array job processing.
 
+
+
 # sourceFiles -------------------------------------------------------------
 
 
@@ -116,13 +118,9 @@ invisible(mclapply(output_obj_list, function(item) {
 # acc_output_obj[[1]]$data
 
 
-#### END TEST ##########
-
-
-
 #### TEST PARALLEL ##########
 
-# acc_run_test_dts <- acc_run_tables_list[c(1,10,20)]
+# acc_run_test_dts <- acc_run_tables_list[c(1,20)]
 # 
 # output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_test_dts,
 #                                                  FUN = acc_run_table_controller,
@@ -133,10 +131,10 @@ invisible(mclapply(output_obj_list, function(item) {
 # 
 # 
 # 
-# acc_output_obj[[1]]$data
+# output_obj_list[[1]]$data
 
 
-#### END TEST PARALLEL ##########
+
 
 
 
