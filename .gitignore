@@ -3,6 +3,7 @@
 .Rhistory
 .RData*
 .Ruserdata
+.Renviron # may contain secrets
 
 test.R
 *.rdata
