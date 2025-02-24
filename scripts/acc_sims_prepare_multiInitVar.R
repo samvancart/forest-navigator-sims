@@ -2,14 +2,23 @@
 # for PREBAS. An acc object is created containing the multiInitVar object and saved.
 
 
+
+# sourceFiles -------------------------------------------------------------
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# clustered_paths <- list.files(boku_data_path, pattern = "clustered",  recursive = T, full.names = T)
+# getPaths ----------------------------------------------------------------
+
+
 
 clustered_paths <- list.files(clean_data_base_path, pattern = "clustered",  recursive = T, full.names = T)
 
+
+
+
+# run ---------------------------------------------------------------------
 
 
 
@@ -19,6 +28,11 @@ multiInitVar_obj_list <- do.call(get_in_parallel, list(data = clustered_paths,
                                       FUN_args = create_multiInitVar_for_layers_args,
                                       cores = cores,
                                       type = type))
+
+
+
+# save --------------------------------------------------------------------
+
 
 
 

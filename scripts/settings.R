@@ -1,5 +1,10 @@
+# This script is for loading necessary libraries and config
 
-### Libraries ###
+
+
+# loadPrebasPuhti ---------------------------------------------------------
+
+
 
 library(devtools)
 
@@ -20,6 +25,7 @@ rm(vPREBAS, RprebassoFolder)
 
 
 
+# loadLibs ----------------------------------------------------------------
 
 
 require(aws.s3)
@@ -52,6 +58,10 @@ require(testthat)
 require(withr)
 require(yaml)
 require(zoo)
+
+
+# loadConfig --------------------------------------------------------------
+
 
 
 

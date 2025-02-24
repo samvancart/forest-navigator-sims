@@ -8,16 +8,26 @@
 
 
 
+# sourceFiles -------------------------------------------------------------
+
+
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-# Clim files to process
-# clim_paths <- list.files(dest_path, full.names = T)
+# arrayJobParams ----------------------------------------------------------
 
 array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
 max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
+
+print(paste0("Array job: ", array_jobID))
+print(paste0("Max array jobs: ", max_array_jobID))
+
+
+
+# getClimPaths ------------------------------------------------------------
 
 
 
@@ -25,25 +35,31 @@ all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts
 
 
 
+# splitIDs ----------------------------------------------------------------
 
 
-max_array_jobID <- 31
-# array_jobID <- 1
 
-# Get all clim_paths as dt with PlgID and clim_scen cols
-all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
-run_dt_max_part_size <- floor(nrow(all_paths_run_dt)/max_array_jobID)
-
-# Split with constraint
-run_dt_splitID <- split_dt_equal_with_constraint(all_paths_run_dt, run_dt_max_part_size, c("PlgID","clim_scen"))
+# This can represent max number of array jobs
+num_split_parts <- 31
 
 # Define split by id (Default is array_jobID)
 split_by_id <- array_jobID
 
 
+
+# splitTable --------------------------------------------------------------
+
+# Get all clim_paths as dt with PlgID and clim_scen cols
+all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
+run_dt_max_part_size <- floor(nrow(all_paths_run_dt)/num_split_parts)
+
+# Split with constraint
+run_dt_splitID <- split_dt_equal_with_constraint(all_paths_run_dt, run_dt_max_part_size, c("PlgID","clim_scen"))
+
+
 print(paste0("Split by id: ", split_by_id))
 cat("\n")
-print(f_stat_dt)
+
 
 # Filter by array jobID
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
@@ -53,6 +69,11 @@ clim_paths <- run_dt$path
 
 print("clim_paths")
 print(clim_paths)
+
+
+
+
+# run ---------------------------------------------------------------------
 
 
 
@@ -75,6 +96,9 @@ clim_acc_init_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
 
 
 
+# save --------------------------------------------------------------------
+
+
 
 
 
@@ -89,39 +113,6 @@ invisible(lapply(clim_acc_init_obj_list, function(obj) {
 
 
 
-
-
-
-
-
-
-# # Save all acc objects
-# save_obj_list <- do.call(get_in_parallel, list(data = clim_acc_init_obj_list,
-#                               FUN = create_dir_and_save_acc_obj,
-#                               FUN_args = list(base_path = clean_data_base_path,
-#                                               test = F, ext = ".rds"),
-#                               cores = cores,
-#                               type = type))
-#   
-
-
-
-
-
-
-
-# t <- system.time(
-# clim_acc_init_obj_list <- run_acc_with_combine_args(FUN = create_acc_clim_data,
-#                                                     acc_input_obj = clim_data_acc_input_obj,
-#                                                     plgid_vec = plgid_vec,
-#                                                     aaa_file = aaa_file,
-#                                                     clean_data_base_path = clean_data_base_path,
-#                                                     get_in_parallel_args = general_get_in_parallel_args,
-#                                                     config = config,
-#                                                     allas_opts = allas_opts,
-#                                                     clim_paths = clim_paths)
-# )
-# print(t)
 
 
 

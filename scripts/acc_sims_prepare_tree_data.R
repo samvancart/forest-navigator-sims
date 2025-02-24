@@ -3,14 +3,18 @@
 # is saved as "clusters_<10km-by-10km_cell_id>.rdata.
 
 
+# sourceFiles -------------------------------------------------------------
+
+
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
-#######################################
 
-############ TREE DATA
 
-#######################################
+
+# getPaths ----------------------------------------------------------------
+
 
 
 # Get PlgIDs to run from clim_paths
@@ -19,8 +23,10 @@ all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
 plgid_vec <- as.integer(unique(all_paths_run_dt$PlgID))
 
 
-# TEST
-# plgid_vec <- as.integer(unlist(tstrsplit(list.files(clean_data_base_path), split = "_", keep = 2)))
+
+# run ---------------------------------------------------------------------
+
+
 
 
 
@@ -34,15 +40,9 @@ clustered_acc_init_obj <- run_acc_with_combine_args(FUN = create_acc_clustered_t
 
 
 
+# modifyAccObjName --------------------------------------------------------
 
 
-
-
-#######################################
-
-############ SAVE
-
-#######################################
 
 # Modify name
 clustered_acc_init_obj_name <- lapply(seq(clustered_acc_init_obj), function(i) {
@@ -52,6 +52,11 @@ clustered_acc_init_obj_name <- lapply(seq(clustered_acc_init_obj), function(i) {
   clustered_acc_init_obj[[i]]
 
 })
+
+
+
+# save --------------------------------------------------------------------
+
 
 
 # Save all acc objects

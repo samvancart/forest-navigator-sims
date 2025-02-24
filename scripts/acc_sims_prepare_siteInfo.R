@@ -1,15 +1,43 @@
+# This script is for creating the Prebas siteInfo
+
+
+
+# sourceFiles -------------------------------------------------------------
+
+
+
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# clustered_paths <- list.files(boku_data_path, pattern = "clustered",  recursive = T, full.names = T)
+
+# getPlgIDs ----------------------------------------------------------------
+
+
 clustered_paths <- list.files(clean_data_base_path, pattern = "clustered",  recursive = T, full.names = T)
 plgid_vec <- as.integer(unlist(tstrsplit(clustered_paths, split = "[/_]", keep = 9)))
+
+
+
+# getSoilDt ---------------------------------------------------------------
+
+
+
 soil_dt <- fread(soil_file_path)[PlgID %in% plgid_vec]
 setnames(soil_dt, old = "soil depth", new = "soil_depth")
 
+
+# splitSoilDt -----------------------------------------------------------------
+
+
+
 split_soil_dts <- split(soil_dt, by = "PlgID")
-length(split_soil_dts)
+
+
+
+# run ---------------------------------------------------------------------
+
+
 
 # Get acc objects
 site_info_obj_list <- lapply(names(split_soil_dts), function(id) {
@@ -25,6 +53,12 @@ site_info_obj_list <- lapply(names(split_soil_dts), function(id) {
                            clim_scen = "detrended")
 
 })
+
+
+
+
+# save --------------------------------------------------------------------
+
 
 
 
