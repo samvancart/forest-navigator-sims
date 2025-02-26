@@ -590,10 +590,30 @@ get_output_operations <- function(plgid,
 
 
 
+
+# man_vars ----------------------------------------------------------------
+
+man_names <- c("noman", "bau")
+man_id <- 2
+man_name <- man_names[man_id]
+
+man_params <- list(noman = list(defaultThin = 0, 
+                                ClCut = 0, 
+                                mortMod = 3, 
+                                ingrowth = T),
+                   
+                   bau = list(defaultThin = 1,
+                              ClCut = 1,
+                              mortMod = 3,
+                              ingrowth = T))
+
 # runTable_paths ----------------------------------------------------------
 
 run_table_base_path <- "data/acc/docs/run_table"
-run_table_sim200_noman_path <- file.path(run_table_base_path, "run_table_sim200_noMan.rds")
+run_table_name <- str_c("run_table", simulation_site, man_name, sep = "-")
+run_table_full_path <- file.path(run_table_base_path, paste0(run_table_name, ".rds"))
+
+if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does not exist."))
 
 # print_vars --------------------------------------------------------------
 
@@ -614,7 +634,8 @@ all_vars <- get_named_list(simulation_site,
                            cluster_data_col_names,
                            species_codes_lookup_path,
                            grid_file_path,
-                           soil_file_path)
+                           soil_file_path,
+                           man_name)
 
 
 # Named list as text

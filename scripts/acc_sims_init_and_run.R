@@ -15,10 +15,8 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 # getRunTable -------------------------------------------------------------
 
-
-
-acc_run_table_path <- run_table_sim200_noman_path
-acc_run_table <- loadRDataFile(acc_run_table_path)
+print(paste0("Getting run_table from ", run_table_full_path))
+acc_run_table <- loadRDataFile(run_table_full_path)
 
 
 
@@ -84,7 +82,7 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
 
 # Save to allas
 allas_output_path <- "output/simulation_sites_200/output_files"
-invisible(mclapply(output_obj_list, function(item) {
+invisible(lapply(output_obj_list, function(item) {
   dt <- item$data[[1]]
   print(paste0("Saving ", item$name, " to ", allas_output_path, " in allas..."))
   s3write_using(x = dt,
@@ -92,7 +90,7 @@ invisible(mclapply(output_obj_list, function(item) {
                 object = file.path(allas_output_path, paste0(item$name, ".csv")),
                 bucket = allas_opts$bucket,
                 opts = c(list(multipart = T), allas_opts$opts))
-}, mc.cores = cores))
+}))
 
 
 
