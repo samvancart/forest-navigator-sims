@@ -36,13 +36,17 @@ print(paste0("Max array jobs: ", max_array_jobID))
 # getFilesToZip -----------------------------------------------------------
 
 
+bucket_list_prefix <- file.path("output", simulation_site, "output_files")
 
-# List all output files that are in Allas
-bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket, 
-                                           region = allas_opts$opts$region, 
-                                           max = Inf, 
-                                           prefix = "output"))$Key
+# List all output files that are in Allas using custom function
+bucket_list <- list_all_objects_in_bucket(bucket = allas_opts$bucket, 
+                                region = allas_opts$opts$region, 
+                                prefix = bucket_list_prefix,
+                                only_keys = T)
 
+
+
+filtered_bucket_list <- grep(man_name, bucket_list, value = T)
 
 
 # CreateSplitRunTables ------------------------------------------------------------
@@ -50,7 +54,7 @@ bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket,
 
 
 # Split run tables into groups by combination of clim_scen and man_scen
-zip_dts <- get_split_grouped_output_dt(bucket_list, zip_folder_name =  "zip_test")
+zip_dts <- get_split_grouped_output_dt(filtered_bucket_list, zip_folder_name =  "zip_test")
 
 
 # Select one table from zip_dts
@@ -80,13 +84,13 @@ move_to_path <- file.path("output", simulation_site, "zip")
 
 # Load files to temp_dir, zip and then write
 load_zip_move(zipfile = zipfile, 
-                        files = zip_dt$path,
-                        zip_opts = list(FUN = utils::zip,
-                                        extra_FUN_args = list(flags = "-u")), # Faster with -u (update) flag
-                        move_to_path = move_to_path,
-                        save_or_put_opts = save_or_put_opts,
-                        cores = cores,
-                        type = type)
+              files = zip_dt$path,
+              zip_opts = list(FUN = utils::zip,
+                              extra_FUN_args = list(flags = "-u")), # Faster with -u (update) flag
+              move_to_path = move_to_path,
+              save_or_put_opts = save_or_put_opts,
+              cores = cores,
+              type = type)
 
 
 

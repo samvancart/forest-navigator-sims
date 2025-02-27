@@ -1550,20 +1550,6 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
 # zip_worker --------------------------------------------------------------
 
 
-# Load or put object
-# FUN is either save_object or put_object from the aws.S3 lib. 
-# Object is the full allas object key. base_dir is the directory to save to/load from.
-save_or_put_allas <- function(FUN, base_dir, object, ...) {
-  
-  # Input validation
-  assert_function(FUN)
-  
-  file <- file.path(base_dir, basename(object))
-  args <- c(list(object =  object, file = file), ...)
-  do.call(FUN, args)
-  return(file)
-}
-
 
 # Helper to create list of dts for zipping files
 get_split_grouped_output_dt <- function(output_paths, 
@@ -1678,14 +1664,17 @@ load_zip_move <- function(zipfile,
     if(dir.exists(temp_dir)) unlink(temp_dir, recursive = T)
   )
   
-  
+
   # Get files from Allas. Specify cores and type inside ... to run in parallel.
   files <- unlist(do.call(get_in_parallel, c(list(data = files,
                                                   FUN = save_or_put_allas,
                                                   FUN_args = c(list(FUN = save_object,
-                                                                    base_dir = temp_dir), 
+                                                                    base_dir = temp_dir),
                                                                save_or_put_opts)),
+
                                              ...)))
+  
+
   
   # Check that all the files were created
   invisible(sapply(files, assert_file_exists))
@@ -1811,3 +1800,64 @@ create_table_from_vars <- function(id_vars, value_vars_list, result_name = "resu
 }
 
 
+
+
+
+
+
+# awsS3Helper_worker --------------------------------------------------
+
+
+# Load or put object
+# FUN is either save_object or put_object from the aws.S3 lib. 
+# Object is the full allas object key. base_dir is the directory to save to/load from.
+save_or_put_allas <- function(FUN, base_dir, object, ...) {
+  
+  # Input validation
+  assert_function(FUN)
+
+  file <- file.path(base_dir, basename(object))
+  args <- c(list(object =  object, file = file), ...)
+  do.call(FUN, args)
+  return(file)
+}
+
+
+
+# Function to list all objects in an S3 bucket 1000 at a time 
+# (the maximum in the aws.s3 package get_bucket function).
+# If there are more than 1000 objects then they a collected in a loop by moving
+# the marker param to start from the end of the last batch of fetched objects.
+#
+# Returns a list of the aws.s3 objects that were found or a character vector of 
+# the unique keys of the objects when only_keys=TRUE
+list_all_objects_in_bucket <- function(only_keys = F, ...) {
+  all_objects <- list()
+  marker <- NULL
+  total_objects <- 0
+  
+  while(TRUE) {
+    
+    
+    # Retrieve a batch of objects
+    batch <- get_bucket(marker = marker, max = 1000, ...)
+    
+    total_objects <- total_objects + length(batch)
+    
+    # Update the marker to the last key in the current batch
+    marker <- tail(batch, 1)$Contents$Key
+    
+    # If no more objects are returned, break the loop
+    if (length(batch) == 0 | is.null(marker)) break
+    
+    # Append the batch to the list of all objects
+    all_objects <- c(all_objects, batch)
+    
+  }
+  
+  print(paste0("Found a total of ", total_objects, " objects."))
+  
+  if(only_keys) return(unique(rbindlist(all_objects)$Key))
+  
+  return(all_objects)
+}
