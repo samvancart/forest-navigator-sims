@@ -9,6 +9,8 @@
 library(devtools)
 
 vPREBAS <- "master"
+# vPREBAS <- "newVersion"
+
 RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
 .libPaths(c(RprebassoFolder,
             "/projappl/project_2000994/Rpackages/project_rpackages",
