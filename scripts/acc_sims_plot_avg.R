@@ -1,4 +1,4 @@
-
+# Plot yearly averages for sums of variables by layer and species.
 
 # sourceFiles -------------------------------------------------------------
 
@@ -19,50 +19,90 @@ bucket_list <- list_all_objects_in_bucket(bucket = allas_opts$bucket,
 
 
 
-filtered_bucket_list <- grep(man_name, bucket_list, value = T)
+
+# loadFiles ---------------------------------------------------------------
+
+idx <- 200
+plot_file <- bucket_list[idx]
+
+dt <- s3read_using(fread, object = plot_file, bucket = allas_opts$bucket, opts = allas_opts$opts)
 
 
 
+# params ------------------------------------------------------------------
 
-dt <- s3read_using(fread, object = bucket_list[20], bucket = allas_opts$bucket, opts = allas_opts$opts)
 
+
+country <- dt$Country[[1]]
+clim_scen <- dt$Climate_scenario[[1]]
+man_scen <- dt$Management_scenario[[1]]
 plot_vars <- c("gpp", "gai", "vol")
+
+
+
+# filterTable ---------------------------------------------------------------
+
+
 
 dt_plot_vars <- dt[Variable %in% plot_vars]
 
-lapply(plot_vars, function(var) {
-  hist(x = dt_plot_vars[Variable==var]$Value, main = var)
-})
+
+
+# plot --------------------------------------------------------------------
 
 
 
-dt_sums <- dt_plot_vars[, .(SumValue = sum(Value)), by = .(Year, Variable, Layer)]
-dt_avg <- dt_sums[, .(AvgSumValue = mean(SumValue, na.rm = TRUE)), by = .(Year, Layer, Variable)]
+create_yearly_avgs_plot <- function(data, by_param, country, clim_scen, man_scen) {
+  ggplot(data, aes(x = Year, y = AvgSumValue, color = as.factor(data[[by_param]]))) +
+    geom_line(size = 0.5) +
+    geom_point(size = 0.5) +
+    facet_wrap(~Variable, scales = "free_y") +  # Separate plots with independent y-axes
+    labs(
+      title = paste(
+        "Yearly Averages of Sums for Each Variable by", by_param, "\n",
+        "Country:", country, "\n",
+        "Climate scenario:", clim_scen, "\n",
+        "Management scenario:", man_scen
+      ),
+      x = "Year",
+      y = "Average Sum Value",
+      color = by_param
+    ) +
+    theme_minimal()
+}
 
-chosen_variable <- "gpp"
-dt_var <- dt_avg[Variable==chosen_variable]
+by_params <- c("Layer", "Species")
+plots <- lapply(by_params, function(by_param) {
+  dt_sums <- dt_plot_vars[, .(SumValue = sum(Value)), by = c("Year", "Variable", by_param)]
+  dt_avg <- dt_sums[, .(AvgSumValue = mean(SumValue, na.rm = TRUE)), by = c("Year", "Variable", by_param)]
+  create_yearly_avgs_plot(data = dt_avg, by_param = by_param, country = country,
+                          clim_scen = clim_scen, man_scen = man_scen)
+}) # Create all plots
 
-ggplot(dt_var, aes(x = Year, y = AvgSumValue, color = Variable)) +
-  geom_line(size = 0.5) + # Adjust the line thickness here
-  facet_wrap(~Layer) +
-  labs(
-    title = "Yearly Averages of Sums by Variable and Layer",
-    x = "Year",
-    y = "Average Sum Value"
-  ) +
-  theme_minimal()
+grid_plot <- grid.arrange(grobs = plots)
 
-ggplot(dt_avg, aes(x = Year, y = AvgSumValue, color = as.factor(Layer))) +
-  geom_line(size = 0.5) +
-  geom_point(size = 0.5) +
-  facet_wrap(~Variable, scales = "free_y") +  # Separate plots with independent y-axes
-  labs(
-    title = "Yearly Averages of Sums for Each Variable by Layer",
-    x = "Year",
-    y = "Average Sum Value",
-    color = "Layer"
-  ) +
-  theme_minimal()
+
+
+
+# save --------------------------------------------------------------------
+
+
+
+plot_filename <- unlist(tstrsplit(basename(plot_file), split = "\\.", keep = 1))
+plot_save_filename <- paste0(plot_filename,".pdf")
+plot_path <- "data/acc/plots"
+plot_save_path <- file.path(plot_path, plot_save_filename)
+
+ggsave(
+  filename = plot_save_path,  # File path
+  plot = cowplot::ggdraw(grid_plot),  # Wrap the grid object with ggdraw from cowplot
+  width = 12,   # Adjust width
+  height = 8,   # Adjust height
+  dpi = 300     # Resolution
+)
+
+
+
 
 
 
