@@ -22,10 +22,38 @@ bucket_list <- list_all_objects_in_bucket(bucket = allas_opts$bucket,
 
 # loadFiles ---------------------------------------------------------------
 
+
+
 idx <- 200
 plot_file <- bucket_list[idx]
 
 dt <- s3read_using(fread, object = plot_file, bucket = allas_opts$bucket, opts = allas_opts$opts)
+
+
+
+# loadIngrowthFiles -----------------------------------------------------------
+
+# TEST PLOTS FOR INGROWTH = F RUNS
+
+grobs_list <- list()
+
+ingrowth <- F
+idx <- 1
+
+# Load from allas when ingrowth=T
+if(ingrowth) {
+  files_ingT <- grep("8003115_his", bucket_list, value = T)
+  plot_file <- files_ingT[idx]
+  print(paste0("Ingrowth is ", ingrowth))
+  print(paste0("Loading from allas"))
+  dt <- s3read_using(fread, object = plot_file, bucket = allas_opts$bucket, opts = allas_opts$opts)
+} else {
+  files_ingF <- list.files(file.path(output_base_path, "output_files"), full.names = T)
+  plot_file <- files_ingF[idx]
+  print(paste0("Ingrowth is ", ingrowth))
+  print(paste0("Loading from filesystem"))
+  dt <- readRDS(plot_file)
+}
 
 
 
@@ -52,7 +80,7 @@ dt_plot_vars <- dt[Variable %in% plot_vars]
 
 
 
-create_yearly_avgs_plot <- function(data, by_param, country, clim_scen, man_scen) {
+create_yearly_avgs_plot <- function(data, by_param, country, clim_scen, man_scen, ingrowth = T) {
   ggplot(data, aes(x = Year, y = AvgSumValue, color = as.factor(data[[by_param]]))) +
     geom_line(size = 0.5) +
     geom_point(size = 0.5) +
@@ -62,7 +90,8 @@ create_yearly_avgs_plot <- function(data, by_param, country, clim_scen, man_scen
         "Yearly Averages of Sums for Each Variable by", by_param, "\n",
         "Country:", country, "\n",
         "Climate scenario:", clim_scen, "\n",
-        "Management scenario:", man_scen
+        "Management scenario:", man_scen, "\n",
+        "Ingrowth:", ingrowth
       ),
       x = "Year",
       y = "Average Sum Value",
@@ -76,10 +105,16 @@ plots <- lapply(by_params, function(by_param) {
   dt_sums <- dt_plot_vars[, .(SumValue = sum(Value)), by = c("Year", "Variable", by_param)]
   dt_avg <- dt_sums[, .(AvgSumValue = mean(SumValue, na.rm = TRUE)), by = c("Year", "Variable", by_param)]
   create_yearly_avgs_plot(data = dt_avg, by_param = by_param, country = country,
-                          clim_scen = clim_scen, man_scen = man_scen)
+                          clim_scen = clim_scen, man_scen = man_scen, ingrowth = ingrowth)
 }) # Create all plots
 
-grid_plot <- grid.arrange(grobs = plots)
+grobs_list <- c(plots, grobs_list)
+
+
+
+# RUN WHEN GROBS LIST IS COMPLETE
+grid_plot <- grid.arrange(grobs = grobs_list)
+
 
 
 

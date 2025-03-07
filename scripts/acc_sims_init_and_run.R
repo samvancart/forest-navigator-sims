@@ -50,11 +50,12 @@ run_dt_splitID <- split_dt_equal_with_constraint(acc_run_table, run_dt_max_part_
 
 
 
-
 # Filter by array jobID
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 
 acc_run_tables_list <- split(run_dt, by = c("plgid"))
+
+
 
 
 
@@ -96,6 +97,12 @@ invisible(lapply(output_obj_list, function(item) {
 
 
 
+
+# saveToFilesystem --------------------------------------------------------
+
+# lapply(output_obj_list, function(obj) {
+#   create_dir_and_save_acc_obj(obj, output_base_path, test = F, ext = ".rds")
+# })
 
 
 
