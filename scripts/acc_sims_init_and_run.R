@@ -20,6 +20,7 @@ acc_run_table <- loadRDataFile(run_table_full_path)
 
 
 
+
 # arrayJobParams ----------------------------------------------------------
 
 
@@ -57,6 +58,28 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
+# plotTest ----------------------------------------------------------------
+
+
+# # test run for plotting
+# plgid_test <- 8003115
+# clim_scen_test <- "detrended"
+# acc_run_table_def <- acc_run_table[plgid == plgid_test & clim_scen == clim_scen_test][rep(1, 4), ]
+# acc_run_table_def[1,]$man_scen <- "bau_ingrowthT"
+# acc_run_table_def[2,]$man_scen <- "bau_ingrowthF"
+# acc_run_table_def[3,]$man_scen <- "noman_ingrowthT"
+# acc_run_table_def[4,]$man_scen <- "noman_ingrowthF"
+# 
+# acc_run_table_def[2,]$man_init_args[[1]]$ingrowth <- FALSE
+# acc_run_table_def[2,]$man_init_args[[1]]$defaultThin <- 0
+# acc_run_table_def[2,]$man_init_args[[1]]$ClCut <- 0
+# acc_run_table_def[4,]$man_init_args[[1]]$ingrowth <- FALSE
+# acc_run_table_def[4,]$man_init_args[[1]]$defaultThin <- 0
+# acc_run_table_def[4,]$man_init_args[[1]]$ClCut <- 0
+# 
+# # acc_run_tables_list <- list(acc_run_table[plgid == plgid_test & clim_scen == clim_scen_test])
+# 
+# acc_run_tables_list <- split(acc_run_table_def, by = "man_scen") 
 
 
 
@@ -68,13 +91,16 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
                                                         FUN = acc_run_table_controller,
                                                         FUN_args = list(paths = produce_output_paths,
-                                                                        FUN = produce_acc_output_obj),
+                                                                        FUN = produce_acc_output_obj,
+                                                                        test_run = T),
                                                         cores = cores,
                                                         type = type)), recursive = F)
 
 
 
 
+
+output_obj_list[[2]]$name
 
 # saveToAllas -------------------------------------------------------------
 
@@ -100,15 +126,13 @@ invisible(lapply(output_obj_list, function(item) {
 
 # saveToFilesystem --------------------------------------------------------
 
-# lapply(output_obj_list, function(obj) {
-#   create_dir_and_save_acc_obj(obj, output_base_path, test = F, ext = ".rds")
-# })
+lapply(output_obj_list, function(obj) {
+  create_dir_and_save_acc_obj(obj, output_base_path, test = F, ext = ".rds")
+})
 
 
-
-
-
-
+test_file <- file.path(output_obj_list[[1]]$save_path, paste0(output_obj_list[[1]]$name, ".rds"))
+test_list <- readRDS(test_file)
 
 
 

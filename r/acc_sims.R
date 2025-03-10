@@ -1432,9 +1432,14 @@ get_acc_output_dt <- function(plgid, model, country,
 # Construct table name and save path then combine with data and plgid into 
 # acc object for saving 
 get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, 
-                            man_scen, output_base_path) {
-  # Check input validity
-  assert_data_table(out_dt)
+                            man_scen, output_base_path, test_run = F) {
+  if(!test_run) {
+    # Check input validity
+    assert_data_table(out_dt)
+  } else {
+    assert_list(out_dt)
+  }
+
   
   
   # Create name according to output template
@@ -1452,13 +1457,32 @@ get_acc_out_obj <- function(out_dt, model, plgid, clim_scen,
 }
 
 
+
+
+handle_acc_test_run <- function(plgid, output_base_path, initPrebas, modOut, multiOut,
+                                model, clim_scen, man_scen) {
+  
+  data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut)
+  
+  output_object <- get_acc_out_obj(data, model, plgid, 
+                                   clim_scen, man_scen, output_base_path, test_run = T)
+  
+  
+  output_object$name <- paste0("testRun_", output_object$name)
+  
+  return(output_object)
+}
+
 # produceOutput_controller ------------------------------------------------
+
+
+
 
 # Wrapper to call the function that runs the model and gets the acc_output_obj.
 # The run_table contains the varying values. Paths contains the static values (the paths).
 # FUN is the function to call. The function is called sequentially for run_table rows.
 # Returns a list of the objects returned from each call to FUN.
-acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_obj) {
+acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_obj, ...) {
   
   assert_data_table(run_table, min.rows = 1)
   assert_list(paths)
@@ -1467,7 +1491,7 @@ acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_
   result_list <- apply(run_table, 1, function(row) {
     
     vals <- as.list(row)
-    args <- c(vals, paths)
+    args <- c(vals, paths, ...)
     
     do.call(FUN, args)
   })
@@ -1479,14 +1503,15 @@ acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_
 
 # Get initPrebas and run regionPrebas to get multiOut then process into 
 # acc output data.table using output_operations.
-# Return acc_output_obj that is used for saving the data.
+# Returns acc_output_obj that is used for saving the data.
+# When test_run=TRUE returns acc_output_obj with data is a list containing initPrebas, modOut and multiOut
 produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    canopy_layer, man_init_args,
                                    varOutID, vHarv,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
                                    conversions_path, output_base_path,
-                                   species_lookup_path, ...) {
+                                   species_lookup_path, test_run = F, ...) {
   
   
   # Check input validity
@@ -1522,6 +1547,17 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   # Get multiOut
   multiOut <- modOut$multiOut
+  
+  
+  if(test_run) {
+    print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
+  
+    output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
+                        initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
+                        model = model, clim_scen = clim_scen, man_scen = man_scen)
+    
+    return(output_object)
+  }
   
   print(paste0("Creating output from multiOut..."))
   
