@@ -1814,7 +1814,7 @@ expand_vectors_to_dt <- function(vectors_list) {
 
 
 # For creating management table with management params as list and id_vars that 
-# can be merged with another table. In this case the table with the other run table vars.
+# can be merged with another table that is in this case the table with the other run table vars.
 create_table_from_vars <- function(id_vars, value_vars_list, result_name = "result") {
   # Check input validity
   assert_list(id_vars)

@@ -9,7 +9,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 test_files <- list.files(output_base_path, recursive = T, full.names = T)
 test_filepaths <- grep("testRun", test_files, value = T)
-# test_list <- lapply(test_filepaths, readRDS)
+print(test_filepaths)
 
 plgid <- unlist(tstrsplit(basename(test_filepaths[1]), split = "_", keep = 3))
 
@@ -21,6 +21,7 @@ process_annual_avg_by_all_and_siteType_from_multiOut <- function(multiOut, vars,
   all_results <- list()  # To store results for all vars
   
   for (var in vars) {  # Loop over vars
+
     # Calculate stand_tot and stand_mean for the current var
     stand_tot <- apply(multiOut[,,var,,1], 1:2, sum)
     stand_mean <- apply(stand_tot, 2, mean)

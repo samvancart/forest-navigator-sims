@@ -11,7 +11,15 @@ library(devtools)
 vPREBAS <- "master"
 # vPREBAS <- "newVersion"
 
-RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
+
+if(vPREBAS=="master") {
+  print("Checking master...")
+  RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
+} else {
+  print("Checking newVersion...")
+  RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_newV"
+}
+
 .libPaths(c(RprebassoFolder,
             "/projappl/project_2000994/Rpackages/project_rpackages",
             .libPaths()))
@@ -22,9 +30,7 @@ tryCatch({
   message("",e)
 })
 
-
 rm(vPREBAS, RprebassoFolder)
-
 
 
 # loadLibs ----------------------------------------------------------------
