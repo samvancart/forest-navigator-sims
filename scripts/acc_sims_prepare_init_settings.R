@@ -15,7 +15,7 @@ source('./r/multiSite.R')
 # simSites_vars ----------------------------------------------------------
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
-simulation_site_id <- 1
+simulation_site_id <- 2
 simulation_site <- simulation_sites[simulation_site_id]
 
 
@@ -414,7 +414,6 @@ output_base_path <- paste0("data/acc/output/", simulation_site)
 
 # output_vars --------------------------------------------------------------
 
-
 produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              selection_path = selection_path,
                              aaa_file = aaa_file,
@@ -615,6 +614,12 @@ run_table_full_path <- file.path(run_table_base_path, paste0(run_table_name, ".r
 
 if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does not exist."))
 
+
+
+# runTable_vars -----------------------------------------------------------
+
+runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 31, 1)
+
 # print_vars --------------------------------------------------------------
 
 
@@ -635,7 +640,8 @@ all_vars <- get_named_list(simulation_site,
                            species_codes_lookup_path,
                            grid_file_path,
                            soil_file_path,
-                           man_name)
+                           man_name,
+                           runTable_split_parts)
 
 
 # Named list as text
