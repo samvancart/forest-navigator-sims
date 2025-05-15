@@ -1898,3 +1898,119 @@ list_all_objects_in_bucket <- function(only_keys = F, ...) {
   return(all_objects)
 }
 
+
+# dClass_worker ----------------------------------------------------------
+
+# n_by_d_class_dt helper
+# This function processes the `multiOut` data from the `prebOut` object, melts it, renames columns, merges data.tables
+d_class_melt_and_merge <- function(multiOut) {
+  
+  # Melt the data
+  n_melt <- melt(multiOut[,,17,,1])
+  d_melt <- melt(multiOut[,,12,,1])
+  species_melt <- melt(multiOut[,,4,,1])
+  
+  # Convert to data.table
+  n_melt <- data.table(n_melt)
+  d_melt <- data.table(d_melt)
+  species_melt <- data.table(species_melt)
+  
+  # Rename columns
+  setnames(n_melt, "value", "N")
+  setnames(d_melt, "value", "D")
+  setnames(species_melt, "value", "species")
+  
+  # Merge tables
+  merged_dt <- merge(n_melt, d_melt, by = c("site", "year", "layer"))
+  merged_dt <- merge(merged_dt, species_melt, by = c("site", "year", "layer"))
+  
+  return(merged_dt)
+}
+
+# n_by_d_class_dt helper
+# Assigns classes based on `D`
+d_class_assign_classes <- function(merged_dt, d_class, max_d_class) {
+  max_d <- pmin(max(merged_dt$D, na.rm = TRUE), max_d_class - d_class)
+  breaks <- seq(0, max_d + d_class, by = d_class)
+  labels <- paste(head(breaks, -1), tail(breaks, -1), sep = "_")
+  merged_dt[, class := cut(D, breaks = breaks, labels = labels, right = FALSE)]
+  return(merged_dt)
+}
+
+# n_by_d_class_dt helper
+# Calculates the number of trees by classes of DBH by `site`, `year`, `species`
+d_class_calculate_n_class <- function(d_class_dt, max_d_class) {
+  result <- unique(d_class_dt[, .(Nclass = as.integer(sum(N))), by = .(site, year, species, class)][, .(site, year, Nclass, class, species)])
+  result[is.na(class), class := paste0(">", max_d_class)] # NAs are max_d class
+  return(result)
+}
+
+# Dcast d_class dt to wide format with d_class labels as columns and n as values. 
+d_class_get_dcast_dt <- function(d_class_dt, d_class, max_d_class) {
+  
+  dcast_dt <- dcast.data.table(d_class_dt, as.formula(paste("site + year + species ~ class")), value.var = "Nclass", fill = 0)
+  
+  breaks <- seq(0, max_d_class, by = d_class)
+  max_d_class_label <- paste0(">", max_d_class)
+  labels <- c(paste(head(breaks, -1), tail(breaks, -1), sep = "_"), max_d_class_label)
+  
+  add_labels <- labels[!labels %in% names(dcast_dt)] # Columns that are not already in dt
+  
+  dcast_dt[, (add_labels) := 0]
+  dcast_dt[, (names(dcast_dt)) := lapply(.SD, as.integer)]
+  
+  var_cols <- names(dcast_dt)[!names(dcast_dt) %in% labels]
+  
+  setcolorder(dcast_dt, c(var_cols, labels)) # Sort
+  
+  return(dcast_dt)
+  
+}
+
+# dClass_controller -------------------------------------------------------
+
+#' Calculate number of trees by DBH class
+#'
+#' This function processes the `multiOut` data from the `prebOut` object, melts it, renames columns, merges data.tables, assigns classes based on `D`, and calculates the number of trees by classes of DBH by `site`, `year`, `species`
+#'
+#' @param prebas_out A multiPrebas/regionPrebas object or a multiOut array
+#' @param d_class DBH class in cm
+#' @param max_d_class Maximum value for classes. Values that are larger will have class ">'max_d_class'" eg. ">150"
+#' @param is_multiOut # When is_multiOut=FALSE, prebas_out should be of class multiPrebas or regionPrebas, otherwise it should be a multiOut orray
+#' @return A data.table with columns `site`, `year`, `Nclass`, and `class`, containing the sum of `N` values grouped by `site`, `year`, `species`, and `class`.
+#' @examples
+#' \dontrun{
+#' prebOut <- list(multiOut = array(data = rnorm(1000), dim = c(10, 10, 20, 10, 2)))
+#' result <- n_by_d_class_dt(prebOut, 5)
+#' print(result)
+#' }
+n_by_d_class_dt <- function(prebas_out, d_class, max_d_class = 150, is_multiOut = FALSE) {
+  
+  assert_numeric(d_class)
+  assert_true(d_class > 0)
+  assert_numeric(max_d_class, lower = d_class, upper = 500)
+  assert_true(d_class <= max_d_class)
+  
+  if(!is_multiOut) {
+    assert_true(class(prebas_out) %in% c("multiPrebas", "regionPrebas"))
+    prebas_out <- prebas_out$multiOut 
+  }
+  
+  assert_array(prebas_out, d = 5) # Check multiOut
+  
+  # Get d, n and species from multiOut and merge into one data.table
+  merged_dt <- d_class_melt_and_merge(prebas_out)
+  
+  # Assign classes based on D
+  d_class_dt <- d_class_assign_classes(merged_dt, d_class, max_d_class)
+  
+  # Get final dt
+  final_d_class_dt <- d_class_calculate_n_class(d_class_dt, max_d_class)
+  
+  # Get dcast dt with all class labels
+  dcast_dt <- d_class_get_dcast_dt(final_d_class_dt, d_class, max_d_class)
+  
+  return(dcast_dt)
+}
+
+

@@ -12,6 +12,7 @@ test.R
 
 # Other files
 code_r.txt
+scripts/acc_sims_test.R
 
 # Folders
 data/

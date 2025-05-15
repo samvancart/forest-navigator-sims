@@ -1,6 +1,7 @@
 
 
-#  ------------------------ START TEST sample_until_global_threshold ------------------------ #
+
+# TEST sample_until_global_threshold ---------------------------------------
 
 # Unittests
 test_that("sample_until_global_threshold works correctly with random seeds and thresholds", {
@@ -44,4 +45,27 @@ test_that("sample_until_global_threshold works correctly with random seeds and t
 
 
 
-#  ------------------------ END TEST sample_until_global_threshold ------------------------ #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
