@@ -38,6 +38,20 @@ print(paste0("Max array jobs: ", max_array_jobID))
 
 bucket_list_prefix <- file.path("output", simulation_site, "output_files")
 
+
+# FIN RUNS PREFIX ---------------------------------------------------------
+
+
+
+bucket_list_prefix <- file.path("output", simulation_site, "output_files_FIN")
+
+
+
+# END FIN RUNS PREFIX -----------------------------------------------------
+
+
+
+
 # List all output files that are in Allas using custom function
 bucket_list <- list_all_objects_in_bucket(bucket = allas_opts$bucket, 
                                 region = allas_opts$opts$region, 
@@ -77,6 +91,22 @@ save_or_put_opts <- list(bucket = allas_opts$bucket, region = allas_opts$opts$re
 
 # move_to_path is the s3 object key without the filename (In other words the "directory path" inside the S3 bucket)
 move_to_path <- file.path("output", simulation_site, "zip")
+
+
+
+
+# ZIP PATH FIN RUNS -------------------------------------------------------
+
+
+
+move_to_path <- file.path("output", simulation_site, "zip_FIN")
+
+
+
+# END ZIP PATH FIN RUNS ---------------------------------------------------
+
+
+
 
 
 

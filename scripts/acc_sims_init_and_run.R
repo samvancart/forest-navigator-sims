@@ -20,6 +20,16 @@ print(paste0("Getting run_table from ", run_table_full_path))
 acc_run_table <- loadRDataFile(run_table_full_path)
 
 
+# FIN RUNS ----------------------------------------------------------------
+
+
+acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
+
+
+
+# END FIN RUNS ------------------------------------------------------------
+
+
 # arrayJobParams ----------------------------------------------------------
 
 
@@ -48,69 +58,11 @@ run_dt_max_part_size <- floor(nrow(acc_run_table)/num_split_parts)
 run_dt_splitID <- split_dt_equal_with_constraint(acc_run_table, run_dt_max_part_size, c("plgid","clim_scen"))
 
 
-
 # Filter by array jobID
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 
 acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
-acc_run_tables_list <- acc_run_tables_list[1]
-
-# plotTest ----------------------------------------------------------------
-
-
-# # Define test parameters
-# plgid_test <- 8003115
-# clim_scen_test <- "detrended"
-# 
-# # Generate a base data table dynamically based on the number of scenarios
-# scenarios <- c("bau_ingrowthT", "bau_ingrowthF", "noman_ingrowthT", "noman_ingrowthF")
-# num_scenarios <- length(scenarios)
-# acc_run_table_def <- acc_run_table[plgid == plgid_test & clim_scen == clim_scen_test][rep(1, num_scenarios), ]
-# 
-# # Assign management scenarios
-# acc_run_table_def[, man_scen := scenarios]
-# 
-# # Loop through each row to modify `man_init_args`
-# for (i in seq_len(nrow(acc_run_table_def))) {
-#   # Extract the row as a list
-#   current_row <- acc_run_table_def[i]
-# 
-#   # Check if `man_init_args` exists, otherwise throw an error
-#   if (is.null(current_row$man_init_args[[1]])) {
-#     stop("man_init_args is missing in row ", i)
-#   }
-# 
-#   # Extract the nested list for modification
-#   current_args <- current_row$man_init_args[[1]]
-# 
-#   # Apply modifications based on the scenario
-#   scenario <- current_row$man_scen
-#   if (scenario == "bau_ingrowthF") {
-#     current_args$ingrowth <- FALSE
-#   } else if (scenario == "noman_ingrowthT") {
-#     current_args$defaultThin <- 0
-#     current_args$ClCut <- 0
-#   } else if (scenario == "noman_ingrowthF") {
-#     current_args$ingrowth <- FALSE
-#     current_args$defaultThin <- 0
-#     current_args$ClCut <- 0
-#   }
-# 
-#   # Reassign the modified list back into the appropriate column and row
-#   acc_run_table_def[i, man_init_args := list(list(current_args))]
-# }
-# 
-# # Split the data table by 'man_scen' if processing subsets separately is required
-# acc_run_tables_list <- split(acc_run_table_def, by = "man_scen")
-# 
-# 
-# invisible(lapply(acc_run_tables_list, function(dt) {
-#   print(paste0("man_scen:"))
-#   print(dt[["man_scen"]])
-#   cat("\n")
-#   print(dt[["man_init_args"]][[1]])
-# }))
 
 
 # run ---------------------------------------------------------------------
@@ -138,6 +90,16 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
 
 # Save to allas
 allas_output_path <- file.path("output", simulation_site, "output_files")
+
+
+# ALLAS FIN RUNS ----------------------------------------------------------
+
+allas_output_path <- file.path("output", simulation_site, "output_files_FIN") # FIN Runs
+
+
+# END ALLAS FIN RUNS ------------------------------------------------------
+
+
 invisible(lapply(output_obj_list, function(item) {
   dt <- item$data[[1]]
   print(paste0("Saving ", item$name, " to ", allas_output_path, " in allas..."))

@@ -15,7 +15,7 @@ source('./r/multiSite.R')
 # simSites_vars ----------------------------------------------------------
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
-simulation_site_id <- 2
+simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
 
 
@@ -618,7 +618,7 @@ if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does
 
 # runTable_vars -----------------------------------------------------------
 
-runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 31, 1)
+runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 32, 1)
 
 # print_vars --------------------------------------------------------------
 

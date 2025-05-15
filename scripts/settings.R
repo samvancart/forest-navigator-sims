@@ -73,10 +73,8 @@ require(zoo)
 
 
 
-if(!exists("config_path")) {
-  # Path to config file
-  config_path <- paste0("config.yaml")
-}
+
+config_path <- paste0("config.yaml")
 
 # Load configuration file
 config <- yaml.load_file(config_path)
