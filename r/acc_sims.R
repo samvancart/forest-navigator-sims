@@ -1934,6 +1934,7 @@ d_class_assign_classes <- function(merged_dt, d_class, max_d_class) {
   breaks <- seq(0, max_d + d_class, by = d_class)
   labels <- paste(head(breaks, -1), tail(breaks, -1), sep = "_")
   merged_dt[, class := cut(D, breaks = breaks, labels = labels, right = FALSE)]
+
   return(merged_dt)
 }
 
