@@ -8,7 +8,7 @@
 
 
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 
 
@@ -17,7 +17,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-# arrayJobParams ----------------------------------------------------------
+# ARRAY_JOB_PARAMS ----------------------------------------------------------
 
 array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
 max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
@@ -27,7 +27,7 @@ print(paste0("Max array jobs: ", max_array_jobID))
 
 
 
-# getClimPaths ------------------------------------------------------------
+# GET_CLIM_PATHS ------------------------------------------------------------
 
 
 
@@ -35,7 +35,7 @@ all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts
 
 
 
-# splitIDs ----------------------------------------------------------------
+# SPLIT_IDS ----------------------------------------------------------------
 
 
 
@@ -47,7 +47,7 @@ split_by_id <- array_jobID
 
 
 
-# splitTable --------------------------------------------------------------
+# SPLIT_TABLE --------------------------------------------------------------
 
 # Get all clim_paths as dt with PlgID and clim_scen cols
 all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
@@ -73,7 +73,7 @@ print(clim_paths)
 
 
 
-# run ---------------------------------------------------------------------
+# RUN ---------------------------------------------------------------------
 
 
 
@@ -96,7 +96,7 @@ clim_acc_init_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
 
 
 
-# save --------------------------------------------------------------------
+# SAVE --------------------------------------------------------------------
 
 
 

@@ -1,41 +1,80 @@
-
-### Libraries ###
-
-library(bit64)
-library(archive)
-library(checkmate)
-library(data.table)
-library(dplyr)
-library(doParallel)
-library(factoextra)
-library(foreach)
-library(foreign)
-library(geoTS)
-library(geosphere)
-library(ggplot2)
-library(ggpubr)
-library(gridExtra)
-library(hash)
-library(lubridate)
-library(ncdf4)
-library(parallel)
-library(parallelly)
-library(purrr)
-library(Rprebasso)
-library(reshape2)
-library(sf)
-library(stars)
-library(stringr)
-library(testthat)
-library(withr)
-library(yaml)
-library(zoo)
+# This script is for loading necessary libraries and config
 
 
-if(!exists("config_path")) {
-  # Path to config file
-  config_path <- paste0("config.yaml")
-}
+
+# LOAD_PREBAS_PUHTI ---------------------------------------------------------
+
+
+# 
+# library(devtools)
+# 
+# vPREBAS <- "master"
+# # vPREBAS <- "newVersion"
+# 
+# 
+# if(vPREBAS=="master") {
+#   print("Checking master...")
+#   RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
+# } else {
+#   print("Checking newVersion...")
+#   RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_newV"
+# }
+# 
+# .libPaths(c(RprebassoFolder,
+#             "/projappl/project_2000994/Rpackages/project_rpackages",
+#             .libPaths()))
+# 
+# tryCatch({
+#   install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+# }, error = function(e) {
+#   message("",e)
+# })
+# 
+# rm(vPREBAS, RprebassoFolder)
+
+
+# LOAD_LIBS ----------------------------------------------------------------
+
+
+require(aws.s3)
+require(bit64)
+require(archive)
+require(checkmate)
+require(data.table)
+require(dplyr)
+require(doParallel)
+require(factoextra)
+require(foreach)
+require(foreign)
+require(geoTS)
+require(geosphere)
+require(ggplot2)
+require(ggpubr)
+require(gridExtra)
+require(hash)
+require(lubridate)
+require(ncdf4)
+require(parallel)
+require(parallelly)
+require(purrr)
+require(Rprebasso)
+require(reshape2)
+require(sf)
+require(stars)
+require(stringr)
+require(testthat)
+require(withr)
+require(yaml)
+require(zoo)
+
+
+# LOAD_CONFIG --------------------------------------------------------------
+
+
+
+
+
+config_path <- paste0("config.yaml")
 
 # Load configuration file
 config <- yaml.load_file(config_path)

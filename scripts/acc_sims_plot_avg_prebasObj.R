@@ -1,11 +1,11 @@
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# loadFiles ---------------------------------------------------------------
+# LOAD_FILES ---------------------------------------------------------------
 
 test_files <- list.files(output_base_path, recursive = T, full.names = T)
 test_filepaths <- grep("testRun", test_files, value = T)
@@ -14,7 +14,7 @@ print(test_filepaths)
 plgid <- unlist(tstrsplit(basename(test_filepaths[1]), split = "_", keep = 3))
 
 
-# getPlotDtFromMultiOut ---------------------------------------------------
+# GET_PLOT-DT_FROM_MULTIOUT ---------------------------------------------------
 
 
 process_annual_avg_by_all_and_siteType_from_multiOut <- function(multiOut, vars, varNames) {
@@ -114,7 +114,7 @@ print(final_results_dt)
 
 
 
-# plot --------------------------------------------------------------------
+# PLOT --------------------------------------------------------------------
 
 
 
@@ -172,7 +172,7 @@ grid_plot <- grid.arrange(grobs=grids)
 
 
 
-# save --------------------------------------------------------------------
+# SAVE --------------------------------------------------------------------
 
 
 

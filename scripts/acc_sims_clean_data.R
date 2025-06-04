@@ -3,8 +3,15 @@
 # processing convenience.
 
 
+# SOURCE_FILES ------------------------------------------------------------
+
+
+
 source('scripts/settings.R')
 source('./r/utils.R')
+
+
+# DEFINE PATHS ------------------------------------------------------------
 
 
 # Define paths: Check indices
@@ -22,6 +29,12 @@ unzip_files <- all_files[grepl(zip_pattern, all_files)] # Check which files are 
 zip_file_paths <- file.path(dir, unzip_files)
 dest_path <- file.path(dir, acc_data_name, acc_data_type, "unzipped")
 
+
+
+# UNZIP -------------------------------------------------------------------
+
+
+
 # Unzip all files
 invisible(lapply(seq_along(zip_file_paths), function(i) {
   file <- zip_file_paths[i]
@@ -33,6 +46,12 @@ invisible(lapply(seq_along(zip_file_paths), function(i) {
 }))
 
 unzipped_files <- list.files(dest_path)
+
+
+
+# RENAME ------------------------------------------------------------------
+
+
 
 # Rename if necessary
 invisible(lapply(unzipped_files, function(file) {

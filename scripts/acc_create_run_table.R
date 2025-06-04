@@ -7,13 +7,13 @@
 
 
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# baseRunTable ---------------------------------------------------------------
+# BASE-RUN-TABLE ---------------------------------------------------------------
 
 print(paste0("Creating run table for man_scen: ", man_name))
 
@@ -47,7 +47,7 @@ acc_base_table_country <- merge(acc_base_table,
 
 
 
-# managementTable ---------------------------------------------------------
+# MANAGEMENT-TABLE ---------------------------------------------------------
 
 
 
@@ -65,7 +65,7 @@ acc_man_table <- rbindlist(lapply(clim_scen, function(cs) {
 acc_base_man_table <- merge.data.table(acc_base_table_country, acc_man_table, by = c("clim_scen", "man_scen"))
 
 
-# staticVarsTable --------------------------------------------------------------
+# STATIC-VARS-TABLE --------------------------------------------------------------
 
 
 acc_static_vars_table <- data.table(varOutID = list(varOutID), vHarv = list(vHarv))
@@ -74,13 +74,13 @@ acc_static_vars_expanded_table <- rbindlist(replicate(nrow(acc_base_man_table), 
 
 
 
-# runTable ----------------------------------------------------------------
+# RUN-TABLE ----------------------------------------------------------------
 
 acc_run_table <- cbind(acc_base_man_table, acc_static_vars_expanded_table)
 
 
 
-# save --------------------------------------------------------------------
+# SAVE --------------------------------------------------------------------
 
 
 saveRDS(acc_run_table, run_table_full_path)

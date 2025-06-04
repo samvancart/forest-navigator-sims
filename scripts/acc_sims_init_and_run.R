@@ -5,7 +5,7 @@
 
 
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 
 
@@ -14,23 +14,23 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# getRunTable -------------------------------------------------------------
+# GET_RUN-TABLE -------------------------------------------------------------
 
 print(paste0("Getting run_table from ", run_table_full_path))
 acc_run_table <- loadRDataFile(run_table_full_path)
 
 
-# FIN RUNS ----------------------------------------------------------------
+# FIN_RUNS ----------------------------------------------------------------
 
 
 acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
 
 
 
-# END FIN RUNS ------------------------------------------------------------
+# END_FIN_RUNS ------------------------------------------------------------
 
 
-# arrayJobParams ----------------------------------------------------------
+# ARRAY-JOB_PARAMS ----------------------------------------------------------
 
 
 
@@ -41,7 +41,7 @@ print(paste0("Array job: ", array_jobID))
 print(paste0("Max array jobs: ", max_array_jobID))
 
 
-# splitTable --------------------------------------------------------------
+# SPLIT_TABLE --------------------------------------------------------------
 
 
 # This can represent max number of array jobs. Determined in runTable_vars in settings
@@ -65,7 +65,7 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
-# run ---------------------------------------------------------------------
+# RUN ---------------------------------------------------------------------
 
 
 
@@ -74,16 +74,65 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
                                                         FUN = acc_run_table_controller,
                                                         FUN_args = list(paths = produce_output_paths,
                                                                         FUN = produce_acc_output_obj,
-                                                                        test_run = F),
+                                                                        start_year = start_year,
+                                                                        test_run = T),
                                                         cores = cores,
                                                         type = type)), recursive = F)
 
 
 
 
+##### FRI 30.5.2025
+# Work on apply_output_operations that is called from get_acc_output_dt. 
+# Add d_classes. 
+# Problem: print("dt before-1") shows that conversions table does not have 
+# d_class units and previously merged d_classes are deleted from the table
+# that has been merged with conversions_dt.
+# output_obj_list2 should contain the result for runs using apply_output_operations fun.
+# Possible solution1: Add d_classes to conversions_dt
+# Possible solution1: Add Units "cm" to all rows of table first and see what happens
 
 
-# saveToAllas -------------------------------------------------------------
+d_class_dt[, Units := "cm"]
+
+d_class_dt <- melt.data.table(d_class_dt, id.vars = c("site", "year", "species"))
+# Merge d_class_dt
+dt <- merge(dt, d_class_dt, by = c("site", "year", "species"))
+
+
+run_table <- acc_run_tables_list[[1]]
+output_obj_list <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, test_run = F)
+output_obj_list2 <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, start_year = start_year, test_run = F)
+
+
+
+multi <- output_obj_list[[1]]$data[[1]]$multiOut
+d_class_dt <- n_by_d_class_dt(prebas_out = multi, d_class = 5, is_multiOut = TRUE)
+
+
+t1 <- output_obj_list[[1]]$data[[1]]
+t2 <- output_obj_list2[[1]]$data[[1]]
+
+all.equal(t1[[7]], t2[[7]])
+all.equal(t1[[12]], t2[[12]])
+
+which(t1[[7]] != t2[[7]])  # Rows where column 7 differs
+which(t1[[12]] != t2[[12]])  # Rows where column 12 differs
+
+t1[which(t1[[7]] != t2[[7]]),]
+t2[which(t1[[7]] != t2[[7]]),]
+
+lapply(names(t1), function(name) {
+  identical(t1[[name]], t2[[name]]) 
+})
+
+unique(t2$Species)
+
+
+
+
+
+# SAVE_TO_ALLAS -------------------------------------------------------------
 
 
 
@@ -92,12 +141,12 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
 allas_output_path <- file.path("output", simulation_site, "output_files")
 
 
-# ALLAS FIN RUNS ----------------------------------------------------------
+# ALLAS_FIN_RUNS ----------------------------------------------------------
 
 allas_output_path <- file.path("output", simulation_site, "output_files_FIN") # FIN Runs
 
 
-# END ALLAS FIN RUNS ------------------------------------------------------
+# END_ALLAS_FIN_RUNS ------------------------------------------------------
 
 
 invisible(lapply(output_obj_list, function(item) {
@@ -115,7 +164,7 @@ invisible(lapply(output_obj_list, function(item) {
 
 
 
-# saveToFilesystem --------------------------------------------------------
+# SAVE_TO_FILE_SYSTEM --------------------------------------------------------
 
 # invisible(lapply(output_obj_list, function(obj) {
 #   create_dir_and_save_acc_obj(obj, output_base_path, test = F, ext = ".rds")
@@ -138,7 +187,7 @@ invisible(lapply(output_obj_list, function(item) {
 # acc_output_obj[[1]]$data
 
 
-#### TEST PARALLEL ##########
+#### TEST_PARALLEL ##########
 
 # acc_run_test_dts <- acc_run_tables_list[c(1,20)]
 # 

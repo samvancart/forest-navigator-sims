@@ -2,7 +2,7 @@
 # This script contains the general settings for the acc sims.
 # All required sources, paths and variables should be stored here.
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 source("r/acc_sims.R")
 source("r/clusters_dt.R")
@@ -12,14 +12,14 @@ source("r/csc_utils.R")
 source('./r/multiSite.R')
 
 
-# simSites_vars ----------------------------------------------------------
+# SIM-SITES_VARS ----------------------------------------------------------
 
 simulation_sites <- c("simulation_sites_200", "test_sites")
 simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
 
 
-# allas_opts ---------------------------------------------------------------
+# ALLAS_OPTS ---------------------------------------------------------------
 
 # Allas
 bucket_name <- "2000994-forest_navigator"
@@ -31,7 +31,7 @@ read_allas <- c(TRUE, FALSE)[simulation_site_id]
 write_allas <- c(TRUE, FALSE)[simulation_site_id]
 
 
-# treeData_paths -----------------------------------------------------------
+# TREEDATA_PATHS -----------------------------------------------------------
 
 
 # Load tree data
@@ -58,7 +58,7 @@ init_file_col <- c("InitFileID", "InitFileName")[simulation_site_id]
 # assert_character(init_files, len = 64)
 
 
-# cleanData_path -----------------------------------------------------------
+# CLEAN_DATA_PATH -----------------------------------------------------------
 
 
 
@@ -67,7 +67,7 @@ clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
 
-# speciesLookup_vars -----------------------------------------------------------
+# SPECIES_LOOKUP_VARS -----------------------------------------------------------
 
 
 
@@ -88,7 +88,7 @@ species_lookup <- fread(species_codes_lookup_path)
 
 
 
-# countryCodes_vars -------------------------------------------------------
+# COUNTRY_CODES_VARS -------------------------------------------------------
 
 # Create the data.table with European countries and their 2-letter codes
 country_codes <- data.table(
@@ -96,7 +96,7 @@ country_codes <- data.table(
   country = c("Albania", "Andorra", "Armenia", "Austria", "Azerbaijan", "Belarus", "Belgium", "Bosnia and Herzegovina", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Kazakhstan", "Kosovo", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malta", "Moldova", "Monaco", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland", "Portugal", "Romania", "Russia", "San Marino", "Serbia", "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine", "United Kingdom", "Vatican City"),
   Country_Code = c("AL", "AD", "AM", "AT", "AZ", "BY", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "GE", "DE", "GR", "HU", "IS", "IE", "IT", "KZ", "XK", "LV", "LI", "LT", "LU", "MT", "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU", "SM", "RS", "SK", "SI", "ES", "SE", "CH", "TR", "UA", "GB", "VA")
 )
-# cells10_vars -----------------------------------------------------------------
+# CELLS10_VARS -----------------------------------------------------------------
 
 
 # Select one 10km cell
@@ -107,7 +107,7 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 
 
-# parallel_opts ------------------------------------------------------------
+# PARALLEL_OPTS ------------------------------------------------------------
 
 
 # Cores and parallelisation type
@@ -117,7 +117,7 @@ general_get_in_parallel_args <- list(cores = cores, type = type)
 
 
 
-# seed_opts -----------------------------------------------------------------
+# SEED_OPTS -----------------------------------------------------------------
 
 
 # Seed for creating reproducable list of seeds
@@ -127,7 +127,7 @@ num_sample_runs <- 1
 seeds <- sample(c(1:1000000), num_sample_runs) # List of seeds to use
 
 
-# treeData_vars ----------------------------------------------------------------
+# TREEDATA_VARS ----------------------------------------------------------------
 
 
 
@@ -142,10 +142,10 @@ split_aaa <- split(aaa_all, by = aaa_split_col)
 tree_data_seed <- seeds
 tree_data_path <- file.path(boku_data_path, "tree_data")
 process_treedata_files_args <- list(seed = tree_data_seed,
-                 init_files_path = init_files_path,
-                 del_cols = c("cum_sum"),
-                 add_cols = c("cell", "cell_300arcsec", "PlgID", "PlgID_05"),
-                 init_file_col = init_file_col)
+                                    init_files_path = init_files_path,
+                                    del_cols = c("cum_sum"),
+                                    add_cols = c("cell", "cell_300arcsec", "PlgID", "PlgID_05"),
+                                    init_file_col = init_file_col)
 
 # Sample from all treedata files until ba reaches threshold (AAA file ba) then add 1km and 10km cell ids.
 process_treedata_files_FUN <- process_treedata_files
@@ -173,10 +173,10 @@ clustering_group_cols <- c(group_id_name, species_id_name)
 clustering_value_cols <-  c("dbh", "treeheight")
 perform_clustering_by_group_FUN <- perform_clustering_by_group
 perform_clustering_by_group_args <- list(group_cols = clustering_group_cols, # Check group_cols based on dts structure
-                 value_cols = clustering_value_cols,
-                 seed = seed,
-                 nstart = 25,
-                 iter.max = 50)
+                                         value_cols = clustering_value_cols,
+                                         seed = seed,
+                                         nstart = 25,
+                                         iter.max = 50)
 
 
 get_in_parallel_all_clusters_dts_args <- list(FUN = perform_clustering_by_group_FUN, 
@@ -196,7 +196,7 @@ tree_data_acc_input_obj <- list(args = list(process_treedata_files_args = proces
 
 
 
-# gridFile_path ------------------------------------------------------------
+# GRID_FILE_PATH ------------------------------------------------------------
 
 grid_file_path <- list.files(file.path(boku_data_path, "grid"), 
                              pattern = paste0("filtered_selection_cell10_", simulation_site_id,"\\.csv"), 
@@ -204,7 +204,7 @@ grid_file_path <- list.files(file.path(boku_data_path, "grid"),
                              full.names = T)
 
 
-# multiInitVar_vars ------------------------------------------------------------
+# MULTI-INIT-VAR_VARS ------------------------------------------------------------
 
 
 cluster_data_col_names = list(
@@ -225,7 +225,7 @@ create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
 
 
 
-# soil_path ----------------------------------------------------------------
+# SOIL_PATH ----------------------------------------------------------------
 
 
 
@@ -235,7 +235,7 @@ soil_file_path <- list.files(file.path(boku_data_path, "soil"),
                              full.names = T)
 
 
-# siteInfo_vars ----------------------------------------------------------------
+# SITEINFO_VARS ----------------------------------------------------------------
 
 
 nYears_lookup <- c(detrended = 121, gwl2 = 110, gwl3 = 110, gwl4 = 110, historical = 72)
@@ -246,7 +246,7 @@ site_types <- c(5, 4, 3, 2, 1)
 
 
 
-# clim_paths ---------------------------------------------------------------
+# CLIM_PATHS ---------------------------------------------------------------
 
 
 
@@ -266,7 +266,7 @@ dest_path <- file.path(climate_7z_dir, "unzipped")
 
 
 
-# clim_vars ----------------------------------------------------------------
+# CLIM_VARS ----------------------------------------------------------------
 
 
 
@@ -370,7 +370,7 @@ clim_operations <- list(
   
   list(fun = function(dt) dt[, cell := as.character(cell)], # Cell is actually PlgID_05. Check and fix!
        args = list()),
-
+  
   list(fun = function(dt) dt[, day := .GRP, by = c("time")],
        args = list())
 )
@@ -384,26 +384,26 @@ clim_data_acc_input_obj <- list(args = list(clim_operations = clim_operations,
 
 
 
-# selection_path -----------------------------------------------------------
+# SELECTION_PATH -----------------------------------------------------------
 
 # Paths for siteID lookup creation
 selection_path <- grid_file_path
 
-# clusteredBase_path -------------------------------------------------------
+# CLUSTERED-BASE_PATH -------------------------------------------------------
 
 
 clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 
 
 
-# conversions_path ---------------------------------------------------------
+# CONVERSIONS_PATH ---------------------------------------------------------
 
 # Lookup for converting names and units
 conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
 conversions_dt <- fread(conversions_path)
 
 
-# output_paths ------------------------------------------------------------------
+# OUTPUT_PATHS ------------------------------------------------------------------
 
 output_base_path <- paste0("data/acc/output/", simulation_site)
 
@@ -412,7 +412,7 @@ output_base_path <- paste0("data/acc/output/", simulation_site)
 
 
 
-# output_vars --------------------------------------------------------------
+# OUTPUT_VARS --------------------------------------------------------------
 
 produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              selection_path = selection_path,
@@ -422,7 +422,8 @@ produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              species_lookup_path = species_codes_lookup_path)
 
 # Output IDs
-varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
+# varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
+varOutID <- c(7, 11:14, 17, 18, 19, 22, 24, 25, 30, 31:33, 42, 43, 44, 47, 50)
 vHarv <- c(30,2)
 
 # Operations
@@ -590,7 +591,7 @@ get_output_operations <- function(plgid,
 
 
 
-# man_vars ----------------------------------------------------------------
+# MAN_VARS ----------------------------------------------------------------
 
 man_names <- c("noman", "bau")
 man_id <- 2
@@ -606,7 +607,7 @@ man_params <- list(noman = list(defaultThin = 0,
                               mortMod = 3,
                               ingrowth = T))
 
-# runTable_paths ----------------------------------------------------------
+# RUN-TABLE_PATHS ----------------------------------------------------------
 
 run_table_base_path <- "data/acc/docs/run_table"
 run_table_name <- str_c("run_table", simulation_site, man_name, sep = "-")
@@ -616,11 +617,11 @@ if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does
 
 
 
-# runTable_vars -----------------------------------------------------------
+# RUN-TABLE_VARS -----------------------------------------------------------
 
 runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 32, 1)
 
-# print_vars --------------------------------------------------------------
+# PRINT_VARS --------------------------------------------------------------
 
 
 

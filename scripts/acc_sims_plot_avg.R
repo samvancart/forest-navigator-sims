@@ -1,12 +1,12 @@
 # Plot yearly averages for sums of variables by layer and species.
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# getFilesToPlot -----------------------------------------------------------
+# GET_FILES_TO_PLOT -----------------------------------------------------------
 
 
 bucket_list_prefix <- file.path("output", simulation_site, "output_files")
@@ -20,7 +20,7 @@ bucket_list <- list_all_objects_in_bucket(bucket = allas_opts$bucket,
 
 
 
-# loadFiles ---------------------------------------------------------------
+# LOAD_FILES ---------------------------------------------------------------
 
 
 
@@ -31,7 +31,7 @@ dt <- s3read_using(fread, object = plot_file, bucket = allas_opts$bucket, opts =
 
 
 
-# loadIngrowthFiles -----------------------------------------------------------
+# LOAD_INGROWTH_FILES -----------------------------------------------------------
 
 # TEST PLOTS FOR INGROWTH = F RUNS
 
@@ -57,7 +57,7 @@ if(ingrowth) {
 
 
 
-# params ------------------------------------------------------------------
+# PARAMS ------------------------------------------------------------------
 
 
 
@@ -68,7 +68,7 @@ plot_vars <- c("gpp", "gai", "vol")
 
 
 
-# filterTable ---------------------------------------------------------------
+# FILTER_TABLE ---------------------------------------------------------------
 
 
 
@@ -76,7 +76,7 @@ dt_plot_vars <- dt[Variable %in% plot_vars]
 
 
 
-# plot --------------------------------------------------------------------
+# PLOT --------------------------------------------------------------------
 
 
 
@@ -119,7 +119,7 @@ grid_plot <- grid.arrange(grobs = grobs_list)
 
 
 
-# save --------------------------------------------------------------------
+# SAVE --------------------------------------------------------------------
 
 
 

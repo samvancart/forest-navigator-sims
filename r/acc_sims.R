@@ -3,7 +3,7 @@
 # The code is organised in sections:
 # Controller functions are functions that call (possibly multiple) worker functions.
 
-# treeData_worker ---------------------------------------------------------
+# TREEDATA_WORKER ---------------------------------------------------------
 
 
 
@@ -145,7 +145,7 @@ process_treedata_files <- function(aaa, init_files_path, seed, del_cols = NULL, 
     names(add_cols_list) <- add_cols
     
     read_and_process_file(path, threshold, seed, del_cols, add_cols_list, threshold_col)
-
+    
   })
   
   return(dts)
@@ -293,7 +293,7 @@ assign_and_merge <- function(tree_data_dts, id_columns, separator = "", id_colum
   return(dts)
 }
 
-# treeData_controller ---------------------------------------------------------
+# TREEDATA_CONTROLLER ---------------------------------------------------------
 
 create_acc_clustered_tree_data <- function(acc_input_obj) {
   
@@ -394,7 +394,7 @@ create_acc_clustered_tree_data <- function(acc_input_obj) {
 }
 
 
-# dtTransformations_controller --------------------------------------------
+# DT-TRANSFORMATIONS_CONTROLLER --------------------------------------------
 
 
 #' Apply Transformations and Add Columns to a Data Table
@@ -483,7 +483,7 @@ transform_and_add_columns <- function(dt, operations = list()) {
 
 
 
-# inputHandler_worker ------------------------------------------------------
+# INPUT-HANDLER_WORKER ------------------------------------------------------
 
 
 #' Handle Data Input
@@ -501,7 +501,7 @@ transform_and_add_columns <- function(dt, operations = list()) {
 #' result2 <- handle_data_input(data_dt)
 #' @export
 handle_data_input <- function(data) {
-
+  
   # Validate input
   if (is.character(data)) {
     assert_file_exists(data, access = "r")
@@ -517,7 +517,7 @@ handle_data_input <- function(data) {
 }
 
 
-# filterData_worker -------------------------------------------------------
+# FILTER-DATA_WORKER -------------------------------------------------------
 
 
 #' Filter Data by Tree Data Cells
@@ -563,7 +563,7 @@ filter_data_by_tree_data_cells <- function(data, tree_data) {
 
 
 
-# climData_worker ---------------------------------------------------------
+# CLIM-DATA_WORKER ---------------------------------------------------------
 
 
 
@@ -675,7 +675,7 @@ add_acc_co2 <- function(clim_dt, name, config) {
 }
 
 
-# climData_controller -----------------------------------------------------
+# CLIM-DATA_CONTROLLER -----------------------------------------------------
 
 
 
@@ -738,7 +738,7 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
 }
 
 
-# multiInitVar_controller -------------------------------------------------
+# MULTI-INIT-VAR_CONTROLLER -------------------------------------------------
 
 
 
@@ -789,7 +789,7 @@ get_multiInitVar_object <- function(clustered_path, grid_file_path, clean_data_b
     plgid <- unique(grid_dt[cell_300arcsec == boku_cell_10]$PlgID)
   }
   
-
+  
   # Get save path
   save_path <- get_acc_input_save_path(plgid, "tree_data", clean_data_base_path)
   
@@ -797,7 +797,7 @@ get_multiInitVar_object <- function(clustered_path, grid_file_path, clean_data_b
 }
 
 
-# saveData_worker ---------------------------------------------------------
+# SAVE-DATA_WORKER ---------------------------------------------------------
 
 
 
@@ -818,7 +818,7 @@ get_multiInitVar_object <- function(clustered_path, grid_file_path, clean_data_b
 #' data <- list(matrix1 = matrix(1:4, 2, 2), matrix2 = matrix(5:8, 2, 2))
 #' save_data(data, "/path/to/save", default_name = "default", test = TRUE)
 save_acc_data <- function(data, save_path, default_name = "default", test = FALSE, ext = ".rdata") {
-
+  
   # Validate inputs
   assert_list(data, min.len = 1)
   assert_character(save_path, len = 1)
@@ -919,7 +919,7 @@ save_file_by_extension <- function(data, file_path) {
 #' @examples
 #' path <- get_acc_input_save_path("123", "output_dir")
 get_acc_input_save_path <- function(plgid, save_dir, base_path) {
-
+  
   # Validate inputs
   assert_integer(plgid, len = 1, any.missing = FALSE)
   assert_character(save_dir, len = 1, any.missing = FALSE)
@@ -933,7 +933,7 @@ get_acc_input_save_path <- function(plgid, save_dir, base_path) {
 
 
 
-# saveData_controller -----------------------------------------------------
+# SAVE-DATA_CONTROLLER -----------------------------------------------------
 
 
 #' Create Directory and Save ACC Object
@@ -978,13 +978,13 @@ create_dir_and_save_acc_obj <- function(acc_obj, base_path, test = FALSE, ...) {
     get_or_create_path(pathVarName = "save_path", defaultDir = base_path, subDir = "")
     assert_directory_exists(save_path, access = "w")
   }
-
+  
   # Save data using save_acc_data function
   save_acc_data(data = data, save_path = save_path, default_name = name, test = test, ...)
 }
 
 
-# siteInfo_controller -----------------------------------------------------
+# SITEINFO_CONTROLLER -----------------------------------------------------
 
 
 #' Get Site Information ACC Object
@@ -1079,7 +1079,7 @@ get_site_info_acc_object <- function(soil_dt,
 
 
 
-# siteInfo_worker ---------------------------------------------------------
+# SITEINFO_WORKER ---------------------------------------------------------
 
 
 #' Get Site Information Data Table
@@ -1203,7 +1203,7 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
 
 
 
-# produceOutput_worker ----------------------------------------------------
+# PRODUCE-OUTPUT_WORKER ----------------------------------------------------
 
 #' Initialize Prebas Model for a Given PLG ID
 #'
@@ -1404,9 +1404,42 @@ get_acc_output_dt <- function(plgid, model, country,
   conversions_dt <- fread(conversions_path)
   species_lookup <- fread(species_lookup_path)
   
+  print("varOutID")
+  print(varOutID)
+  
   # Get multiOut as dt
-  out_dt <- as.data.table(melt(multiOut[,,varOutID,,1]))
+  out_dt <- as.data.table(melt(multiOut[,,c(varOutID, 4),,1]))
+  
+  print("out_dt")
+  print(out_dt)
+  
   out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
+  # 
+  # print("out_dt_wide")
+  # print(out_dt_wide)
+  
+  d_class_dt <- n_by_d_class_dt(prebas_out = multiOut, d_class = 5, is_multiOut = TRUE)
+  
+  # out_dt_wide <- merge(out_dt_wide, d_class_dt, by = c("site", "year", "species"))
+  
+  # print("out_dt_wide")
+  # print(out_dt_wide)
+  
+  dt <- apply_output_operations(dt = out_dt_wide,
+                                multiOut = multiOut,
+                                conversions_dt = conversions_dt,
+                                siteID_lookup = siteID_lookup,
+                                species_lookup = species_lookup,
+                                model = model,
+                                country = country,
+                                clim_scen = clim_scen,
+                                man_scen = man_scen,
+                                canopy_layer = canopy_layer,
+                                start_year = start_year,
+                                vHarv = vHarv,
+                                d_class_dt = d_class_dt)
+  
+  return(dt)
   
   # Get operations
   output_operations <- get_output_operations(
@@ -1429,6 +1462,103 @@ get_acc_output_dt <- function(plgid, model, country,
 }
 
 
+apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year, 
+                                    d_class_dt, 
+                                    vHarv = c(30,2),
+                                    stem_cols = c("Wstem", "Wbranch"), root_cols = c("WfineRoots", "W_croot"), 
+                                    old_output_col_names = c("Units", "forest_type", "value", "year", "variable", "layer"), 
+                                    new_output_col_names = c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer"), 
+                                    del_output_cols = c("site", "species"), 
+                                    output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species", 
+                                                         "Canopy_layer", "Variable", "Unit", "Year", "Value")) {
+  
+  # Define additional columns to add
+  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
+                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
+  
+  # Sum biomass for stems
+  dt <- sum_bioms(dt, name = "stem_biom", sum_cols = stem_cols)
+  
+  # Sum biomass for roots
+  dt <- sum_bioms(dt, name = "root_biom", sum_cols = root_cols)
+  
+  # Calculate crown length from height and base height
+  dt <- calculate_lc(dt)
+  
+  # Remove unnecessary columns (stem biomass and crown base height)
+  dt <- del_dt_cols(dt, del_cols = c(stem_cols, hc_base_col))
+  
+  # Rename columns using conversion table
+  dt <- set_output_names(dt, old = conversions_dt$PREBAS, new = conversions_dt$Variable, skip_absent = TRUE)
+  
+  # Convert output values to correct units
+  dt <- convert_output_vals_to_correct_units(dt, conversions_dt)
+  
+  # Reshape the data from wide to long format
+  dt <- melt.data.table(dt, id.vars = c("site", "year", "layer"))
+  
+  print("dt before-3")
+  print(dt)
+  
+  # Merge multiOut species and harvest information
+  dt <- merge_multiOut_species_and_harv_with_out_dt(dt, multiOut, vHarv)
+  
+  print("dt before-2")
+  print(dt)
+  
+  # Merge units from conversion table
+  dt <- merge.data.table(dt, conversions_dt[, c("Variable", "Units")], by.x = "variable", by.y = "Variable")
+  
+  print("dt before-1")
+  print(dt)
+  
+  # Merge siteID lookup to get site details
+  dt <- merge.data.table(dt, siteID_lookup, by = c("site"))
+  
+  print("dt before0")
+  print(dt)
+  
+  # Add species codes based on species lookup
+  dt <- dt[species_lookup[, c("speciesID", "prebas_species_code")], on = .(species = speciesID), Species := i.prebas_species_code]
+  
+  print("dt before1")
+  print(dt)
+  
+  # Convert layer column to integer format
+  dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))]
+  
+  print("dt before2")
+  print(dt)
+  
+  # Add model, country, climate scenario, management scenario, and canopy layer columns
+  dt <- add_columns_to_dt(dt, columns = add_cols)
+  
+  print("dt before3")
+  print(dt)
+  
+  # Adjust year values based on the starting year
+  dt[, year := as.integer(dt$year + (as.integer(start_year) - 1))]
+  
+  print("dt before4")
+  print(dt)
+  
+  # Rename columns for final output format
+  dt <- set_output_names(dt, old = old_output_col_names, new = new_output_col_names, skip_absent = TRUE)
+  
+  print("dt before5")
+  print(dt)
+  
+  # Remove unnecessary columns
+  dt <- del_dt_cols(dt, del_cols = del_output_cols)
+  
+  # Set final column order for output
+  setcolorder(dt, neworder = output_col_order)
+  
+  return(dt)
+}
+
+
+
 # Construct table name and save path then combine with data and plgid into 
 # acc object for saving 
 get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, 
@@ -1439,7 +1569,7 @@ get_acc_out_obj <- function(out_dt, model, plgid, clim_scen,
   } else {
     assert_list(out_dt)
   }
-
+  
   
   
   # Create name according to output template
@@ -1473,7 +1603,7 @@ handle_acc_test_run <- function(plgid, output_base_path, initPrebas, modOut, mul
   return(output_object)
 }
 
-# produceOutput_controller ------------------------------------------------
+# PRODUCE-OUTPUT_CONTROLLER ------------------------------------------------
 
 
 
@@ -1551,10 +1681,10 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   if(test_run) {
     print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
-  
+    
     output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
-                        initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
-                        model = model, clim_scen = clim_scen, man_scen = man_scen)
+                                         initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
+                                         model = model, clim_scen = clim_scen, man_scen = man_scen)
     
     return(output_object)
   }
@@ -1583,7 +1713,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
 
 
 
-# zip_worker --------------------------------------------------------------
+# ZIP_WORKER --------------------------------------------------------------
 
 
 
@@ -1674,7 +1804,7 @@ zip_output_files_using <- function(FUN, zipfile, extra_FUN_args = list(), files,
 
 
 
-# zip_controller ----------------------------------------------------------
+# ZIP_CONTROLLER ----------------------------------------------------------
 
 
 ### Load files from allas, zip them and finally move the files to a location (Allas/filesystem/both).
@@ -1700,17 +1830,17 @@ load_zip_move <- function(zipfile,
     if(dir.exists(temp_dir)) unlink(temp_dir, recursive = T)
   )
   
-
+  
   # Get files from Allas. Specify cores and type inside ... to run in parallel.
   files <- unlist(do.call(get_in_parallel, c(list(data = files,
                                                   FUN = save_or_put_allas,
                                                   FUN_args = c(list(FUN = save_object,
                                                                     base_dir = temp_dir),
                                                                save_or_put_opts)),
-
+                                             
                                              ...)))
   
-
+  
   
   # Check that all the files were created
   invisible(sapply(files, assert_file_exists))
@@ -1766,7 +1896,7 @@ load_zip_move <- function(zipfile,
 # }
 
 
-# speciesLookup_worker ----------------------------------------------------
+# SPECIES-LOOKUP_WORKER ----------------------------------------------------
 
 
 get_prebas_species_codes_from_pCROB <- function(pCROB) {
@@ -1787,7 +1917,7 @@ get_prebas_species_codes_from_pCROB <- function(pCROB) {
 
 
 
-# countryCodes_worker -----------------------------------------------------
+# COUNTRY-CODES_WORKER -----------------------------------------------------
 get_acc_country_codes_lookup <- function(aaa, country_codes, aaa_cols = c("PlgID", "Country_Code"), ...) {
   aaa_country_codes <- aaa_all[, ..aaa_cols]
   aaa_country_codes <- aaa_country_codes[!duplicated(aaa_country_codes)]
@@ -1797,7 +1927,7 @@ get_acc_country_codes_lookup <- function(aaa, country_codes, aaa_cols = c("PlgID
 }
 
 
-# runTable_worker ---------------------------------------------------------
+# RUN-TABLE_WORKER ---------------------------------------------------------
 
 expand_vectors_to_dt <- function(vectors_list) {
   # Create expanded grid
@@ -1841,7 +1971,7 @@ create_table_from_vars <- function(id_vars, value_vars_list, result_name = "resu
 
 
 
-# awsS3Helper_worker --------------------------------------------------
+# AWS-S3-HELPER_WORKER --------------------------------------------------
 
 
 # Load or put object
@@ -1851,7 +1981,7 @@ save_or_put_allas <- function(FUN, base_dir, object, ...) {
   
   # Input validation
   assert_function(FUN)
-
+  
   file <- file.path(base_dir, basename(object))
   args <- c(list(object =  object, file = file), ...)
   do.call(FUN, args)
@@ -1899,7 +2029,7 @@ list_all_objects_in_bucket <- function(only_keys = F, ...) {
 }
 
 
-# dClass_worker ----------------------------------------------------------
+# DCLASS_WORKER ----------------------------------------------------------
 
 # n_by_d_class_dt helper
 # This function processes the `multiOut` data from the `prebOut` object, melts it, renames columns, merges data.tables
@@ -1934,7 +2064,7 @@ d_class_assign_classes <- function(merged_dt, d_class, max_d_class) {
   breaks <- seq(0, max_d + d_class, by = d_class)
   labels <- paste(head(breaks, -1), tail(breaks, -1), sep = "_")
   merged_dt[, class := cut(D, breaks = breaks, labels = labels, right = FALSE)]
-
+  
   return(merged_dt)
 }
 
@@ -1968,7 +2098,7 @@ d_class_get_dcast_dt <- function(d_class_dt, d_class, max_d_class) {
   
 }
 
-# dClass_controller -------------------------------------------------------
+# DCLASS_CONTROLLER -------------------------------------------------------
 
 #' Calculate number of trees by DBH class
 #'
@@ -1978,7 +2108,8 @@ d_class_get_dcast_dt <- function(d_class_dt, d_class, max_d_class) {
 #' @param d_class DBH class in cm
 #' @param max_d_class Maximum value for classes. Values that are larger will have class ">'max_d_class'" eg. ">150"
 #' @param is_multiOut # When is_multiOut=FALSE, prebas_out should be of class multiPrebas or regionPrebas, otherwise it should be a multiOut orray
-#' @return A data.table with columns `site`, `year`, `Nclass`, and `class`, containing the sum of `N` values grouped by `site`, `year`, `species`, and `class`.
+#' @return A data.table with columns `site`, `year`, and `species`, containing count data across multiple class intervals ( eg. `0_5`, `5_10`, ..., `145_150`, `>150`), 
+#' grouped by `site`, `year`, and `species`.
 #' @examples
 #' \dontrun{
 #' prebOut <- list(multiOut = array(data = rnorm(1000), dim = c(10, 10, 20, 10, 2)))

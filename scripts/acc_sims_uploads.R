@@ -4,7 +4,7 @@
 
 
 
-# sourceFiles -------------------------------------------------------------
+# SOURCE_FILES -------------------------------------------------------------
 
 
 source('scripts/settings.R')
@@ -12,7 +12,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-# defineFilesToUpload ----------------------------------------------------------------
+# DEFINE_FILES_TO_UPLOAD ----------------------------------------------------------------
 
 
 
@@ -29,7 +29,7 @@ upload_files <- bucket_list
 
 
 
-# getFilesToUpload --------------------------------------------------------
+# GET_FILES_TO_UPLOAD --------------------------------------------------------
 
 
 uploads_path <- file.path(output_base_path, "zip")
