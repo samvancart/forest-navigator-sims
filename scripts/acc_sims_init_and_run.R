@@ -93,40 +93,42 @@ output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_li
 # Possible solution1: Add Units "cm" to all rows of table first and see what happens
 
 
-d_class_dt[, Units := "cm"]
-
-d_class_dt <- melt.data.table(d_class_dt, id.vars = c("site", "year", "species"))
-# Merge d_class_dt
-dt <- merge(dt, d_class_dt, by = c("site", "year", "species"))
 
 
-run_table <- acc_run_tables_list[[1]]
-output_obj_list <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, test_run = F)
+
+run_table <- acc_run_tables_list[[2]]
+output_obj_list <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, test_run = T) # TEST
+
 output_obj_list2 <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, start_year = start_year, test_run = F)
 
+length(output_obj_list2)
+
+
+output_obj_list2[[1]]$main_output_object
+
+s <- unlist(output_obj_list2, recursive = F)
+length(s$main_output_object)
+
+o <- c("hello", "you")
+e <- c("spurs", "boys")
+tv <- c(o,e)
+str_c(tv, collapse = "_")
 
 
 multi <- output_obj_list[[1]]$data[[1]]$multiOut
+
 d_class_dt <- n_by_d_class_dt(prebas_out = multi, d_class = 5, is_multiOut = TRUE)
 
+d_class_dt_melted <- melt.data.table(d_class_dt, id.vars = c("site", "year", "species"))
 
-t1 <- output_obj_list[[1]]$data[[1]]
-t2 <- output_obj_list2[[1]]$data[[1]]
+d_class_dt[, Units := "cm"]
 
-all.equal(t1[[7]], t2[[7]])
-all.equal(t1[[12]], t2[[12]])
+dt <- output_obj_list2[[1]]$data[[1]]
 
-which(t1[[7]] != t2[[7]])  # Rows where column 7 differs
-which(t1[[12]] != t2[[12]])  # Rows where column 12 differs
+names(dt)[!names(dt) %in% c("Species")]
 
-t1[which(t1[[7]] != t2[[7]]),]
-t2[which(t1[[7]] != t2[[7]]),]
-
-lapply(names(t1), function(name) {
-  identical(t1[[name]], t2[[name]]) 
-})
-
-unique(t2$Species)
+# Merge d_class_dt
+dt <- merge(dt, d_class_dt, by = c("site", "year", "species"))
 
 
 

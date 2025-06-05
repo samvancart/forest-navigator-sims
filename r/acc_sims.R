@@ -1403,28 +1403,15 @@ get_acc_output_dt <- function(plgid, model, country,
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   conversions_dt <- fread(conversions_path)
   species_lookup <- fread(species_lookup_path)
-  
-  print("varOutID")
-  print(varOutID)
-  
+
   # Get multiOut as dt
-  out_dt <- as.data.table(melt(multiOut[,,c(varOutID, 4),,1]))
+  out_dt <- as.data.table(melt(multiOut[,, varOutID,, 1]))
   
   print("out_dt")
   print(out_dt)
   
   out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
-  # 
-  # print("out_dt_wide")
-  # print(out_dt_wide)
-  
-  d_class_dt <- n_by_d_class_dt(prebas_out = multiOut, d_class = 5, is_multiOut = TRUE)
-  
-  # out_dt_wide <- merge(out_dt_wide, d_class_dt, by = c("site", "year", "species"))
-  
-  # print("out_dt_wide")
-  # print(out_dt_wide)
-  
+
   dt <- apply_output_operations(dt = out_dt_wide,
                                 multiOut = multiOut,
                                 conversions_dt = conversions_dt,
@@ -1436,34 +1423,14 @@ get_acc_output_dt <- function(plgid, model, country,
                                 man_scen = man_scen,
                                 canopy_layer = canopy_layer,
                                 start_year = start_year,
-                                vHarv = vHarv,
-                                d_class_dt = d_class_dt)
+                                vHarv = vHarv)
   
   return(dt)
   
-  # Get operations
-  output_operations <- get_output_operations(
-    plgid = plgid,
-    multiOut = multiOut,
-    conversions_dt = conversions_dt,
-    siteID_lookup = siteID_lookup,
-    species_lookup = species_lookup,
-    model = model,
-    country = country,
-    clim_scen = clim_scen,
-    man_scen = man_scen,
-    canopy_layer = canopy_layer,
-    vHarv = vHarv,
-    ...
-  )
-  
-  # Get output dt
-  return(transform_and_add_columns(out_dt_wide, output_operations))
 }
 
-
-apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year, 
-                                    d_class_dt, 
+# TO DO: ALl default args should go inside an extra_args list! Same for apply_dclass_operations FUN
+apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year,
                                     vHarv = c(30,2),
                                     stem_cols = c("Wstem", "Wbranch"), root_cols = c("WfineRoots", "W_croot"), 
                                     old_output_col_names = c("Units", "forest_type", "value", "year", "variable", "layer"), 
@@ -1497,56 +1464,29 @@ apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup,
   # Reshape the data from wide to long format
   dt <- melt.data.table(dt, id.vars = c("site", "year", "layer"))
   
-  print("dt before-3")
-  print(dt)
-  
   # Merge multiOut species and harvest information
   dt <- merge_multiOut_species_and_harv_with_out_dt(dt, multiOut, vHarv)
-  
-  print("dt before-2")
-  print(dt)
   
   # Merge units from conversion table
   dt <- merge.data.table(dt, conversions_dt[, c("Variable", "Units")], by.x = "variable", by.y = "Variable")
   
-  print("dt before-1")
-  print(dt)
-  
   # Merge siteID lookup to get site details
   dt <- merge.data.table(dt, siteID_lookup, by = c("site"))
   
-  print("dt before0")
-  print(dt)
-  
   # Add species codes based on species lookup
   dt <- dt[species_lookup[, c("speciesID", "prebas_species_code")], on = .(species = speciesID), Species := i.prebas_species_code]
-  
-  print("dt before1")
-  print(dt)
-  
+
   # Convert layer column to integer format
   dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))]
-  
-  print("dt before2")
-  print(dt)
   
   # Add model, country, climate scenario, management scenario, and canopy layer columns
   dt <- add_columns_to_dt(dt, columns = add_cols)
   
-  print("dt before3")
-  print(dt)
-  
   # Adjust year values based on the starting year
   dt[, year := as.integer(dt$year + (as.integer(start_year) - 1))]
   
-  print("dt before4")
-  print(dt)
-  
   # Rename columns for final output format
   dt <- set_output_names(dt, old = old_output_col_names, new = new_output_col_names, skip_absent = TRUE)
-  
-  print("dt before5")
-  print(dt)
   
   # Remove unnecessary columns
   dt <- del_dt_cols(dt, del_cols = del_output_cols)
@@ -1558,29 +1498,109 @@ apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup,
 }
 
 
+# Get d_class dt and tranform into output format.
+get_dclass_acc_output_dt <- function(plgid, model, country, 
+                              clim_scen, man_scen, canopy_layer, 
+                              multiOut, selection_path,
+                              clean_data_base_path, aaa_file,
+                              species_lookup_path, d_class = 5, ...) {
+  
+  
+  assert_array(multiOut, d = 5)
+  
+  # Load lookup files
+  siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
+  species_lookup <- fread(species_lookup_path)
+  
+  d_class_dt <- n_by_d_class_dt(prebas_out = multiOut, d_class = d_class, is_multiOut = TRUE)
+  
+  dt <- apply_dclass_operations(dt = d_class_dt,
+                                siteID_lookup = siteID_lookup,
+                                species_lookup = species_lookup,
+                                model = model,
+                                country = country,
+                                clim_scen = clim_scen,
+                                man_scen = man_scen,
+                                canopy_layer = canopy_layer,
+                                start_year = start_year)
+  
+  return(dt)
+  
+}
+
+# TO DO: ALl default args should go inside an extra_args list! Same for apply_output_operations FUN
+apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year,
+                                    old_output_col_names = c("forest_type", "year"), 
+                                    new_output_col_names = c("Mixture_type", "Year"), 
+                                    del_output_cols = c("site", "species"), 
+                                    output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species",
+                                                         "Canopy_layer", "Variable", "Unit", "Year")) {
+  
+  # Define the d_class cols for ordering later
+  d_class_cols <- names(dt)[!names(dt) %in% c("site", "year", "species")]
+  
+  # Define additional columns to add
+  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
+                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
+  
+  # Merge siteID lookup to get site details
+  dt <- merge.data.table(dt, siteID_lookup, by = c("site"))
+  
+  # Add species codes based on species lookup
+  dt <- dt[species_lookup[, c("speciesID", "prebas_species_code")], on = .(species = speciesID), Species := i.prebas_species_code]
+  
+  # Add model, country, climate scenario, management scenario, and canopy layer columns
+  dt <- add_columns_to_dt(dt, columns = add_cols)
+  
+  # Adjust year values based on the starting year
+  dt[, year := as.integer(dt$year + (as.integer(start_year) - 1))]
+  
+  # Add variable col
+  dt[, Variable := "dbh_dist"]
+  
+  # Add unit col
+  dt[, Unit := "N/ha"]
+  
+  # Rename columns for final output format
+  dt <- set_output_names(dt, old = old_output_col_names, new = new_output_col_names, skip_absent = TRUE)
+  
+  # Remove unnecessary columns
+  dt <- del_dt_cols(dt, del_cols = del_output_cols)
+  
+  # Add d_class cols to all cols vector
+  output_col_order_dclass <- c(output_col_order, d_class_cols)
+  
+  # Set final column order for output
+  setcolorder(dt, neworder = output_col_order_dclass)
+  
+  return(dt)
+}
+
+# Helper function to create a dynamic name for get_acc_out_obj.
+# Detrended clim_scen becomes "historical".
+# Param extra_words is a character vector that will be added to the name.
+create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
+  clim_scen <- ifelse(clim_scen == "detrended", "historical", clim_scen)
+  output_template_vector <- c(model, plgid, clim_scen, man_scen, extra_words)
+  
+  return(str_c(output_template_vector, collapse = "_"))
+}
 
 # Construct table name and save path then combine with data and plgid into 
 # acc object for saving 
-get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, 
-                            man_scen, output_base_path, test_run = F) {
-  if(!test_run) {
-    # Check input validity
+get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, man_scen, 
+                            save_path, test_run = FALSE, extra_words = NULL) {
+  # Validate data
+  if (!test_run) {
     assert_data_table(out_dt)
   } else {
     assert_list(out_dt)
   }
   
+  # Generate name
+  name <- create_name(model, plgid, clim_scen, man_scen, extra_words)
   
-  
-  # Create name according to output template
-  clim_scen <- ifelse(clim_scen=="detrended", "historical", clim_scen)
-  output_template_vector <- c(model, plgid, clim_scen, man_scen)
-  name <- str_c(output_template_vector, collapse = "_")
-  
-  # Get save path
-  # save_path <- get_acc_input_save_path(plgid, "output", output_base_path)
-  save_path <- file.path(output_base_path, "output_files")
-  
+  # Create and return output object
   acc_out_obj <- list(name = name, plgid = plgid, data = list(out_dt), save_path = save_path)
   
   return(acc_out_obj)
@@ -1594,8 +1614,9 @@ handle_acc_test_run <- function(plgid, output_base_path, initPrebas, modOut, mul
   
   data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut)
   
+  # save_path not used in test run so it can be output_base_path
   output_object <- get_acc_out_obj(data, model, plgid, 
-                                   clim_scen, man_scen, output_base_path, test_run = T)
+                                   clim_scen, man_scen, save_path = output_base_path, test_run = T)
   
   
   output_object$name <- paste0("testRun_", output_object$name)
@@ -1703,10 +1724,37 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   print("Creating acc output object...")
   
-  output_object <- get_acc_out_obj(out_dt_melted, model, plgid, 
-                                   clim_scen, man_scen, output_base_path)
+  # Create save path for get_acc_out_obj FUN
+  save_path <- file.path(output_base_path, "output_files")
+  
+  main_output_object <- get_acc_out_obj(out_dt_melted, model, plgid, 
+                                   clim_scen, man_scen, save_path)
   
   print("Done.")
+  
+  
+  print(paste0("Creating dbh class dt..."))
+  
+  dclass_dt <- get_dclass_acc_output_dt(plgid, model, country, 
+                                        clim_scen, man_scen, canopy_layer, 
+                                        multiOut, selection_path,
+                                        clean_data_base_path, aaa_file,
+                                        species_lookup_path, d_class = 5, ...)
+  
+  
+  print("Done")
+  
+  print("Creating d_class acc output object...")
+  
+  # Create save path for get_acc_out_obj FUN
+  save_path <- file.path(output_base_path, "dbh_classes")
+  
+  dclass_output_object <- get_acc_out_obj(dclass_dt, model, plgid, 
+                                   clim_scen, man_scen, save_path, extra_words = "dbh-dist")
+  
+  print("Done.")
+  
+  output_object <- list(main_output_object = main_output_object, dclass_output_object = dclass_output_object)
   
   return(output_object)
 }

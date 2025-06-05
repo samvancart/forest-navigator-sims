@@ -5,32 +5,39 @@
 # LOAD_PREBAS_PUHTI ---------------------------------------------------------
 
 
-# 
-# library(devtools)
-# 
-# vPREBAS <- "master"
-# # vPREBAS <- "newVersion"
-# 
-# 
-# if(vPREBAS=="master") {
-#   print("Checking master...")
-#   RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
-# } else {
-#   print("Checking newVersion...")
-#   RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_newV"
-# }
-# 
-# .libPaths(c(RprebassoFolder,
-#             "/projappl/project_2000994/Rpackages/project_rpackages",
-#             .libPaths()))
-# 
+
+library(devtools)
+
+vPREBAS <- "master"
+# vPREBAS <- "newVersion"
+
+print("NOT UPDATING PREBAS")
+
+if(vPREBAS=="master") {
+  print("Checking master...")
+  RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_master"
+} else {
+  print("Checking newVersion...")
+  RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_newV"
+}
+
+.libPaths(c(RprebassoFolder,
+            "/projappl/project_2000994/Rpackages/project_rpackages",
+            .libPaths()))
+
+
+
+# TEMPORARILY DON'T UPDATE ------------------------------------------------
+
+
+
 # tryCatch({
 #   install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
 # }, error = function(e) {
 #   message("",e)
 # })
-# 
-# rm(vPREBAS, RprebassoFolder)
+
+rm(vPREBAS, RprebassoFolder)
 
 
 # LOAD_LIBS ----------------------------------------------------------------
