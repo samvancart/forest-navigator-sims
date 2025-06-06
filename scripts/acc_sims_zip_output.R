@@ -19,7 +19,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 
 
-zip_file_path <- file.path(output_base_path, "zip_test")
+zip_file_path <- paste0("data/acc/output/", simulation_site, "/zip_test")
 if(!dir.exists(zip_file_path)) dir.create(zip_file_path)
 
 

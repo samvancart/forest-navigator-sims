@@ -405,11 +405,17 @@ conversions_dt <- fread(conversions_path)
 
 # OUTPUT_PATHS ------------------------------------------------------------------
 
-output_base_path <- paste0("data/acc/output/", simulation_site)
+# output_base_path <- file.path("data", "acc", "output", simulation_site) # FILESYSTEM PATH
+
+output_base_path <- file.path("output", simulation_site) # ALLAS PATH
 
 
 
+# SAVE_DIRS --------------------------------------------------------------
 
+output_save_dir <- "output_files"
+
+dclass_save_dir <- "dbh_classes"
 
 
 # OUTPUT_VARS --------------------------------------------------------------
@@ -419,176 +425,13 @@ produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              aaa_file = aaa_file,
                              conversions_path = conversions_path,
                              output_base_path = output_base_path,
-                             species_lookup_path = species_codes_lookup_path)
+                             species_lookup_path = species_codes_lookup_path,
+                             output_save_dir = output_save_dir,
+                             dclass_save_dir = dclass_save_dir)
 
 # Output IDs
-# varOutID <- c(44,18,19,11:14,17,30,43,42,7,22,31:33,24:25,47,50)
 varOutID <- c(7, 11:14, 17, 18, 19, 22, 24, 25, 30, 31:33, 42, 43, 44, 47, 50)
 vHarv <- c(30,2)
-
-# Operations
-
-
-merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv = c(30, 2)) {
-  
-  # Input validations using checkmate
-  assert_data_table(out_dt)  # Ensure out_dt is a data.table
-  assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
-  assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
-  
-  # Convert multi-dimensional arrays to data.table and melt them
-  species <- as.data.table(melt(multiOut[,,4,,1]))
-  v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
-  
-  # Rename columns for clarity
-  setnames(species, old = "value", new = "species")
-  
-  # Merge datasets
-  out_dt_species <- merge(out_dt, species, by = intersect(names(out_dt), names(species)))
-  v_harv_species <- merge(v_harv, species, by = intersect(names(v_harv), names(species)))
-  v_harv_species[, variable := "harv"]
-  
-  # Combine data.tables
-  out_dt_all <- rbind(out_dt_species, v_harv_species)
-  
-  # Return the final data.table
-  return(out_dt_all)
-}
-
-sum_bioms <- function(dt, name, sum_cols, by = c("year", "site", "layer")) {
-  dt[, (name) := sum(unlist(.SD)), by = by, .SDcols = sum_cols]
-  return(dt)
-}
-
-calculate_lc <- function(dt, name = "Lc", height = "H", hc_base = "Hc_base") {
-  dt[, Lc := pmax(get(height) - get(hc_base), 0)]
-  return(dt)
-}
-
-set_output_names <- function(dt, ...) {
-  setnames(dt, ...)
-}
-
-convert_output_vals_to_correct_units <- function(dt, conversions_dt) {
-  invisible(  apply(conversions_dt, 1, function(row) {
-    var <- row[["Variable"]]
-    conversion_char <- row[["PREBASconv"]]
-    conversion <- eval(parse(text = conversion_char))
-    
-    if(var %in% names(dt)) {
-      dt[, (var) := .SD * conversion, .SDcols = var]
-    }
-  }))
-  return(dt)
-}
-
-add_columns_to_dt <- function(dt, columns) {
-  # Ensure columns is a named list
-  assert_list(columns, names = "named")
-  
-  # Add columns to the data.table
-  dt[, names(columns) := mget(names(columns), envir = as.environment(columns))]
-  
-  return(dt)
-}
-
-
-stem_cols <-  c("Wstem", "Wbranch")
-root_cols <- c("WfineRoots", "W_croot")
-hc_base_col <- c("Hc_base")
-old_output_col_names <- c("Units", "forest_type", "value", "year", "layer")
-new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Layer")
-del_output_cols <- c("site", "species")
-output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", 
-                      "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value")
-
-
-get_output_operations <- function(plgid, 
-                                  multiOut, 
-                                  conversions_dt,
-                                  siteID_lookup,
-                                  species_lookup,
-                                  model,
-                                  country,
-                                  clim_scen,
-                                  man_scen,
-                                  canopy_layer,
-                                  vHarv = c(30,2), 
-                                  stem_cols = c("Wstem", "Wbranch"), 
-                                  root_cols = c("WfineRoots", "W_croot"),
-                                  old_output_col_names = c("Units", "forest_type", "value", "year", "variable", "layer"),
-                                  new_output_col_names = c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer"),
-                                  del_output_cols = c("site", "species"),
-                                  output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", 
-                                                       "PlgID_05", "Mixture_type", "Species", "Canopy_layer", "Variable", "Unit", "Year", "Value"),
-                                  ...) {
-  
-  
-  add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
-                   Management_scenario = man_scen, Canopy_layer = canopy_layer)
-  
-  
-  output_operations <- list(
-    # Get stem and root biomasses
-    list(fun = sum_bioms,
-         args = list(name = "stem_biom", sum_cols = stem_cols)),
-    
-    list(fun = sum_bioms,
-         args = list(name = "root_biom", sum_cols = root_cols)),
-    # Calculate crown length from H and Hc_base
-    list(fun = calculate_lc, 
-         args = list()),
-    # Delete unnecessary cols
-    list(fun = del_dt_cols,
-         args = list(del_cols = c(stem_cols, hc_base_col))),
-    # Get new names from conversion table
-    list(fun = set_output_names,
-         args = list(old = conversions_dt$PREBAS, new = conversions_dt$Variable, skip_absent = T)),
-    
-    list(fun = convert_output_vals_to_correct_units,
-         args = list(conversions_dt = conversions_dt)),
-    
-    list(fun = melt.data.table,
-         args = list(id.vars = c("site", "year", "layer"))),
-    
-    list(fun = merge_multiOut_species_and_harv_with_out_dt,
-         args = list(multiOut = multiOut, vHarv = vHarv)),
-    
-    list(fun = merge.data.table,
-         args = list(y = conversions_dt[,c("Variable", "Units")], by.x = "variable", by.y = "Variable")),
-    # Get PlgID_05 and mixture type
-    list(fun = merge.data.table,
-         args = list(y = siteID_lookup, by = c("site"))),
-    # Get species codes
-    list(fun = function(dt) dt[species_lookup[, c("speciesID", "prebas_species_code")], on = .(species = speciesID), Species := i.prebas_species_code],
-         args = list()),
-    # Layer to int
-    list(fun = function(dt) dt[, layer := as.integer(unlist(tstrsplit(dt$layer, split = " ", keep = 2)))],
-         args = list()),
-    # Add Model, Country clim_scen, harv_scen and Canopy_layer
-    list(fun = add_columns_to_dt,
-         args = list(columns = add_cols)),
-    
-    list(fun = function(dt, start_year) dt[, year := as.integer(dt$year + (as.integer(start_year) - 1))],
-         args = list(start_year = start_year)),
-    
-    list(fun = set_output_names, 
-         args = list(old = old_output_col_names, new = new_output_col_names, skip_absent = T)),
-    
-    list(fun = del_dt_cols, 
-         args = list(del_cols = del_output_cols)),
-    
-    list(fun = setcolorder, 
-         args = list(neworder = output_col_order))
-    
-  )
-  
-}
-
-
-
-
-
 
 
 # MAN_VARS ----------------------------------------------------------------

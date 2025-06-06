@@ -69,78 +69,19 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
-
-output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
+output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list[1:2],
                                                         FUN = acc_run_table_controller,
                                                         FUN_args = list(paths = produce_output_paths,
                                                                         FUN = produce_acc_output_obj,
                                                                         start_year = start_year,
-                                                                        test_run = T),
-                                                        cores = cores,
-                                                        type = type)), recursive = F)
-
-
-
-
-##### FRI 30.5.2025
-# Work on apply_output_operations that is called from get_acc_output_dt. 
-# Add d_classes. 
-# Problem: print("dt before-1") shows that conversions table does not have 
-# d_class units and previously merged d_classes are deleted from the table
-# that has been merged with conversions_dt.
-# output_obj_list2 should contain the result for runs using apply_output_operations fun.
-# Possible solution1: Add d_classes to conversions_dt
-# Possible solution1: Add Units "cm" to all rows of table first and see what happens
-
-
-
-
-
-run_table <- acc_run_tables_list[[2]]
-output_obj_list <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, test_run = T) # TEST
-
-output_obj_list2 <- acc_run_table_controller(run_table = run_table, paths = produce_output_paths, FUN = produce_acc_output_obj, start_year = start_year, test_run = F)
-
-length(output_obj_list2)
-
-
-output_obj_list2[[1]]$main_output_object
-
-s <- unlist(output_obj_list2, recursive = F)
-length(s$main_output_object)
-
-o <- c("hello", "you")
-e <- c("spurs", "boys")
-tv <- c(o,e)
-str_c(tv, collapse = "_")
-
-
-multi <- output_obj_list[[1]]$data[[1]]$multiOut
-
-d_class_dt <- n_by_d_class_dt(prebas_out = multi, d_class = 5, is_multiOut = TRUE)
-
-d_class_dt_melted <- melt.data.table(d_class_dt, id.vars = c("site", "year", "species"))
-
-d_class_dt[, Units := "cm"]
-
-dt <- output_obj_list2[[1]]$data[[1]]
-
-names(dt)[!names(dt) %in% c("Species")]
-
-# Merge d_class_dt
-dt <- merge(dt, d_class_dt, by = c("site", "year", "species"))
-
-
+                                                                        test_run = F),
+                                                        cores = 2,
+                                                        type = type)), recursive = F),
+                          recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
 
 
 
 # SAVE_TO_ALLAS -------------------------------------------------------------
-
-
-
-
-# Save to allas
-allas_output_path <- file.path("output", simulation_site, "output_files")
 
 
 # ALLAS_FIN_RUNS ----------------------------------------------------------
@@ -152,11 +93,13 @@ allas_output_path <- file.path("output", simulation_site, "output_files_FIN") # 
 
 
 invisible(lapply(output_obj_list, function(item) {
+  allas_output_path <- item$save_path
   dt <- item$data[[1]]
+  obj = file.path(allas_output_path, paste0(item$name, ".csv"))
   print(paste0("Saving ", item$name, " to ", allas_output_path, " in allas..."))
   s3write_using(x = dt,
                 FUN = fwrite,
-                object = file.path(allas_output_path, paste0(item$name, ".csv")),
+                object = obj,
                 bucket = allas_opts$bucket,
                 opts = c(list(multipart = T), allas_opts$opts))
 }))

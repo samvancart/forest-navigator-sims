@@ -1203,6 +1203,83 @@ get_acc_site_info_dt <- function(filtered_soil_dt,
 
 
 
+# PRODUCE-OUTPUT_HELPER ---------------------------------------------------
+
+
+merge_multiOut_species_and_harv_with_out_dt <- function(out_dt, multiOut, vHarv = c(30, 2)) {
+  
+  # Input validations using checkmate
+  assert_data_table(out_dt)  # Ensure out_dt is a data.table
+  assert_array(multiOut, min.d = 4)  # Ensure multiOut is at least a 4-dimensional array
+  assert_integerish(vHarv, len = 2, lower = 1, any.missing = FALSE)
+  
+  # Convert multi-dimensional arrays to data.table and melt them
+  species <- as.data.table(melt(multiOut[,,4,,1]))
+  v_harv <- as.data.table(melt(multiOut[,,vHarv[1],,vHarv[2]]))
+  
+  # Rename columns for clarity
+  setnames(species, old = "value", new = "species")
+  
+  # Merge datasets
+  out_dt_species <- merge(out_dt, species, by = intersect(names(out_dt), names(species)))
+  v_harv_species <- merge(v_harv, species, by = intersect(names(v_harv), names(species)))
+  v_harv_species[, variable := "harv"]
+  
+  # Combine data.tables
+  out_dt_all <- rbind(out_dt_species, v_harv_species)
+  
+  # Return the final data.table
+  return(out_dt_all)
+}
+
+sum_bioms <- function(dt, name, sum_cols, by = c("year", "site", "layer")) {
+  dt[, (name) := sum(unlist(.SD)), by = by, .SDcols = sum_cols]
+  return(dt)
+}
+
+calculate_lc <- function(dt, name = "Lc", height = "H", hc_base = "Hc_base") {
+  dt[, Lc := pmax(get(height) - get(hc_base), 0)]
+  return(dt)
+}
+
+set_output_names <- function(dt, ...) {
+  setnames(dt, ...)
+}
+
+convert_output_vals_to_correct_units <- function(dt, conversions_dt) {
+  invisible(  apply(conversions_dt, 1, function(row) {
+    var <- row[["Variable"]]
+    conversion_char <- row[["PREBASconv"]]
+    conversion <- eval(parse(text = conversion_char))
+    
+    if(var %in% names(dt)) {
+      dt[, (var) := .SD * conversion, .SDcols = var]
+    }
+  }))
+  return(dt)
+}
+
+add_columns_to_dt <- function(dt, columns) {
+  # Ensure columns is a named list
+  assert_list(columns, names = "named")
+  
+  # Add columns to the data.table
+  dt[, names(columns) := mget(names(columns), envir = as.environment(columns))]
+  
+  return(dt)
+}
+
+
+# Helper function to create a dynamic name for get_acc_out_obj.
+# Detrended clim_scen becomes "historical".
+# Param extra_words is a character vector that will be added to the name.
+create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
+  clim_scen <- ifelse(clim_scen == "detrended", "historical", clim_scen)
+  output_template_vector <- c(model, plgid, clim_scen, man_scen, extra_words)
+  
+  return(str_c(output_template_vector, collapse = "_"))
+}
+
 # PRODUCE-OUTPUT_WORKER ----------------------------------------------------
 
 #' Initialize Prebas Model for a Given PLG ID
@@ -1387,6 +1464,7 @@ get_siteID_lookup <- function(plgid,
 
 
 
+# TO DO: Add start_year to run_table?
 
 # Transform multiOut to melted output table
 get_acc_output_dt <- function(plgid, model, country, 
@@ -1429,15 +1507,19 @@ get_acc_output_dt <- function(plgid, model, country,
   
 }
 
-# TO DO: ALl default args should go inside an extra_args list! Same for apply_dclass_operations FUN
-apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year,
-                                    vHarv = c(30,2),
-                                    stem_cols = c("Wstem", "Wbranch"), root_cols = c("WfineRoots", "W_croot"), 
-                                    old_output_col_names = c("Units", "forest_type", "value", "year", "variable", "layer"), 
-                                    new_output_col_names = c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer"), 
-                                    del_output_cols = c("site", "species"), 
-                                    output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species", 
-                                                         "Canopy_layer", "Variable", "Unit", "Year", "Value")) {
+
+apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup, species_lookup, 
+                                    model, country, clim_scen, man_scen, canopy_layer, start_year,
+                                    vHarv = c(30,2)) {
+  
+  
+  stem_cols <- c("Wstem", "Wbranch")
+  root_cols = c("WfineRoots", "W_croot")
+  old_output_col_names <- c("Units", "forest_type", "value", "year", "variable", "layer")
+  new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer")
+  del_output_cols <- c("site", "species")
+  output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species", 
+                       "Canopy_layer", "Variable", "Unit", "Year", "Value")
   
   # Define additional columns to add
   add_cols <- list(Model = model, Country = country, Climate_scenario = clim_scen,
@@ -1528,13 +1610,17 @@ get_dclass_acc_output_dt <- function(plgid, model, country,
   
 }
 
-# TO DO: ALl default args should go inside an extra_args list! Same for apply_output_operations FUN
-apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, country, clim_scen, man_scen, canopy_layer, start_year,
-                                    old_output_col_names = c("forest_type", "year"), 
-                                    new_output_col_names = c("Mixture_type", "Year"), 
-                                    del_output_cols = c("site", "species"), 
-                                    output_col_order = c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species",
-                                                         "Canopy_layer", "Variable", "Unit", "Year")) {
+
+apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, country, 
+                                    clim_scen, man_scen, canopy_layer, start_year) {
+  
+  
+  old_output_col_names <- c("forest_type", "year")
+  new_output_col_names <- c("Mixture_type", "Year")
+  del_output_cols <- c("site", "species")
+  output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species",
+                       "Canopy_layer", "Variable", "Unit", "Year")
+  
   
   # Define the d_class cols for ordering later
   d_class_cols <- names(dt)[!names(dt) %in% c("site", "year", "species")]
@@ -1576,15 +1662,6 @@ apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, co
   return(dt)
 }
 
-# Helper function to create a dynamic name for get_acc_out_obj.
-# Detrended clim_scen becomes "historical".
-# Param extra_words is a character vector that will be added to the name.
-create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
-  clim_scen <- ifelse(clim_scen == "detrended", "historical", clim_scen)
-  output_template_vector <- c(model, plgid, clim_scen, man_scen, extra_words)
-  
-  return(str_c(output_template_vector, collapse = "_"))
-}
 
 # Construct table name and save path then combine with data and plgid into 
 # acc object for saving 
@@ -1662,7 +1739,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
                                    conversions_path, output_base_path,
-                                   species_lookup_path, test_run = F, ...) {
+                                   species_lookup_path, output_save_dir, dclass_save_dir, test_run = F, ...) {
   
   
   # Check input validity
@@ -1682,8 +1759,9 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   assert_file_exists(selection_path)
   assert_file_exists(aaa_file)
   assert_file_exists(conversions_path)
-  assert_directory_exists(output_base_path)
   assert_file_exists(species_lookup_path)
+  
+  assert_character(output_base_path) # This is an Allas path
   
   
   
@@ -1725,10 +1803,10 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   print("Creating acc output object...")
   
   # Create save path for get_acc_out_obj FUN
-  save_path <- file.path(output_base_path, "output_files")
+  out_save_path <- file.path(output_base_path, output_save_dir)
   
   main_output_object <- get_acc_out_obj(out_dt_melted, model, plgid, 
-                                   clim_scen, man_scen, save_path)
+                                   clim_scen, man_scen, out_save_path)
   
   print("Done.")
   
@@ -1747,10 +1825,10 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   print("Creating d_class acc output object...")
   
   # Create save path for get_acc_out_obj FUN
-  save_path <- file.path(output_base_path, "dbh_classes")
+  dclass_save_path <- file.path(output_base_path, dclass_save_dir)
   
   dclass_output_object <- get_acc_out_obj(dclass_dt, model, plgid, 
-                                   clim_scen, man_scen, save_path, extra_words = "dbh-dist")
+                                   clim_scen, man_scen, dclass_save_path, extra_words = "dbh-dist")
   
   print("Done.")
   
