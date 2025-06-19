@@ -1328,7 +1328,7 @@ get_init_prebas_for_plgid <- function(plgid, clim_scen, clean_data_base_path, ..
   
   site_info_path <- list.files(file.path(base_path, "site"), pattern = "siteInfo", full.names = T)[1]
   multi_init_var_path <- list.files(file.path(base_path, "tree_data"), pattern = "multiInitVar", full.names = T)[1]
-  
+
   # Additional input validations
   assertFileExists(site_info_path, access = "r")
   assertFileExists(multi_init_var_path, access = "r")
@@ -1481,6 +1481,7 @@ get_acc_output_dt <- function(plgid, model, country,
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   conversions_dt <- fread(conversions_path)
   species_lookup <- fread(species_lookup_path)
+  
 
   # Get multiOut as dt
   out_dt <- as.data.table(melt(multiOut[,, varOutID,, 1]))
@@ -1515,6 +1516,7 @@ apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup,
   
   stem_cols <- c("Wstem", "Wbranch")
   root_cols = c("WfineRoots", "W_croot")
+  hc_base_col <- c("Hc_base")
   old_output_col_names <- c("Units", "forest_type", "value", "year", "variable", "layer")
   new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer")
   del_output_cols <- c("site", "species")
@@ -1770,6 +1772,11 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   # Get initPrebas
   init_args <- list(plgid = plgid, clim_scen = clim_scen, clean_data_base_path = clean_data_base_path)
   initPrebas <- do.call(get_init_prebas_for_plgid, c(init_args, man_init_args))
+  
+  siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
+  
+  
+  # TODO PASS INIT_PREBAS AND SITE_ID_LOOKUP TO MANAGEMENT FUNCTION HERE
   
   # Get modOut
   modOut <- get_modOut(regionPrebas, initPrebas)

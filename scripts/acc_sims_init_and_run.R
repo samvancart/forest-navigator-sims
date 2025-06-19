@@ -23,9 +23,9 @@ acc_run_table <- loadRDataFile(run_table_full_path)
 # FIN_RUNS ----------------------------------------------------------------
 
 
-acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
+# acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
 
-
+acc_run_table <- acc_run_table[country=="Sweden"] 
 
 # END_FIN_RUNS ------------------------------------------------------------
 
@@ -69,13 +69,13 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
-output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list[1:2],
+output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list[1:1],
                                                         FUN = acc_run_table_controller,
                                                         FUN_args = list(paths = produce_output_paths,
                                                                         FUN = produce_acc_output_obj,
                                                                         start_year = start_year,
-                                                                        test_run = F),
-                                                        cores = 2,
+                                                                        test_run = T),
+                                                        cores = cores,
                                                         type = type)), recursive = F),
                           recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
 
@@ -123,13 +123,13 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
-# acc_run_test <- acc_run_tables_list[[1]]
-# 
-# 
-# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj)
-# 
-# 
-# acc_output_obj[[1]]$data
+acc_run_test <- acc_run_tables_list[[1]]
+
+
+acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+
+
+acc_output_obj[[1]]$data
 
 
 #### TEST_PARALLEL ##########
