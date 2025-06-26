@@ -402,6 +402,10 @@ conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions
 conversions_dt <- fread(conversions_path)
 
 
+# MANAGEMENT_PATHS --------------------------------------------------------
+
+sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-01-2400325_fdf.csv"
+
 # OUTPUT_PATHS ------------------------------------------------------------------
 
 # output_base_path <- file.path("data", "acc", "output", simulation_site) # FILESYSTEM PATH
