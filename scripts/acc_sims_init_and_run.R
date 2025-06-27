@@ -69,7 +69,7 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
 
-output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list[1:1],
+output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
                                                         FUN = acc_run_table_controller,
                                                         FUN_args = list(paths = produce_output_paths,
                                                                         FUN = produce_acc_output_obj,

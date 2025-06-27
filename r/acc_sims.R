@@ -1269,6 +1269,12 @@ add_columns_to_dt <- function(dt, columns) {
   return(dt)
 }
 
+extract_full_forestType <- function(f_types_long) {
+  f_type_parts <- tstrsplit(f_types_long, split = "_", keep = 1:4)
+  f_types <- do.call(paste, c(f_type_parts, sep = "_"))
+  return(f_types)
+} # Extract the full forest type from the InitFileID column in aaa_file
+
 
 # Helper function to create a dynamic name for get_acc_out_obj.
 # Detrended clim_scen becomes "historical".
@@ -1281,6 +1287,36 @@ create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
 }
 
 # PRODUCE-OUTPUT_WORKER ----------------------------------------------------
+
+
+# Select management file from man_paths_list by country and merge management regimes with forest types using siteID_lookup.
+# Call forest_management_update fun and return modified initPrebas.
+forest_management_update_controller <- function(initPrebas, siteID_lookup, 
+                                                man_paths_list, country, man_scen, 
+                                                man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
+  
+  if(!country %in% names(man_paths_list)) {
+    return(initPrebas)
+  }
+  
+  man_path <- man_paths_list[[country]]
+  man_dt <- fread(man_path)
+  
+  assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
+  man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
+  man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
+  
+  assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
+  
+  forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
+  
+  initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
+                                             country = country, management = man_scen)
+  
+  return(initPrebas_man)
+  
+}
+
 
 #' Initialize Prebas Model for a Given PLG ID
 #'
@@ -1449,14 +1485,19 @@ get_siteID_lookup <- function(plgid,
   # Read the AAA data
   aaa_all <- fread(aaa_path)
   if (is.null(aaa_all) || nrow(aaa_all) == 0) stop("No AAA data found")
+  assert_names(names(aaa_all), must.include = c("forest_type", "InitFileID"))
   
   # Merge with AAA data to include forest type
   siteID_all_lookup <- merge(clustered_dt_lookup, 
-                             aaa_all[PlgID == plgid][, c(..use_id, "forest_type")], 
+                             aaa_all[PlgID == plgid][, c(..use_id, "forest_type", "InitFileID")], 
                              by = c(use_id))
   
+  # Extract the full forest_type
+  siteID_all_lookup[, forest_type_full := extract_full_forestType(InitFileID)]
+  
   # Select final columns for the output
-  siteID_lookup <- siteID_all_lookup[, .(site, PlgID_05, forest_type)]
+  siteID_lookup <- siteID_all_lookup[, .(site, PlgID_05, forest_type, forest_type_full)]
+  
   
   # Return the final lookup table
   return(siteID_lookup)
@@ -1741,7 +1782,8 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
                                    conversions_path, output_base_path,
-                                   species_lookup_path, output_save_dir, dclass_save_dir, test_run = F, ...) {
+                                   species_lookup_path, output_save_dir, dclass_save_dir, man_paths_list, 
+                                   test_run = F, ...) {
   
   
   # Check input validity
@@ -1765,6 +1807,8 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   assert_character(output_base_path) # This is an Allas path
   
+  assert_list(man_paths_list)
+  lapply(names(man_paths_list), function(man_path_name) assert_file_exists(man_paths_list[[man_path_name]]))
   
   
   print(paste0("Creating output for plgid ", plgid, "..."))
@@ -1775,11 +1819,14 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   
-  
-  # TODO PASS INIT_PREBAS AND SITE_ID_LOOKUP TO MANAGEMENT FUNCTION HERE
+  # Modify initPrebas according to management
+  # TODO Add man_file_man_col to run_table and pass to forest_management_update_controller
+  initPrebas_man <- forest_management_update_controller(initPrebas = initPrebas, siteID_lookup = siteID_lookup, 
+                                                                    man_paths_list = man_paths_list, 
+                                                                    country = country, man_scen = man_scen)
   
   # Get modOut
-  modOut <- get_modOut(regionPrebas, initPrebas)
+  modOut <- get_modOut(regionPrebas, initPrebas_man)
   
   # Get multiOut
   multiOut <- modOut$multiOut

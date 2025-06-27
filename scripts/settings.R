@@ -2,6 +2,9 @@
 
 
 
+
+
+
 # LOAD_PREBAS_PUHTI ---------------------------------------------------------
 
 
@@ -21,21 +24,27 @@ if(vPREBAS=="master") {
   RprebassoFolder = "/projappl/project_2000994/Rpackages/Rprebasso_newV"
 }
 
-.libPaths(c(RprebassoFolder,
-            "/projappl/project_2000994/Rpackages/project_rpackages",
+# .libPaths(c(RprebassoFolder,
+#             "/projappl/project_2000994/Rpackages/project_rpackages",
+#             .libPaths()))
+
+
+
+
+# UPDATE TO TEMPORARY DIR -------------------------------------------------
+
+
+prebas_temp_path <- "/scratch/project_2000994/PREBASruns/finRuns/Rsrc/samuel/forest-navigator-sims/data/temp_prebas/"
+
+.libPaths(c(prebas_temp_path,
             .libPaths()))
 
 
-
-# TEMPORARILY DON'T UPDATE ------------------------------------------------
-
-
-
-# tryCatch({
-#   install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
-# }, error = function(e) {
-#   message("",e)
-# })
+tryCatch({
+  install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+}, error = function(e) {
+  message("",e)
+})
 
 rm(vPREBAS, RprebassoFolder)
 

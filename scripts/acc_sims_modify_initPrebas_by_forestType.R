@@ -34,6 +34,45 @@ setkey(forest_management,"forest_type")
 setkey(forestTypes_tab,"forest_type")
 forest_type_management_tab <- unique(merge(forestTypes_tab,forest_management[,.(forest_type,for_man)],by="forest_type",allow.cartesian=FALSE))
 ##----##
+
+
+# MAN FUNCTION ------------------------------------------------------------
+
+# Select management file from man_paths_list by country and merge management regimes with forest types using siteID_lookup.
+# Call forest_management_update and return modified initPrebas.
+forest_management_update_controller <- function(initPrebas, siteID_lookup, 
+                                                man_paths_list, country, man_scen, 
+                                                man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
+  
+  if(!country %in% names(man_paths_list)) {
+    return(initPrebas)
+  }
+
+  man_path <- man_paths_list[[country]]
+  man_dt <- fread(man_path)
+  
+  assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
+  man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
+  man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add for_man to run table?
+
+  assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
+  
+  forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
+  
+  return(forest_type_management_tab)
+  
+  initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
+                                         country = country, management = man_scen)
+  
+  return(initPrebas_man)
+  
+}
+
+
+# END MAN FUNCTION --------------------------------------------------------
+
+
+
 merge(forestTypes_tab,forest_management[,.(forest_type,for_man)],by="forest_type",allow.cartesian=FALSE)
 
 forest_management[grepl("SWE_MIX03", ForestTypeElevSite)]

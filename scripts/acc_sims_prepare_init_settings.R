@@ -51,6 +51,7 @@ aaa_all <- fread(aaa_file)
 
 
 
+
 # Init files
 init_files_path <- file.path(boku_tree_data_path, "init_files")
 init_files <- list.files(init_files_path, full.names = T)
@@ -402,10 +403,6 @@ conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions
 conversions_dt <- fread(conversions_path)
 
 
-# MANAGEMENT_PATHS --------------------------------------------------------
-
-sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-01-2400325_fdf.csv"
-
 # OUTPUT_PATHS ------------------------------------------------------------------
 
 # output_base_path <- file.path("data", "acc", "output", simulation_site) # FILESYSTEM PATH
@@ -421,21 +418,11 @@ output_save_dir <- "output_files"
 dclass_save_dir <- "dbh_classes"
 
 
-# OUTPUT_VARS --------------------------------------------------------------
+# MAN PATHS ---------------------------------------------------------------
 
-produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
-                             selection_path = selection_path,
-                             aaa_file = aaa_file,
-                             conversions_path = conversions_path,
-                             output_base_path = output_base_path,
-                             species_lookup_path = species_codes_lookup_path,
-                             output_save_dir = output_save_dir,
-                             dclass_save_dir = dclass_save_dir)
+sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-01-2400325_fdf.csv"
 
-# Output IDs
-varOutID <- c(7, 11:14, 17, 18, 19, 22, 24, 25, 30, 31:33, 42, 43, 44, 47, 50)
-vHarv <- c(30,2)
-
+man_paths_list <- list(Sweden = sweden_man_path)
 
 # MAN_VARS ----------------------------------------------------------------
 
@@ -452,6 +439,23 @@ man_params <- list(noman = list(defaultThin = 0,
                               ClCut = 1,
                               mortMod = 3,
                               ingrowth = T))
+
+# OUTPUT_VARS --------------------------------------------------------------
+
+produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
+                             selection_path = selection_path,
+                             aaa_file = aaa_file,
+                             conversions_path = conversions_path,
+                             output_base_path = output_base_path,
+                             species_lookup_path = species_codes_lookup_path,
+                             output_save_dir = output_save_dir,
+                             dclass_save_dir = dclass_save_dir,
+                             man_paths_list = man_paths_list) # Management paths as named list
+
+# Output IDs
+varOutID <- c(7, 11:14, 17, 18, 19, 22, 24, 25, 30, 31:33, 42, 43, 44, 47, 50)
+vHarv <- c(30,2)
+
 
 # RUN-TABLE_PATHS ----------------------------------------------------------
 
