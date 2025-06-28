@@ -469,7 +469,7 @@ if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does
 
 # RUN-TABLE_VARS -----------------------------------------------------------
 
-runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 32, 1)
+runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 3, 1)
 
 # PRINT_VARS --------------------------------------------------------------
 

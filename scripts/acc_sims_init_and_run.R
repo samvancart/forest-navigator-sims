@@ -84,14 +84,6 @@ output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_ta
 # SAVE_TO_ALLAS -------------------------------------------------------------
 
 
-# ALLAS_TEMP_RUNS ----------------------------------------------------------
-
-allas_output_path <- file.path("output", simulation_site, "output_files_SWE") # SWE Runs
-
-
-# END_ALLAS_TEMP_RUNS ------------------------------------------------------
-
-
 invisible(lapply(output_obj_list, function(item) {
   allas_output_path <- item$save_path
   dt <- item$data[[1]]
@@ -123,13 +115,13 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
-acc_run_test <- acc_run_tables_list[[1]]
-
-
-acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-
-
-acc_output_obj[[1]]$data
+# acc_run_test <- acc_run_tables_list[[1]]
+# 
+# 
+# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# 
+# 
+# acc_output_obj[[1]]$data
 
 
 

@@ -33,7 +33,7 @@ if(vPREBAS=="master") {
 
 # UPDATE TO TEMPORARY DIR -------------------------------------------------
 
-
+print("UPDATING PREBAS INTO data/temp_prebas")
 prebas_temp_path <- "/scratch/project_2000994/PREBASruns/finRuns/Rsrc/samuel/forest-navigator-sims/data/temp_prebas/"
 
 .libPaths(c(prebas_temp_path,
