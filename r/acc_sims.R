@@ -1560,7 +1560,7 @@ apply_output_operations <- function(dt, multiOut, conversions_dt, siteID_lookup,
   hc_base_col <- c("Hc_base")
   old_output_col_names <- c("Units", "forest_type", "value", "year", "variable", "layer")
   new_output_col_names <- c("Unit", "Mixture_type", "Value", "Year", "Variable", "Layer")
-  del_output_cols <- c("site", "species")
+  del_output_cols <- c("site", "species", "forest_type_full")
   output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species", 
                        "Canopy_layer", "Variable", "Unit", "Year", "Value")
   
