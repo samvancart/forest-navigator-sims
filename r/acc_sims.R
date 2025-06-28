@@ -1660,7 +1660,7 @@ apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, co
   
   old_output_col_names <- c("forest_type", "year")
   new_output_col_names <- c("Mixture_type", "Year")
-  del_output_cols <- c("site", "species")
+  del_output_cols <- c("site", "species", "forest_type_full")
   output_col_order <- c("Model", "Country", "Climate_scenario", "Management_scenario", "PlgID_05", "Mixture_type", "Species",
                        "Canopy_layer", "Variable", "Unit", "Year")
   
@@ -1695,7 +1695,7 @@ apply_dclass_operations <- function(dt, siteID_lookup, species_lookup, model, co
   
   # Remove unnecessary columns
   dt <- del_dt_cols(dt, del_cols = del_output_cols)
-  
+
   # Add d_class cols to all cols vector
   output_col_order_dclass <- c(output_col_order, d_class_cols)
   

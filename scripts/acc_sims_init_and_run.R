@@ -20,14 +20,14 @@ print(paste0("Getting run_table from ", run_table_full_path))
 acc_run_table <- loadRDataFile(run_table_full_path)
 
 
-# FIN_RUNS ----------------------------------------------------------------
+# TEMP_RUNS ----------------------------------------------------------------
 
 
 # acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
 
 acc_run_table <- acc_run_table[country=="Sweden"] 
 
-# END_FIN_RUNS ------------------------------------------------------------
+# END_TEMP_RUNS ------------------------------------------------------------
 
 
 # ARRAY-JOB_PARAMS ----------------------------------------------------------
@@ -74,7 +74,7 @@ output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_ta
                                                         FUN_args = list(paths = produce_output_paths,
                                                                         FUN = produce_acc_output_obj,
                                                                         start_year = start_year,
-                                                                        test_run = T),
+                                                                        test_run = F),
                                                         cores = cores,
                                                         type = type)), recursive = F),
                           recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
@@ -84,12 +84,12 @@ output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_ta
 # SAVE_TO_ALLAS -------------------------------------------------------------
 
 
-# ALLAS_FIN_RUNS ----------------------------------------------------------
+# ALLAS_TEMP_RUNS ----------------------------------------------------------
 
-allas_output_path <- file.path("output", simulation_site, "output_files_FIN") # FIN Runs
+allas_output_path <- file.path("output", simulation_site, "output_files_SWE") # SWE Runs
 
 
-# END_ALLAS_FIN_RUNS ------------------------------------------------------
+# END_ALLAS_TEMP_RUNS ------------------------------------------------------
 
 
 invisible(lapply(output_obj_list, function(item) {
@@ -130,6 +130,8 @@ acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, p
 
 
 acc_output_obj[[1]]$data
+
+
 
 
 #### TEST_PARALLEL ##########
