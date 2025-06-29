@@ -36,7 +36,7 @@ print(paste0("Max array jobs: ", max_array_jobID))
 # GET_FILES_TO_ZIP -----------------------------------------------------------
 
 
-bucket_list_prefix <- file.path("output", simulation_site, "output_files")
+bucket_list_prefix <- file.path("output", simulation_site, "output_files/")
 
 
 # FIN_RUNS_PREFIX ---------------------------------------------------------
@@ -83,7 +83,8 @@ zip_dt <- zip_dts[[array_jobID]]
 
 
 
-# When writing to allas zipfile should be the basename of full_zip_path
+# When writing to allas zipfile is the name of the file. The files are grouped by clim_scen
+# and man_scen so zip_dt should only have one combination e.g. "gwl2_bau.zip.
 zipfile <- basename(zip_dt$full_zip_path[1])
 
 # aws.S3 function args for save_object and put_object

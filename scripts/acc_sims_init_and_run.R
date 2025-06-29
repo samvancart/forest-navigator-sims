@@ -18,11 +18,16 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 option_list <- list(
   make_option(c("-c", "--countries"), type = "character", default = NA,
-              help = "Country name or abbreviation (e.g., 'FI' or 'Finland')")
+              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')")
 )
 
 parser <- OptionParser(option_list = option_list)
 args <- parse_args(parser)
+
+countries_arg <- args$countries
+countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
+countries <- trimws(countries)  # Remove spaces around items
+
 
 
 # GET_RUN-TABLE -------------------------------------------------------------
@@ -33,8 +38,10 @@ acc_run_table_all <- loadRDataFile(run_table_full_path)
 
 # FILTER_BY_COUNTRY -------------------------------------------------------
 
-acc_run_table <- filter_and_validate_by_country(dt = acc_run_table_all, lookup = country_codes, countries = args$countries)
+acc_run_table <- filter_and_validate_by_country(dt = acc_run_table_all, lookup = country_codes, countries = countries)
 
+print("Countries to run:")
+print(unique(acc_run_table$country))
 
 # ARRAY-JOB_PARAMS ----------------------------------------------------------
 
@@ -121,13 +128,13 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
-acc_run_test <- acc_run_tables_list[[1]][1,]
-
-
-acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-
-
-acc_output_obj[[1]]$data
+# acc_run_test <- acc_run_tables_list[[1]][1,]
+# 
+# 
+# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# 
+# 
+# acc_output_obj[[1]]$data
 
 
 
