@@ -14,20 +14,26 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
+# PARSE_ARGS --------------------------------------------------------------
+
+option_list <- list(
+  make_option(c("-c", "--countries"), type = "character", default = NA,
+              help = "Country name or abbreviation (e.g., 'FI' or 'Finland')")
+)
+
+parser <- OptionParser(option_list = option_list)
+args <- parse_args(parser)
+
+
 # GET_RUN-TABLE -------------------------------------------------------------
 
 print(paste0("Getting run_table from ", run_table_full_path))
-acc_run_table <- loadRDataFile(run_table_full_path)
+acc_run_table_all <- loadRDataFile(run_table_full_path)
 
 
-# TEMP_RUNS ----------------------------------------------------------------
+# FILTER_BY_COUNTRY -------------------------------------------------------
 
-
-# acc_run_table <- acc_run_table[country=="Finland"] # ONLY RUN FOR FINLAND
-
-acc_run_table <- acc_run_table[country=="Sweden"] 
-
-# END_TEMP_RUNS ------------------------------------------------------------
+acc_run_table <- filter_and_validate_by_country(dt = acc_run_table_all, lookup = country_codes, countries = args$countries)
 
 
 # ARRAY-JOB_PARAMS ----------------------------------------------------------
@@ -115,13 +121,13 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
-# acc_run_test <- acc_run_tables_list[[1]]
-# 
-# 
-# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-# 
-# 
-# acc_output_obj[[1]]$data
+acc_run_test <- acc_run_tables_list[[1]][1,]
+
+
+acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+
+
+acc_output_obj[[1]]$data
 
 
 

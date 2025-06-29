@@ -1527,9 +1527,6 @@ get_acc_output_dt <- function(plgid, model, country,
   # Get multiOut as dt
   out_dt <- as.data.table(melt(multiOut[,, varOutID,, 1]))
   
-  print("out_dt")
-  print(out_dt)
-  
   out_dt_wide <- dcast.data.table(out_dt, site + year + layer ~ variable, value.var = "value")
 
   dt <- apply_output_operations(dt = out_dt_wide,
@@ -1778,7 +1775,7 @@ acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_
 # When test_run=TRUE returns acc_output_obj with data is a list containing initPrebas, modOut and multiOut
 produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    canopy_layer, man_init_args,
-                                   varOutID, vHarv,
+                                   varOutID, vHarv, country_code_str,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
                                    conversions_path, output_base_path,
@@ -1793,6 +1790,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   assert_character(country, len = 1)
   assert_character(clim_scen, len = 1)
   assert_character(man_scen, len = 1)
+  assert_character(country_code_str, len = 1)
   assert_numeric(canopy_layer, len = 1)
   assert_list(man_init_args, min.len = 0)
   assert_numeric(vHarv)
@@ -1856,6 +1854,8 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   print("Creating acc output object...")
   
+  output_save_dir <- add_country_code_str_to_save_dir(save_dir = output_save_dir, country_code_str = country_code_str)
+  
   # Create save path for get_acc_out_obj FUN
   out_save_path <- file.path(output_base_path, output_save_dir)
   
@@ -1877,6 +1877,10 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   print("Done")
   
   print("Creating d_class acc output object...")
+  
+
+  
+  dclass_save_dir <- add_country_code_str_to_save_dir(save_dir = dclass_save_dir, country_code_str = country_code_str)
   
   # Create save path for get_acc_out_obj FUN
   dclass_save_path <- file.path(output_base_path, dclass_save_dir)
@@ -2326,3 +2330,71 @@ n_by_d_class_dt <- function(prebas_out, d_class, max_d_class = 150, is_multiOut 
 }
 
 
+
+# UTIL_WORKER -------------------------------------------------------------
+
+# dt = acc_run_table, lookup = country_codes. Provide vector of either country names or country codes.
+# Case insensitive
+filter_and_validate_by_country <- function(dt, lookup, countries = NA) {
+  dt_copy <- data.table::copy(dt)  # prevent accidental in-place edits
+  lookup_copy <- data.table::copy(lookup)
+  
+  
+  
+  # Standardize reference columns to lowercase for matching
+  lookup_copy[, country_lower := tolower(trimws(country))]
+  lookup_copy[, code_lower := tolower(trimws(Country_Code))]
+  dt_copy[, country_lower := tolower(trimws(country))]
+  
+  # If no countries provided, return original with NA column
+  if (is.na(countries)[1]) {
+    dt_copy[, country_code_str := NA_character_]
+    dt_copy[, country_lower := NULL]
+    
+    return(dt_copy)
+  }
+  
+  # Clean input countries
+  input_clean <- tolower(trimws(countries))
+  
+  # Step 1: Resolve input to lookup$country values
+  matched <- lookup_copy[code_lower %in% input_clean | country_lower %in% input_clean]
+  
+  if (nrow(matched) == 0) {
+    stop("None of the input countries/codes matched the lookup.")
+  }
+  
+  # Step 2: Ensure all provided values matched something
+  resolved_inputs <- tolower(c(matched$country, matched$Country_Code))
+  if (!all(input_clean %in% resolved_inputs)) {
+    missing <- setdiff(input_clean, resolved_inputs)
+    stop(sprintf("Unrecognized country/country code(s): %s", paste(missing, collapse = ", ")))
+  }
+  
+  # Step 3: Check that the resolved countries exist in dt
+  resolved_countries <- unique(matched$country_lower)
+  missing_in_dt <- setdiff(resolved_countries, unique(dt_copy$country_lower))
+  if (length(missing_in_dt) > 0) {
+    stop(sprintf("The following countries are not present in the data table: %s",
+                 paste(missing_in_dt, collapse = ", ")))
+  }
+  
+  # Step 4: Filter and annotate
+  filtered_dt <- dt_copy[country_lower %in% resolved_countries]
+  filtered_codes <- lookup_copy[country_lower %in% resolved_countries, Country_Code]
+  filtered_dt[, country_code_str := paste(sort(unique(filtered_codes)), collapse = "_")]
+  
+  # Remove helper column
+  filtered_dt[, country_lower := NULL]
+  
+  return(filtered_dt)
+}
+
+add_country_code_str_to_save_dir <- function(save_dir, country_code_str) {
+  if(is.na(country_code_str)) {
+    return(save_dir)
+  }
+  new_save_dir <- file.path(save_dir, country_code_str)
+  
+  return(new_save_dir)
+}
