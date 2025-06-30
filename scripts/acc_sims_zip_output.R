@@ -14,6 +14,35 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
+# PARSE_ARGS --------------------------------------------------------------
+
+option_list <- list(
+  make_option(c("-c", "--countries"), type = "character", default = NA,
+              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')"),
+  make_option(c("-o", "--output_type"), type = "character", default = "output_files", help = "output file type either output_files or dbh_classes.")
+)
+
+parser <- OptionParser(option_list = option_list)
+args <- parse_args(parser)
+
+assert_true(c("output_type") %in% names(args))
+
+args$countries <- "SE"
+
+countries_arg <- args$countries
+countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
+countries <- trimws(countries)  # Remove spaces around items
+
+resolved_country_codes <- resolve_countries_from_lookup(lookup = country_codes, countries = countries)
+res_country_codes_str <- resolved_country_codes$country_codes_str
+country_codes_str <- ifelse(is.null(res_country_codes_str), "", res_country_codes_str)
+
+output_file <- file.path(args$output_type, country_codes_str)
+
+print("country_codes_str")
+print(country_codes_str)
+print("output_file")
+print(output_file)
 
 # CREATE_TEST_ZIP_PATH -------------------------------------------------------------
 
@@ -36,19 +65,7 @@ print(paste0("Max array jobs: ", max_array_jobID))
 # GET_FILES_TO_ZIP -----------------------------------------------------------
 
 
-bucket_list_prefix <- file.path("output", simulation_site, "output_files/")
-
-
-# FIN_RUNS_PREFIX ---------------------------------------------------------
-
-
-
-bucket_list_prefix <- file.path("output", simulation_site, "output_files_FIN")
-
-
-
-# END_FIN-RUNS_PREFIX -----------------------------------------------------
-
+bucket_list_prefix <- file.path("output", simulation_site, paste0(output_file, "/"))
 
 
 
@@ -91,25 +108,11 @@ zipfile <- basename(zip_dt$full_zip_path[1])
 save_or_put_opts <- list(bucket = allas_opts$bucket, region = allas_opts$opts$region, multipart = TRUE)
 
 # move_to_path is the s3 object key without the filename (In other words the "directory path" inside the S3 bucket)
-move_to_path <- file.path("output", simulation_site, "zip")
+move_to_path_output_file <- file.path(country_codes_str, args$output_type)
+move_to_path <- file.path("output", simulation_site, "zip", move_to_path_output_file)
 
-
-
-
-# ZIP-PATH_FIN-RUNS -------------------------------------------------------
-
-
-
-move_to_path <- file.path("output", simulation_site, "zip_FIN")
-
-
-
-# END_ZIP-PATH_FIN-RUNS ---------------------------------------------------
-
-
-
-
-
+print("move_to_path")
+print(move_to_path)
 
 # RUN ---------------------------------------------------------------------
 

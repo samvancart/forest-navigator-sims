@@ -2333,63 +2333,6 @@ n_by_d_class_dt <- function(prebas_out, d_class, max_d_class = 150, is_multiOut 
 
 # UTIL_WORKER -------------------------------------------------------------
 
-# dt = acc_run_table, lookup = country_codes. Provide vector of either country names or country codes.
-# Case insensitive
-filter_and_validate_by_country <- function(dt, lookup, countries = NA) {
-  dt_copy <- data.table::copy(dt)  # prevent accidental in-place edits
-  lookup_copy <- data.table::copy(lookup)
-  
-  
-  
-  # Standardize reference columns to lowercase for matching
-  lookup_copy[, country_lower := tolower(trimws(country))]
-  lookup_copy[, code_lower := tolower(trimws(Country_Code))]
-  dt_copy[, country_lower := tolower(trimws(country))]
-  
-  # If no countries provided, return original with NA column
-  if (is.na(countries)[1]) {
-    dt_copy[, country_code_str := NA_character_]
-    dt_copy[, country_lower := NULL]
-    
-    return(dt_copy)
-  }
-  
-  # Clean input countries
-  input_clean <- tolower(trimws(countries))
-  
-  # Step 1: Resolve input to lookup$country values
-  matched <- lookup_copy[code_lower %in% input_clean | country_lower %in% input_clean]
-  
-  if (nrow(matched) == 0) {
-    stop("None of the input countries/codes matched the lookup.")
-  }
-  
-  # Step 2: Ensure all provided values matched something
-  resolved_inputs <- tolower(c(matched$country, matched$Country_Code))
-  if (!all(input_clean %in% resolved_inputs)) {
-    missing <- setdiff(input_clean, resolved_inputs)
-    stop(sprintf("Unrecognized country/country code(s): %s", paste(missing, collapse = ", ")))
-  }
-  
-  # Step 3: Check that the resolved countries exist in dt
-  resolved_countries <- unique(matched$country_lower)
-  missing_in_dt <- setdiff(resolved_countries, unique(dt_copy$country_lower))
-  if (length(missing_in_dt) > 0) {
-    stop(sprintf("The following countries are not present in the data table: %s",
-                 paste(missing_in_dt, collapse = ", ")))
-  }
-  
-  # Step 4: Filter and annotate
-  filtered_dt <- dt_copy[country_lower %in% resolved_countries]
-  filtered_codes <- lookup_copy[country_lower %in% resolved_countries, Country_Code]
-  filtered_dt[, country_code_str := paste(sort(unique(filtered_codes)), collapse = "_")]
-  
-  # Remove helper column
-  filtered_dt[, country_lower := NULL]
-  
-  return(filtered_dt)
-}
-
 add_country_code_str_to_save_dir <- function(save_dir, country_code_str) {
   if(is.na(country_code_str)) {
     return(save_dir)
@@ -2398,3 +2341,124 @@ add_country_code_str_to_save_dir <- function(save_dir, country_code_str) {
   
   return(new_save_dir)
 }
+
+resolve_countries_from_lookup <- function(lookup, countries) {
+  if (is.na(countries)[1]) {
+    return(list(resolved = NULL, codes = NA_character_))
+  }
+  
+  lookup_copy <- data.table::copy(lookup)
+  lookup_copy[, country_lower := tolower(trimws(country))]
+  lookup_copy[, code_lower := tolower(trimws(Country_Code))]
+  
+  input_clean <- tolower(trimws(countries))
+  
+  matched <- lookup_copy[
+    code_lower %in% input_clean | country_lower %in% input_clean
+  ]
+  
+  if (nrow(matched) == 0) {
+    stop("None of the input countries/codes matched the lookup.")
+  }
+  
+  resolved_inputs <- tolower(c(matched$country, matched$Country_Code))
+  if (!all(input_clean %in% resolved_inputs)) {
+    missing <- setdiff(input_clean, resolved_inputs)
+    stop(sprintf("Unrecognized country/country code(s): %s", paste(missing, collapse = ", ")))
+  }
+  
+  list(
+    resolved = unique(matched$country_lower),
+    codes = sort(unique(matched$Country_Code)),
+    country_codes_str = paste(sort(unique(matched$Country_Code)), collapse = "_")
+  )
+}
+
+
+# UTIL_CONTROLLER ---------------------------------------------------------
+
+
+filter_and_validate_by_country <- function(dt, lookup, countries = NA) {
+  dt_copy <- data.table::copy(dt)
+  dt_copy[, country_lower := tolower(trimws(country))]
+  
+  res <- resolve_countries_from_lookup(lookup, countries)
+  
+  if (is.null(res$resolved)) {
+    dt_copy[, country_code_str := NA_character_]
+    dt_copy[, country_lower := NULL]
+    return(dt_copy)
+  }
+  
+  missing_in_dt <- setdiff(res$resolved, unique(dt_copy$country_lower))
+  if (length(missing_in_dt) > 0) {
+    stop(sprintf("The following countries are not present in the data table: %s",
+                 paste(missing_in_dt, collapse = ", ")))
+  }
+  
+  filtered_dt <- dt_copy[country_lower %in% res$resolved]
+  filtered_dt[, country_code_str := res$country_codes_str]
+  filtered_dt[, country_lower := NULL]
+  
+  return(filtered_dt)
+}
+
+
+# dt = acc_run_table, lookup = country_codes. Provide vector of either country names or country codes.
+# Case insensitive
+# filter_and_validate_by_country <- function(dt, lookup, countries = NA) {
+#   dt_copy <- data.table::copy(dt)  # prevent accidental in-place edits
+#   lookup_copy <- data.table::copy(lookup)
+# 
+# 
+# 
+#   # Standardize reference columns to lowercase for matching
+#   lookup_copy[, country_lower := tolower(trimws(country))]
+#   lookup_copy[, code_lower := tolower(trimws(Country_Code))]
+#   dt_copy[, country_lower := tolower(trimws(country))]
+# 
+#   # If no countries provided, return original with NA column
+#   if (is.na(countries)[1]) {
+#     dt_copy[, country_code_str := NA_character_]
+#     dt_copy[, country_lower := NULL]
+# 
+#     return(dt_copy)
+#   }
+# 
+#   # Clean input countries
+#   input_clean <- tolower(trimws(countries))
+# 
+#   # Step 1: Resolve input to lookup$country values
+#   matched <- lookup_copy[code_lower %in% input_clean | country_lower %in% input_clean]
+# 
+#   if (nrow(matched) == 0) {
+#     stop("None of the input countries/codes matched the lookup.")
+#   }
+# 
+#   # Step 2: Ensure all provided values matched something
+#   resolved_inputs <- tolower(c(matched$country, matched$Country_Code))
+#   if (!all(input_clean %in% resolved_inputs)) {
+#     missing <- setdiff(input_clean, resolved_inputs)
+#     stop(sprintf("Unrecognized country/country code(s): %s", paste(missing, collapse = ", ")))
+#   }
+# 
+#   # Step 3: Check that the resolved countries exist in dt
+#   resolved_countries <- unique(matched$country_lower)
+#   missing_in_dt <- setdiff(resolved_countries, unique(dt_copy$country_lower))
+#   if (length(missing_in_dt) > 0) {
+#     stop(sprintf("The following countries are not present in the data table: %s",
+#                  paste(missing_in_dt, collapse = ", ")))
+#   }
+# 
+#   # Step 4: Filter and annotate
+#   filtered_dt <- dt_copy[country_lower %in% resolved_countries]
+#   filtered_codes <- lookup_copy[country_lower %in% resolved_countries, Country_Code]
+#   filtered_dt[, country_code_str := paste(sort(unique(filtered_codes)), collapse = "_")]
+# 
+#   # Remove helper column
+#   filtered_dt[, country_lower := NULL]
+# 
+#   return(filtered_dt)
+# }
+
+

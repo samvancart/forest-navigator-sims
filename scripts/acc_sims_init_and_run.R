@@ -24,6 +24,7 @@ option_list <- list(
 parser <- OptionParser(option_list = option_list)
 args <- parse_args(parser)
 
+
 countries_arg <- args$countries
 countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
 countries <- trimws(countries)  # Remove spaces around items
