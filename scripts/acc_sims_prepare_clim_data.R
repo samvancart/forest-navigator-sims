@@ -29,11 +29,10 @@ print(paste0("Max array jobs: ", max_array_jobID))
 
 # GET_CLIM_PATHS ------------------------------------------------------------
 
-
-
+# TODO Check the use of this function
 all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
 
-
+fread(grid_file_path)
 
 # SPLIT_IDS ----------------------------------------------------------------
 

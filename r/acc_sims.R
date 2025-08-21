@@ -2374,6 +2374,34 @@ resolve_countries_from_lookup <- function(lookup, countries) {
   )
 }
 
+# TODO Check the use of this function
+get_acc_clim_paths_run_dt <- function(all_clim_paths, 
+                                      clim_scen_pat = "(?<=/)[^/]+(?=_id_)", 
+                                      plgid_pat = "(?<=plgid_)[0-9]+") {
+  
+  plgid_vec <- str_extract(all_clim_paths, plgid_pat)
+  clim_scen_vec <- str_extract(all_clim_paths, clim_scen_pat)
+  
+  dt <- data.table(path = all_clim_paths, PlgID = plgid_vec, clim_scen = clim_scen_vec)
+  return(dt)
+}
+
+# TODO Check the use of this function
+get_filtered_clim_paths_from_bucket <- function(grid_file_path, allas_opts, plgid_pat = "(?<=plgid_)[0-9]+") {
+  bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket, region = allas_opts$opts$region))$Key
+  plgid_vec <- unique(fread(grid_file_path)$PlgID)
+  clim_paths <- bucket_list[is_regex_match(bucket_list, plgid_pat, plgid_vec)]
+  
+  return(clim_paths)
+}
+
+
+# TODO Check the use of this function
+# Helper
+is_regex_match <- function(str_vec, regex_pat, compare_to_str) {
+  return(str_extract(str_vec, regex_pat) %in% compare_to_str)
+}
+
 
 # UTIL_CONTROLLER ---------------------------------------------------------
 
@@ -2460,5 +2488,6 @@ filter_and_validate_by_country <- function(dt, lookup, countries = NA) {
 # 
 #   return(filtered_dt)
 # }
+
 
 

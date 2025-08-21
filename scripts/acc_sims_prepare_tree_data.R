@@ -16,12 +16,14 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # GET_PATHS ----------------------------------------------------------------
 
 
-
 # Get PlgIDs to run from clim_paths
+
+# TODO Check the use of this function
 all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
+
+# TODO Check the use of this function
 all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
 plgid_vec <- as.integer(unique(all_paths_run_dt$PlgID))
-
 
 
 # RUN ---------------------------------------------------------------------

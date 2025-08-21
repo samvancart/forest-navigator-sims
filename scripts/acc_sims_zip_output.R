@@ -27,8 +27,6 @@ args <- parse_args(parser)
 
 assert_true(c("output_type") %in% names(args))
 
-args$countries <- "SE"
-
 countries_arg <- args$countries
 countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
 countries <- trimws(countries)  # Remove spaces around items
