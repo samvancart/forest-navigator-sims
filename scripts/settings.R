@@ -88,12 +88,34 @@ require(zoo)
 # LOAD_CONFIG --------------------------------------------------------------
 
 
-
-
-
 config_path <- paste0("config.yaml")
 
 # Load configuration file
 config <- yaml.load_file(config_path)
+
+
+# ALLAS ENV VARS ----------------------------------------------------------
+
+
+bucket <- Sys.getenv("AWS_BUCKET")
+region <- Sys.getenv("AWS_REGION")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
