@@ -94,7 +94,6 @@ output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_ta
                           recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
 
 
-
 # SAVE_TO_ALLAS -------------------------------------------------------------
 
 

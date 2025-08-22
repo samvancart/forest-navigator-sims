@@ -96,7 +96,10 @@ for (url in links) {
   cat("Downloading:", url, "\n")
   clean_url <- sub("\\?.*$", "", url)
   dest_file <- file.path(temp_download_dir, basename(clean_url))
-  download.file(url, destfile = dest_file, mode = "wb")
+  # download.file(url, destfile = dest_file, mode = "wb")
+  cmd <- sprintf("curl -L -C - --retry 5 --max-time 3600 -o '%s' '%s'", dest_file, url)
+  system(cmd)
+  
   
   # Unzip if it's a zip file
   if (grepl("\\.zip$", dest_file)) {
@@ -129,6 +132,9 @@ invisible(lapply(unzipped_files, function(file) {
   put_object(file = file, object = allas_path, bucket = bucket, multipart = TRUE, region = region)
   print("Done.")
 }))
+
+cat("\n")
+print("All done.")
 
 
 
