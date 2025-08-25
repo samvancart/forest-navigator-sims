@@ -1,7 +1,7 @@
 # This script is for downloading data directly into Allas storage via Accelerator
 # download links. If the file is a zip archive then it will be unzipped and only 
 # the inflated files will be transferred. 
-# USE: Pass a directory as parameter else default_dir will be used (section PARSE ARGS).
+# USE: Pass a directory as parameter else default_input_dir will be used (section PARSE ARGS).
 # All txt files containing the download links in the specified directory will be downloaded,
 # 1 txt file/array job.
 # NAMING OF FILES: Files should be named like this: eg. download-file-1_name.txt.
@@ -19,12 +19,12 @@ source('scripts/settings.R')
 # PARSE ARGS --------------------------------------------------------------
 
 
-default_dir  <- "data/acc/input/simulation_sites_200/raw/climate/all_1km"
+default_input_dir  <- "data/acc/input/simulation_sites_1km/raw/tree_data/"
 
 # Define command-line options
 option_list <- list(
-  make_option(c("-d", "--dir"), type = "character", default = default_dir,
-              help = paste("Path to folder containing .txt files [default:", default_dir, "]"), metavar = "character"),
+  make_option(c("-d", "--dir"), type = "character", default = default_input_dir,
+              help = paste("Path to folder containing .txt files [default:", default_input_dir, "]"), metavar = "character"),
   
   make_option(c("-a", "--array_id"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID", unset = 1)), 
               help="SLURM array job ID [default: %default]"),
@@ -72,6 +72,7 @@ target_file <- txt_files[args$array_id]
 cat("Processing file:", target_file, "\n")
 
 target_file_name <- unlist(tstrsplit(basename(target_file), split = "[_.]", keep = 2))
+cat("File name:", target_file_name, "\n")
 
 
 # CREATE DIRS IN TEMPDIR --------------------------------------------------

@@ -47,7 +47,7 @@ aaa_file <- list.files(file.path(boku_tree_data_path, "aaa"),
                        recursive = T)
 
 assert_file_exists(aaa_file)
-aaa_all <- fread(aaa_file)
+aaa_all <- fread(aaa_file) # This is actually the filtered AAA. The aaa_1km file in acc_preprocess_1_aaa.R is the original. 
 
 
 
