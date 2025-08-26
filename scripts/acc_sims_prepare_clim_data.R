@@ -16,16 +16,6 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
-# TEST --------------------------------------------------------------------
-
-
-data_prefix <- file.path("input/simulation_sites_1km/gwl4/")
-
-# Get keys
-data_keys_dt <- setnames(as.data.table(list_all_objects_in_bucket(only_keys = T, bucket = bucket, prefix = data_prefix, region = region)), "Key")
-
-
 # ARRAY_JOB_PARAMS ----------------------------------------------------------
 
 array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
@@ -42,6 +32,7 @@ print(paste0("Max array jobs: ", max_array_jobID))
 # TODO Check the use of this function
 all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
 
+fread(grid_file_path)
 
 # SPLIT_IDS ----------------------------------------------------------------
 
@@ -79,7 +70,6 @@ print(clim_paths)
 
 
 
-
 # RUN ---------------------------------------------------------------------
 
 
@@ -113,14 +103,6 @@ clim_acc_init_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
 invisible(lapply(clim_acc_init_obj_list, function(obj) {
   create_dir_and_save_acc_obj(obj, base_path = clean_data_base_path, test = F, ext = ".rds")
 }))
-
-
-
-
-
-
-
-
 
 
 

@@ -679,7 +679,7 @@ add_acc_co2 <- function(clim_dt, name, config) {
 
 
 
-#' Get Accumulated Initial Climate Object
+#' Get Acc Initial Climate Object
 #'
 #' This function processes a climate data path and a tree data file to create an initial climate data object.
 #'

@@ -1,13 +1,14 @@
 # This script is for downloading data directly into Allas storage via Accelerator
 # download links. If the file is a zip archive then it will be unzipped and only 
 # the inflated files will be transferred. 
-# USE: Pass a directory as parameter else default_input_dir will be used (section PARSE ARGS).
+# USE: Define a directory path (section INPUT PATH).
 # All txt files containing the download links in the specified directory will be downloaded,
 # 1 txt file/array job.
 # NAMING OF FILES: Files should be named like this: eg. download-file-1_name.txt.
 # So the separator should be something other than an underscore except for the last
 # separator. The text between the underscore (last separator) and the dot before the file extension
-# will be used as the "folder name" in Allas.
+# will be used as the "folder name" in Allas. This "folder name" may include separators as
+# long as they are not underscores.
 
 
 # LOAD LIBS ---------------------------------------------------------------
@@ -16,52 +17,16 @@
 source('scripts/settings.R')
 
 
-# PARSE ARGS --------------------------------------------------------------
+# INPUT DIR ---------------------------------------------------------------
 
 
-default_input_dir  <- "data/acc/input/simulation_sites_1km/raw/tree_data/"
-
-# Define command-line options
-option_list <- list(
-  make_option(c("-d", "--dir"), type = "character", default = default_input_dir,
-              help = paste("Path to folder containing .txt files [default:", default_input_dir, "]"), metavar = "character"),
-  
-  make_option(c("-a", "--array_id"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID", unset = 1)), 
-              help="SLURM array job ID [default: %default]"),
-  
-  make_option(c("-c", "--array_count"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_COUNT", unset = 1)),
-              help="Total number of array jobs [default: %default]")
-)
-
-# Parse options
-parser <- OptionParser(option_list = option_list)
-args <- parse_args(parser)
-
-# Expand ~ to full path
-args$dir <- path.expand(args$dir)
-
-
-if (!dir.exists(args$dir)) {
-  stop(paste("Directory does not exist:", args$dir))
-}
-
-
-if (is.null(args$array_id)) {
-  stop("Please provide --array_id to select which .txt file to process.")
-}
-
-print("Dir:")
-print(args$dir)
-print("Array id:")
-print(args$array_id)
-print("Max arrays:")
-print(args$array_count)
+input_dir  <- "data/acc/input/simulation_sites_1km/raw/tree_data/"
 
 
 # CHOOSE FILE -------------------------------------------------------------
 
 
-txt_files <- list.files(args$dir, pattern = "\\.txt$", full.names = TRUE)
+txt_files <- list.files(input_dir, pattern = "\\.txt$", full.names = TRUE)
 
 if (args$array_id < 1 || args$array_id > length(txt_files)) {
   stop(paste("Invalid array_id:", args$array_id, "- must be between 1 and", length(txt_files)))

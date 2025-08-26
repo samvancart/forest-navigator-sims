@@ -1,4 +1,7 @@
-# TODO This script is for 
+# This script is for pre-processing the BOKU AAA and init forest type files.
+# The selection file (IDs lookup) is also modified by adding a BOKU_ID column to it.
+# All data should first be downloaded into Allas (eg. by running acc_download_links_to_allas.R).
+# The necessary init files are filtered and written into a separate folder in Allas.
 
 
 # SOURCE_FILES ------------------------------------------------------------
@@ -6,7 +9,6 @@
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
-
 
 
 # LOAD_AAA_FROM_ALLAS -----------------------------------------------------
@@ -34,7 +36,7 @@ aaa_filtered <- merge(aaa_1km, sel_bokuID, by.x = "cell", by.y = "BOKU_ID")
 
 length(unique(aaa_filtered$PlgID))
 
-aaa_filtered[!complete.cases(aaa_filtered)]
+aaa_filtered[!complete.cases(aaa_filtered)] # Hopefully empty
 
 
 # FILTER_SELECTION_FILE ---------------------------------------------------
@@ -42,7 +44,6 @@ aaa_filtered[!complete.cases(aaa_filtered)]
 
 filtered_sel <- sel_bokuID[BOKU_ID %in% aaa_filtered$cell]
 filtered_sel10 <- merge(filtered_sel, aaa_filtered[, c("cell", "cell_300arcsec")], by.x = "BOKU_ID", by.y = "cell")
-
 
 
 # LOAD_INIT_FILES_FROM_ALLAS ----------------------------------------------
@@ -55,17 +56,35 @@ init_keys_dt <- setnames(as.data.table(list_all_objects_in_bucket(only_keys = T,
 
 
 init_files_filtered <- unique(aaa_filtered$InitFileID)
-init_filenames <- file.path(init_files_prefix, paste0(init_files_filtered, "_01.csv"))
+init_filenames <- paste0(init_files_prefix, init_files_filtered, "_01.csv")
 
-# REMOVE UNNECESSARY INIT_FILES
+# Filter files
 all_init_files <- init_keys_dt$Key
-del_init_files <- all_init_files[!all_init_files %in% init_filenames]
+del_init_files <- all_init_files[!basename(all_init_files) %in% basename(init_filenames)]
 
-delete_object(object = del_init_files, bucket = bucket, region = region)
+# If you want to delete (slow) then do so in a batch job.
+# delete_object(object = del_init_files, bucket = bucket, region = region)
 
 
+# SAVE TO ALLAS -----------------------------------------------------------
 
 
+# Save the required files into a new path.
+
+# TODO simsites as var
+allas_basepath <- file.path("input", "simulation_sites_1km", "initFiles-1km-filtered")
+
+invisible(lapply(init_filenames, function(file) {
+  allas_path <- file.path(allas_basepath, basename(file))
+  print(paste0("Reading ", file, "..."))
+  x <- s3read_using(FUN = fread, object = file, bucket = bucket, opts = list(region = region))
+  print(paste0("Saving ", allas_path, " to Allas..."))
+  s3write_using(x = x, FUN = fwrite, object = allas_path, bucket = bucket, opts = list(region = region))
+  print("Done.")
+}))
+
+cat("\n")
+print("All done.")
 
 
 
