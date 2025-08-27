@@ -31,8 +31,10 @@ bokuIDs <- fread("data/acc/docs/boku_id_map_1km.csv")
 
 sel_bokuID <- merge(sel, bokuIDs[, c("PlgID_05", "BOKU_ID")], by = "PlgID_05")
 
-
 aaa_filtered <- merge(aaa_1km, sel_bokuID, by.x = "cell", by.y = "BOKU_ID")
+
+# Save the file if necessary
+# fwrite(aaa_filtered, "data/acc/input/simulation_sites_200/raw/tree_data/aaa/AAA_cell1kmForestTypeList_filtered_1.csv")
 
 length(unique(aaa_filtered$PlgID))
 
