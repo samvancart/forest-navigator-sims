@@ -11,7 +11,8 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-# CHOOSE CLIMATE SCENARIO -------------------------------------------------
+
+# DEFINE CLIMATE SCENARIOS ------------------------------------------------
 
 
 clim_names <- c("detrended", "gwl2", "gwl3", "gwl4")
