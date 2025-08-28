@@ -32,7 +32,8 @@ data_keys_dt <- rbindlist(lapply(data_prefixes, function(data_prefix) {
 }))
 
 
-# CREATE PLGID AND CLIM_SCEN  COLS ----------------------------------------
+
+# CREATE PLGID AND CLIM_SCEN COLS -----------------------------------------
 
 
 data_keys_dt[, PlgID := as.integer(unlist(tstrsplit(basename(Key), split = "[_.]", keep = 5)))]
