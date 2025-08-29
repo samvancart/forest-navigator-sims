@@ -93,6 +93,9 @@ speciesID_lookup_combined <- rbind(speciesID_lookup_swe, missing_speciesID_fm_lo
 sim_sites_200_species_lookup <- merge(filtered_species_codes_lookup_dt, speciesID_lookup_combined, by = "latin_name")
 
 
+speciesID_lookup_combined_path <- "data/acc/docs/species/latin-name-to-prebas-speciesID_lookup.csv"
+fwrite(speciesID_lookup_combined, file = speciesID_lookup_combined_path)
+
 # fwrite(sim_sites_200_species_lookup, file = "data/acc/docs/sim_sites_200_species_codes_lookup.csv")
 
 
