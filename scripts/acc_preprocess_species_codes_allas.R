@@ -41,7 +41,6 @@ species_codes_list <- lapply(seq(data_keys_dt$Key), function(i) {
   append(species_codes_list, species_codes)
 })
 
-
 unique_species_codes <- unique(unlist(species_codes_list))
 
 # unique_species_codes <- fread("data/acc/docs/species_codes_1km.csv")$code
