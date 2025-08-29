@@ -43,7 +43,7 @@ species_codes_list <- lapply(seq(data_keys_dt$Key), function(i) {
 
 unique_species_codes <- unique(unlist(species_codes_list))
 
-# unique_species_codes <- fread("data/acc/docs/species_codes_1km.csv")$code
+unique_species_codes <- fread("data/acc/docs/species_codes_1km.csv")$code
 
 
 # FILTER ------------------------------------------------------------------
@@ -51,8 +51,8 @@ unique_species_codes <- unique(unlist(species_codes_list))
 
 # Filter the table with all BOKU species codes and latin names etc. by the codes.
 
-species_codes_lookup_path <- "data/acc/docs/new_species_codes_consistent_CHO_2024-05-21.csv"
-species_codes_lookup_dt <- fread(species_codes_lookup_path)
+species_codes_lookup_path_all <- "data/acc/docs/new_species_codes_consistent_CHO_2024-05-21.csv"
+species_codes_lookup_dt <- fread(species_codes_lookup_path_all)
 
 filtered_species_codes_lookup_dt <- species_codes_lookup_dt[which(code %in% unique_species_codes)]
 
@@ -95,17 +95,10 @@ final_species_lookup <- merge(filtered_species_codes_lookup_dt, species_db, by =
 
 # SAVE --------------------------------------------------------------------
 
-# TODO Save to correct location with correct name
-final_species_lookup_path <- "data/acc/docs/species_codes_lookup_1km.csv"
-print(paste0("Saving to ", final_species_lookup_path, "..."))
-fwrite(final_species_lookup, file = final_species_lookup_path)
+
+print(paste0("Saving to ", species_codes_lookup_path, "..."))
+fwrite(final_species_lookup, file = species_codes_lookup_path)
 print("Done")
-
-
-
-
-
-
 
 
 
