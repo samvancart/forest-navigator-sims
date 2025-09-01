@@ -738,6 +738,137 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
 }
 
 
+# MULTI-INIT-VAR_WORKER ---------------------------------------------------
+
+
+#' Process a Subset of Data
+#'
+#' This function processes a subset of data based on the given index and number of layers.
+#' It extracts specific columns and ensures that the number of layers does not exceed the subset's length.
+#'
+#' @param subset A data frame containing the subset of data to process.
+#' @param i An integer representing the index of the subset to process.
+#' @param nLayers A numeric vector specifying the number of layers for each subset.
+#' @param col_names A list of character strings specifying the column names in the subset. 
+#' Default is a list with elements "speciesID", "Age", "Height", "Dbh", and "basal_area".
+#'
+#' @return A list containing the processed data for the specified subset.
+#' @import checkmate
+#' @examples
+#' subset <- data.frame(
+#'   speciesID = 1:10,
+#'   Age = 11:20,
+#'   Height = 21:30,
+#'   Dbh = 31:40,
+#'   basal_area = 41:50
+#' )
+#' nLayers <- c(5, 6, 7, 8, 9, 10)
+#' col_names <- list(
+#'   speciesID = "speciesID",
+#'   Age = "Age",
+#'   Height = "Height",
+#'   Dbh = "Dbh",
+#'   basal_area = "basal_area"
+#' )
+#' result <- process_subset(subset, 1, nLayers, col_names)
+#' print(result)
+process_subset <- function(subset, i, nLayers, col_names = list(
+  speciesID = "speciesID",
+  Age = "Age",
+  Height = "Height",
+  Dbh = "Dbh",
+  basal_area = "basal_area"
+)) {
+  
+  # Validate inputs
+  assert_data_frame(subset, min.rows = 1, col.names = "strict")
+  assert_integerish(i, lower = 1, upper = length(nLayers), any.missing = FALSE, len = 1)
+  assert_numeric(nLayers, lower = 1, len = length(nLayers), any.missing = FALSE)
+  assert_list(col_names, types = "character", len = 5, any.missing = FALSE)
+  assert_names(names(col_names), must.include = c("speciesID", "Age", "Height", "Dbh", "basal_area"))
+  assert_names(names(subset), must.include = unlist(col_names))
+  
+  # Ensure nLayers is within the valid range
+  nLayers_i <- min(nLayers[i], nrow(subset))
+  
+  # Extract the specified columns using the provided or default column names
+  result <- list(
+    speciesID = head(subset[[col_names$speciesID]], nLayers_i),
+    Age = head(subset[[col_names$Age]], nLayers_i),
+    Height = head(subset[[col_names$Height]], nLayers_i),
+    Dbh = head(subset[[col_names$Dbh]], nLayers_i),
+    basal_area = head(subset[[col_names$basal_area]], nLayers_i),
+    NA_values = rep(NA, nLayers_i)
+  )
+  
+  return(result)
+}
+
+
+#' Create multiInitVar for Layers
+#'
+#' This function creates a multiInitVar array for layers based on the provided data file path and group/species identifiers.
+#'
+#' @param dt_path A string representing the path to the R data file.
+#' @param group_id_name A string representing the name of the group ID column in the data.
+#' @param species_id_name A string representing the name of the species ID column in the data.
+#' @param ... Additional arguments passed to the process_subset function.
+#'
+#' @return A 3-dimensional array containing the multiInitVar data.
+#' @import checkmate
+#' @examples
+#' # Example usage
+#' multiInitVar <- create_multiInitVar_for_layers("path/to/data.RData", "groupID", "speciesID")
+create_multiInitVar_for_layers <- function(dt_path, group_id_name, species_id_name, ...) {
+  
+  # Validate inputs
+  assert_character(dt_path, any.missing = FALSE, len = 1)
+  assert_file_exists(dt_path)
+  assert_character(group_id_name, any.missing = FALSE, len = 1)
+  assert_character(species_id_name, any.missing = FALSE, len = 1)
+  
+  # Load the data
+  dt <- loadRDataFile(dt_path)
+  
+  # Validate the loaded data
+  assert_data_frame(dt, min.rows = 1, col.names = "strict")
+  assert_names(names(dt), must.include = c(group_id_name, species_id_name))
+  
+  nSites <- length(unique(dt[[group_id_name]]))
+  nLayers <- dt[, .N, by = c(group_id_name)]$N
+  nSpecies <- dt[, .N, by = c(group_id_name, species_id_name)][, .N, by = c(group_id_name)]$N
+  maxNlayers <- max(nLayers)
+  
+  # Initialize the multiInitVar array
+  multiInitVar <- array(0, dim=c(nSites, 7, maxNlayers))
+  multiInitVar[,6:7,] <- multiInitVar[,6:7,NA]
+  
+  print(paste0("Creating multiInitVar for ", nSites, " sites with max ", maxNlayers, " layers..."))
+  
+  system.time({
+    # Split the data.table by groupID
+    split_data <- split(dt, by = group_id_name)
+    
+    # Apply the process_subset function to each subset
+    results <- lapply(seq_along(split_data), function(i) process_subset(split_data[[i]], i, nLayers, ...))
+    
+    # Fill matrix with the values
+    for (i in seq_along(results)) {
+      multiInitVar[i, 1, 1:nLayers[i]] <- results[[i]]$speciesID # vector of species ID taken from data
+      multiInitVar[i, 2, 1:nLayers[i]] <- results[[i]]$Age # age by tree from NFI
+      multiInitVar[i, 3, 1:nLayers[i]] <- results[[i]]$Height # height from NFI data
+      multiInitVar[i, 4, 1:nLayers[i]] <- results[[i]]$Dbh # dbh from NFI data
+      multiInitVar[i, 5, 1:nLayers[i]] <- results[[i]]$basal_area # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
+      multiInitVar[i, 6, 1:nLayers[i]] <- results[[i]]$NA_values
+    }
+  })
+  
+  print("Done.")
+  
+  return(multiInitVar)
+}
+
+
 # MULTI-INIT-VAR_CONTROLLER -------------------------------------------------
 
 
