@@ -302,7 +302,7 @@ create_acc_clustered_tree_data <- function(acc_input_obj) {
     
     # Validations
     required_names <- c(
-      "process_treedata_files_args", 
+      "process_treedata_files_args",
       "assign_and_merge_args", 
       "perform_clustering_by_group_args",
       "aaa_split_col",
