@@ -89,7 +89,7 @@ if(nrow(missing_speciesID) > 0) {
 
 # CREATE FINAL LOOKUP -----------------------------------------------------
 
-
+# TODO Add required columns!!!  "speciesID"           "species_code"        "prebas_species_name" "prebas_latin_name"   "prebas_species_code"
 final_species_lookup <- merge(filtered_species_codes_lookup_dt, species_db, by = "latin_name")
 
 
