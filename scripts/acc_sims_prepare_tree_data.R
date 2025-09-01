@@ -15,7 +15,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # When load_initFiles_to_temp=TRUE all required initFiles that are stored in Allas
 # will be loaded into a temporary directory prior to processing.
 
-load_initFiles_to_temp <- TRUE 
+load_initFiles_to_temp <- TRUE
 
 
 # DEFINE CLIMATE SCENARIOS ------------------------------------------------
@@ -43,9 +43,6 @@ data_keys_dt[, clim_scen := tstrsplit(basename(Key), split = "[_.]", keep = 1)]
 
 plgid_vec <- unique(data_keys_dt$PlgID)
 
-plgid_vec <- plgid_vec[1]
-
-
 
 # LOAD INIT FILES INTO TEMPDIR --------------------------------------------
 
@@ -59,11 +56,11 @@ init_files_path_base <- process_treedata_files_args$init_files_path
 init_files_path_temp <- file.path(tempdir(), init_files_path_base)
 process_treedata_files_args$init_files_path <- init_files_path_temp # Make temp path the default
 
-lapply(init_keys_dt$Key[1], function(key) {
+invisible(lapply(init_keys_dt$Key, function(key) {
   temp_path <- file.path(init_files_path_temp, basename(key))
   print(temp_path)
   save_object(object = key, bucket = bucket, file = temp_path, region = region)
-})
+}))
 
 
 # CREATE ACC_OBJECT -------------------------------------------------------
@@ -98,6 +95,7 @@ rm_init_files_path <- file.path(tempdir(), rm_init_files_dir)
 unlink(rm_init_files_path, recursive = TRUE)
 
 list.files(tempdir())
+
 
 # MODIFY_ACC-OBJ_NAME --------------------------------------------------------
 
