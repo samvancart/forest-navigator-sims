@@ -3,7 +3,6 @@
 # done in a terminal using accli, after which the local files should be deleted.
 
 
-
 # SOURCE_FILES -------------------------------------------------------------
 
 
@@ -11,9 +10,7 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
 # DEFINE_FILES_TO_UPLOAD ----------------------------------------------------------------
-
 
 
 allas_zipfiles_prefix <- file.path("output", simulation_site, "zip")
@@ -26,7 +23,6 @@ bucket_list <- as.data.table(get_bucket_df(bucket = allas_opts$bucket,
 
 # Select files to upload from bucket_list
 upload_files <- bucket_list
-
 
 
 # GET_FILES_TO_UPLOAD --------------------------------------------------------
