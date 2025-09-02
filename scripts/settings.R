@@ -110,7 +110,12 @@ option_list <- list(
               help="SLURM array job ID [default: %default]"),
   
   make_option(c("-c", "--array_count"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_COUNT", unset = 1)),
-              help="Total number of array jobs [default: %default]")
+              help="Total number of array jobs [default: %default]"),
+  
+  make_option(c("-c", "--countries"), type = "character", default = NA,
+              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')"),
+  
+  make_option(c("-o", "--output_type"), type = "character", default = "output_files", help = "output file type either output_files or dbh_classes.")
 )
 
 # Parse options
@@ -121,7 +126,10 @@ print("Array id:")
 print(args$array_id)
 print("Max arrays:")
 print(args$array_count)
-
+print("countries:")
+print(args$countries)
+print("output type:")
+print(args$output_type)
 
 
 

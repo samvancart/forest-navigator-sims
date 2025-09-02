@@ -15,18 +15,9 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # PARSE_ARGS --------------------------------------------------------------
 
 
-zip_option_list <- list(
-  make_option(c("-c", "--countries"), type = "character", default = NA,
-              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')"),
-  make_option(c("-o", "--output_type"), type = "character", default = "output_files", help = "output file type either output_files or dbh_classes.")
-)
+assert_true(c("output_type") %in% names(args))
 
-parser <- OptionParser(option_list = zip_option_list)
-zip_args <- parse_args(parser)
-
-assert_true(c("output_type") %in% names(zip_args))
-
-countries_arg <- zip_args$countries
+countries_arg <- args$countries
 countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
 countries <- trimws(countries)  # Remove spaces around items
 
@@ -34,7 +25,7 @@ resolved_country_codes <- resolve_countries_from_lookup(lookup = country_codes, 
 res_country_codes_str <- resolved_country_codes$country_codes_str
 country_codes_str <- ifelse(is.null(res_country_codes_str), "", res_country_codes_str)
 
-output_file <- file.path(zip_args$output_type, country_codes_str)
+output_file <- file.path(args$output_type, country_codes_str)
 
 print("country_codes_str")
 print(country_codes_str)

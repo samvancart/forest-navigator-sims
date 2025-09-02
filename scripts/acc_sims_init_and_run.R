@@ -17,16 +17,7 @@ source(config$PATH_acc_sims_prepare_init_settings)
 # PARSE_ARGS --------------------------------------------------------------
 
 
-init_option_list <- list(
-  make_option(c("-c", "--countries"), type = "character", default = NA,
-              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')")
-)
-
-parser <- OptionParser(option_list = init_option_list)
-init_args <- parse_args(parser)
-
-
-countries_arg <- init_args$countries
+countries_arg <- args$countries
 countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
 countries <- trimws(countries)  # Remove spaces around items
 
@@ -113,6 +104,7 @@ invisible(lapply(output_obj_list, function(item) {
 
 # acc_run_test <- acc_run_tables_list[[100]][1,]
 # 
+# acc_run_test[, country_code_str := "FI"]
 # 
 # acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
 # 

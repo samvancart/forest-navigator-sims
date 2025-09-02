@@ -89,8 +89,12 @@ if(nrow(missing_speciesID) > 0) {
 
 # CREATE FINAL LOOKUP -----------------------------------------------------
 
-# TODO Add required columns!!!  "speciesID"           "species_code"        "prebas_species_name" "prebas_latin_name"   "prebas_species_code"
-final_species_lookup <- merge(filtered_species_codes_lookup_dt, species_db, by = "latin_name")
+
+merged_species_lookup <- merge(filtered_species_codes_lookup_dt, species_db, by = "latin_name")
+
+prebas_lookup_vars_dt <- get_prebas_species_codes_from_pCROB(pCROB) # Make sure Rprebasso is loaded
+
+final_species_lookup <- merge(merged_species_lookup, prebas_lookup_vars_dt, by = "speciesID") # Add prebas names and codes
 
 
 # SAVE --------------------------------------------------------------------
