@@ -420,7 +420,7 @@ dclass_save_dir <- "dbh_classes"
 
 # MAN PATHS ---------------------------------------------------------------
 
-sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-01-2400325_fdf.csv"
+sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv"
 
 man_paths_list <- list(Sweden = sweden_man_path)
 

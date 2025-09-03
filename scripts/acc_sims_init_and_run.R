@@ -102,14 +102,31 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
-# acc_run_test <- acc_run_tables_list[[100]][1,]
-# 
-# acc_run_test[, country_code_str := "FI"]
-# 
-# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-# 
-# 
-# acc_output_obj[[1]]$data
+
+
+acc_run_test <- acc_run_tables_list[[1]][1,]
+
+acc_run_test[, country_code_str := "FI"]
+
+acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+
+acc_output_obj[[1]]$data
+
+# TEST IN LOOP
+a_ids <- unique(run_dt[1:54,]$plgid)
+run_dt_test <- run_dt[!duplicated(plgid) & country == "Sweden"]
+
+
+acc_run_test <- run_dt_test[plgid==8275310]
+
+
+acc_run_tables_list_test <- split(run_dt, by = c("plgid"))
+
+for(i in seq(length(acc_run_tables_list_test))) {
+  acc_run_test <- acc_run_tables_list[[i]]
+  acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+}
+
 
 
 

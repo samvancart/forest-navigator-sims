@@ -1427,6 +1427,9 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
                                                 man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
   
   if(!country %in% names(man_paths_list)) {
+    if(!country %in% c("Finland")) {
+      warning(paste0("No management file found for ", country, "! Returning initPrebas."))
+    }
     return(initPrebas)
   }
   

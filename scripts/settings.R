@@ -106,13 +106,13 @@ region <- Sys.getenv("AWS_REGION")
 
 # Define command-line options
 option_list <- list(
-  make_option(c("-a", "--array_id"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID", unset = 1)), 
+  make_option(c("--array_id"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_ID", unset = 1)), 
               help="SLURM array job ID [default: %default]"),
   
-  make_option(c("-c", "--array_count"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_COUNT", unset = 1)),
+  make_option(c("--array_count"), type="integer", default=as.integer(Sys.getenv("SLURM_ARRAY_TASK_COUNT", unset = 1)),
               help="Total number of array jobs [default: %default]"),
   
-  make_option(c("-c", "--countries"), type = "character", default = NA,
+  make_option(c("c", "--countries"), type = "character", default = NA,
               help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')"),
   
   make_option(c("-o", "--output_type"), type = "character", default = "output_files", help = "output file type either output_files or dbh_classes.")
