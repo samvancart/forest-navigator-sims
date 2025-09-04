@@ -108,6 +108,7 @@ invisible(lapply(output_obj_list, function(item) {
 # 
 # acc_run_test[, country_code_str := "FI"]
 # 
+# acc_run_test <- run_dt[country=="Sweden"][88,]
 # acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
 # 
 # acc_output_obj[[1]]$data

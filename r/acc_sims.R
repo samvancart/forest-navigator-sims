@@ -1444,8 +1444,26 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
   
   forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
   
-  initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
-                                             country = country, management = man_scen)
+  # initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
+  #                                            country = country, management = man_scen)
+  
+  initPrebas_man <- tryCatch({
+    forest_management_update(
+      initPrebas = initPrebas,
+      forest_type_management_tab = forest_type_management_tab,
+      country = country,
+      management = man_scen
+    )
+  }, warning = function(w) {
+    message("Warning during forest_management_update: ", conditionMessage(w))
+    NULL  # or handle differently
+  }, error = function(e) {
+    message("Error during forest_management_update: ", conditionMessage(e))
+    NULL  # or handle differently
+  }, finally = {
+    message(paste0("Attempted forest_management_update execution for ", country,"."))
+  })
+  
   
   return(initPrebas_man)
   
