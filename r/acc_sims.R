@@ -609,7 +609,7 @@ get_dcast_matrices_list_from_dt <- function(dt,
   # Create list of matrices
   dcast_matrices <- lapply(var_cols, function(x) {
     formula <- dcast_formula
-    dcast_dt <- as.matrix(dcast(dt, formula, value.var = x))
+    dcast_dt <- as.matrix(dcast(dt, formula, value.var = x, fill = NA))
   })
   
   print(paste0("Adding suffix_str ", "'", suffix_str, "'", " to dt names."))

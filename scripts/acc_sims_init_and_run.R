@@ -57,19 +57,38 @@ run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 
 acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
+acc_run_tables_list[26]
+
 
 # RUN ---------------------------------------------------------------------
 
 
-output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
-                                                        FUN = acc_run_table_controller,
-                                                        FUN_args = list(paths = produce_output_paths,
-                                                                        FUN = produce_acc_output_obj,
-                                                                        start_year = start_year,
-                                                                        test_run = F),
-                                                        cores = cores,
-                                                        type = type)), recursive = F),
-                          recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
+# output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
+#                                                         FUN = acc_run_table_controller,
+#                                                         FUN_args = list(paths = produce_output_paths,
+#                                                                         FUN = produce_acc_output_obj,
+#                                                                         start_year = start_year,
+#                                                                         test_run = F),
+#                                                         cores = cores,
+#                                                         type = type)), recursive = F),
+#                           recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
+
+# No unlisting
+output_obj_list <- do.call(get_in_parallel, list(data = acc_run_tables_list,
+                                                               FUN = acc_run_table_controller,
+                                                               FUN_args = list(paths = produce_output_paths,
+                                                                               FUN = produce_acc_output_obj,
+                                                                               start_year = start_year,
+                                                                               test_run = F),
+                                                               cores = cores,
+                                                               type = type))
+
+
+# UNLIST ------------------------------------------------------------------
+
+
+print("Runs completed, unlisting...")
+output_obj_list <- unlist(unlist(output_obj_list, recursive = F), recursive = F)
 
 
 # SAVE_TO_ALLAS -------------------------------------------------------------
@@ -103,13 +122,14 @@ invisible(lapply(output_obj_list, function(item) {
 #### TEST ##########
 
 
-
+# 
 # acc_run_test <- acc_run_tables_list[[1]][1,]
 # 
 # acc_run_test[, country_code_str := "FI"]
 # 
-# acc_run_test <- run_dt[country=="Sweden"][88,]
+# acc_run_test <- run_dt[26,]
 # acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
 # 
 # acc_output_obj[[1]]$data
 # 
