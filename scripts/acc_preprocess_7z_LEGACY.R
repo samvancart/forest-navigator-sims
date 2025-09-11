@@ -1,3 +1,7 @@
+# LEGACY CODE
+
+# TODO Adapt for Allas storage if necessary
+
 # This script is for unzipping .7z files downloaded from the accelerator db.
 # The files are extracted into the "unzipped" folder.
 

@@ -1,3 +1,5 @@
+# This script checks the length of the tas variable in climate data tables to 
+# find possible inconsistencies in the numbers of rows in the tables.
 
 
 # SOURCE_FILES -------------------------------------------------------------

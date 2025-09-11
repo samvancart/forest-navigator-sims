@@ -2,7 +2,7 @@
 # The selection file (IDs lookup) is also modified by adding a BOKU_ID column to it.
 # All data should first be downloaded into Allas (eg. by running acc_download_links_to_allas.R).
 # The necessary init files are filtered and written into a separate folder in Allas.
-
+# CHECK PATHS (aaa_prefix etc.) BEFORE RUNNING
 
 # SOURCE_FILES ------------------------------------------------------------
 

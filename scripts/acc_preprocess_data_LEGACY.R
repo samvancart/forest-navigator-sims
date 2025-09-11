@@ -1,3 +1,5 @@
+# LEGACY CODE
+
 # Code for filtering AAA file, creating species code lookup
 
 

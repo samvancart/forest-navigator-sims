@@ -1,8 +1,9 @@
-
 # This script contains the general settings for the acc sims.
 # All required sources, paths and variables should be stored here.
 
+
 # SOURCE_FILES -------------------------------------------------------------
+
 
 source("r/acc_sims.R")
 source("r/clusters_dt.R")
@@ -14,12 +15,14 @@ source('./r/multiSite.R')
 
 # SIM-SITES_VARS ----------------------------------------------------------
 
+
 simulation_sites <- c("simulation_sites_200", "test_sites")
 simulation_site_id <- 1
 simulation_site <- simulation_sites[simulation_site_id]
 
 
 # ALLAS_OPTS ---------------------------------------------------------------
+
 
 # Allas
 bucket_name <- "2000994-forest_navigator"
@@ -62,14 +65,11 @@ init_file_col <- c("InitFileID", "InitFileName")[simulation_site_id]
 # CLEAN_DATA_PATH -----------------------------------------------------------
 
 
-
 # Cleaned data path
 clean_data_base_path <- file.path("data/acc/input", simulation_site, "clean")
 
 
-
 # SPECIES_LOOKUP_VARS -----------------------------------------------------------
-
 
 
 # Get species codes lookup
@@ -88,8 +88,8 @@ species_lookup <- fread(species_codes_lookup_path)
 # species_lookup_prebas <- merge(species_lookup, prebas_species_lookup, by = "speciesID")
 
 
-
 # COUNTRY_CODES_VARS -------------------------------------------------------
+
 
 # Create the data.table with European countries and their 2-letter codes
 country_codes <- data.table(
@@ -97,6 +97,8 @@ country_codes <- data.table(
   country = c("Albania", "Andorra", "Armenia", "Austria", "Azerbaijan", "Belarus", "Belgium", "Bosnia and Herzegovina", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Georgia", "Germany", "Greece", "Hungary", "Iceland", "Ireland", "Italy", "Kazakhstan", "Kosovo", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "Malta", "Moldova", "Monaco", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland", "Portugal", "Romania", "Russia", "San Marino", "Serbia", "Slovakia", "Slovenia", "Spain", "Sweden", "Switzerland", "Turkey", "Ukraine", "United Kingdom", "Vatican City"),
   Country_Code = c("AL", "AD", "AM", "AT", "AZ", "BY", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "GE", "DE", "GR", "HU", "IS", "IE", "IT", "KZ", "XK", "LV", "LI", "LT", "LU", "MT", "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU", "SM", "RS", "SK", "SI", "ES", "SE", "CH", "TR", "UA", "GB", "VA")
 )
+
+
 # CELLS10_VARS -----------------------------------------------------------------
 
 
@@ -107,7 +109,6 @@ cells_10_id <- 2
 aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 
-
 # PARALLEL_OPTS ------------------------------------------------------------
 
 
@@ -115,7 +116,6 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 cores <- max(1, availableCores() - 1)
 type <- "FORK"
 general_get_in_parallel_args <- list(cores = cores, type = type)
-
 
 
 # SEED_OPTS -----------------------------------------------------------------
@@ -129,7 +129,6 @@ seeds <- sample(c(1:1000000), num_sample_runs) # List of seeds to use
 
 
 # TREEDATA_VARS ----------------------------------------------------------------
-
 
 
 # TREE DATA
@@ -193,10 +192,8 @@ tree_data_acc_input_obj <- list(args = list(process_treedata_files_args = proces
                                             aaa_split_col = aaa_split_col))
 
 
-
-
-
 # GRID_FILE_PATH ------------------------------------------------------------
+
 
 grid_file_path <- list.files(file.path(boku_data_path, "grid"), 
                              pattern = paste0("filtered_selection_cell10_", simulation_site_id,"\\.csv"), 
@@ -222,11 +219,7 @@ create_multiInitVar_for_layers_args <- list(grid_file_path = grid_file_path,
                                             clean_data_base_path = clean_data_base_path)
 
 
-
-
-
 # SOIL_PATH ----------------------------------------------------------------
-
 
 
 soil_file_path <- list.files(file.path(boku_data_path, "soil"), 
@@ -244,10 +237,7 @@ site_type_probs <- c(.1, .3, .5, .7, .9)
 site_types <- c(5, 4, 3, 2, 1)
 
 
-
-
 # CLIM_PATHS ---------------------------------------------------------------
-
 
 
 # Climate paths
@@ -263,11 +253,7 @@ files_7z_paths <- file.path(climate_7z_dir, files_7z)
 dest_path <- file.path(climate_7z_dir, "unzipped")
 
 
-
-
-
 # CLIM_VARS ----------------------------------------------------------------
-
 
 
 # Climate data processing operations
@@ -381,13 +367,12 @@ clim_data_acc_input_obj <- list(args = list(clim_operations = clim_operations,
                                             simulation_site = simulation_site))
 
 
-
-
-
 # SELECTION_PATH -----------------------------------------------------------
+
 
 # Paths for siteID lookup creation
 selection_path <- grid_file_path
+
 
 # CLUSTERED-BASE_PATH -------------------------------------------------------
 
@@ -395,8 +380,8 @@ selection_path <- grid_file_path
 clustered_base_path <- paste0("data/acc/input/", simulation_site, "/raw/clustered")
 
 
-
 # CONVERSIONS_PATH ---------------------------------------------------------
+
 
 # Lookup for converting names and units
 conversions_path <- paste0("data/acc/docs/forest_nav_units_and_names_conversions_lookup.csv")
@@ -405,13 +390,14 @@ conversions_dt <- fread(conversions_path)
 
 # OUTPUT_PATHS ------------------------------------------------------------------
 
+
 # output_base_path <- file.path("data", "acc", "output", simulation_site) # FILESYSTEM PATH
 
 output_base_path <- file.path("output", simulation_site) # ALLAS PATH
 
 
-
 # SAVE_DIRS --------------------------------------------------------------
+
 
 output_save_dir <- "output_files"
 
@@ -420,11 +406,14 @@ dclass_save_dir <- "dbh_classes"
 
 # MAN PATHS ---------------------------------------------------------------
 
+
 sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv"
 
 man_paths_list <- list(Sweden = sweden_man_path)
 
+
 # MAN_VARS ----------------------------------------------------------------
+
 
 man_names <- c("noman", "bau")
 man_id <- 2
@@ -440,7 +429,9 @@ man_params <- list(noman = list(defaultThin = 0,
                               mortMod = 3,
                               ingrowth = T))
 
+
 # OUTPUT_VARS --------------------------------------------------------------
+
 
 produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              selection_path = selection_path,
@@ -459,6 +450,7 @@ vHarv <- c(30,2)
 
 # RUN-TABLE_PATHS ----------------------------------------------------------
 
+
 run_table_base_path <- "data/acc/docs/run_table"
 run_table_name <- str_c("run_table", simulation_site, man_name, sep = "-")
 run_table_full_path <- file.path(run_table_base_path, paste0(run_table_name, ".rds"))
@@ -466,16 +458,13 @@ run_table_full_path <- file.path(run_table_base_path, paste0(run_table_name, ".r
 if(!file.exists(run_table_full_path)) warning(paste0(run_table_full_path, " does not exist."))
 
 
-
 # RUN-TABLE_VARS -----------------------------------------------------------
+
 
 runTable_split_parts <- ifelse(simulation_site=="simulation_sites_200", 3, 1)
 
+
 # PRINT_VARS --------------------------------------------------------------
-
-
-
-
 
 
 # Get variables as named list

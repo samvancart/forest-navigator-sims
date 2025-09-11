@@ -6,7 +6,6 @@
 # SOURCE_FILES ------------------------------------------------------------
 
 
-
 source('scripts/settings.R')
 source('./r/utils.R')
 
@@ -30,9 +29,7 @@ zip_file_paths <- file.path(dir, unzip_files)
 dest_path <- file.path(dir, acc_data_name, acc_data_type, "unzipped")
 
 
-
 # UNZIP -------------------------------------------------------------------
-
 
 
 # Unzip all files
@@ -48,9 +45,7 @@ invisible(lapply(seq_along(zip_file_paths), function(i) {
 unzipped_files <- list.files(dest_path)
 
 
-
 # RENAME ------------------------------------------------------------------
-
 
 
 # Rename if necessary
