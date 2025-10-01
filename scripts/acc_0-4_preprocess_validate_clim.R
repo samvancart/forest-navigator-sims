@@ -40,7 +40,8 @@ print("All done.")
 
 
 print("Saving...")
-fwrite(res_dt, "n_rows-PlgID_05.csv")
+val_save_path <- "data/acc/docs/data_validation/n_rows-PlgID_05.csv"
+fwrite(res_dt, file = val_save_path)
 print("Done")
 
 

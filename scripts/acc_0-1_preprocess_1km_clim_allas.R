@@ -11,7 +11,6 @@ source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
 # DEFINE CLIMATE SCENARIOS ------------------------------------------------
 
 
