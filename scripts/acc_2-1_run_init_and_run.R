@@ -1,7 +1,7 @@
 # This script is for initialising and running PREBAS using the regionPrebas function.
 # A run_table is required for running this script as well as a named list of the required paths.
-# The run_table should be created in the acc_create_run_table.R script. The paths and other
-# parameters are set in acc_sims_prepare_init_settings.R.
+# The run_table should be created in the acc_2-0_run_create_run_table.R script. The paths and other
+# parameters are set in acc_settings.R.
 # The output is processed according to the ForestNav output template and saved.
 # Manually determine number (num_split_parts) of data.tables to split into for array job processing.
 
@@ -56,8 +56,6 @@ run_dt_splitID <- split_dt_equal_with_constraint(acc_run_table, run_dt_max_part_
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 
 acc_run_tables_list <- split(run_dt, by = c("plgid"))
-
-acc_run_tables_list[26]
 
 
 # RUN ---------------------------------------------------------------------

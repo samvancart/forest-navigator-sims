@@ -96,7 +96,7 @@ invisible(lapply(clim_acc_init_obj_list, function(obj) {
 
 
 
-
+print("All done.")
 
 
 
