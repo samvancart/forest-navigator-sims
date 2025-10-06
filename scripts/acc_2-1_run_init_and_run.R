@@ -105,6 +105,8 @@ invisible(lapply(output_obj_list, function(item) {
 }))
 
 
+print("All done.")
+
 # SAVE_TO_FILE_SYSTEM --------------------------------------------------------
 
 # invisible(lapply(output_obj_list, function(obj) {

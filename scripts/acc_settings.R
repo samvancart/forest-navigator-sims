@@ -416,7 +416,7 @@ man_paths_list <- list(Sweden = sweden_man_path)
 
 
 man_names <- c("noman", "bau")
-man_id <- 2
+man_id <- 1
 man_name <- man_names[man_id]
 
 man_params <- list(noman = list(defaultThin = 0, 
