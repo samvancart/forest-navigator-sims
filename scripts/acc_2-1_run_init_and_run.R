@@ -47,7 +47,7 @@ num_split_parts <- runTable_split_parts
 # Define split by id (Default is args$array_id)
 split_by_id <- args$array_id
 
-run_dt_max_part_size <- floor(nrow(acc_run_table)/num_split_parts)
+run_dt_max_part_size <- ceiling(nrow(acc_run_table)/num_split_parts)
 
 # Split with constraint
 run_dt_splitID <- split_dt_equal_with_constraint(acc_run_table, run_dt_max_part_size, c("plgid","clim_scen"))
@@ -79,7 +79,8 @@ output_obj_list <- do.call(get_in_parallel, list(data = acc_run_tables_list,
                                                                                start_year = start_year,
                                                                                test_run = F),
                                                                cores = cores,
-                                                               type = type))
+                                                               type = type,
+                                                 .options = furrr_options(seed = TRUE))) # Set seed for parallelisation with future
 
 
 # UNLIST ------------------------------------------------------------------
