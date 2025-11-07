@@ -406,17 +406,22 @@ dclass_save_dir <- "dbh_classes"
 
 # MAN PATHS ---------------------------------------------------------------
 
+# The management files are downloaded from Accelerator. Each file goes into
+# man_base_path and has this format: <2 letter country code>_rest_of_name.csv 
+# eg. SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv for Sweden.
 
-sweden_man_path <- "data/acc/docs/management/SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv"
 
-man_paths_list <- list(Sweden = sweden_man_path)
+man_base_path <- "data/acc/docs/management"
+man_files <- list.files(man_base_path, pattern = ".csv$", full.names = T)
+
+man_paths_list <- unlist(lapply(man_files, function(file) get_man_paths_item(file, aaa_all, country_codes)), recursive = F)
 
 
 # MAN_VARS ----------------------------------------------------------------
 
 
 man_names <- c("noman", "bau")
-man_id <- 1
+man_id <- 2
 man_name <- man_names[man_id]
 
 man_params <- list(noman = list(defaultThin = 0, 

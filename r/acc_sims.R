@@ -2255,7 +2255,8 @@ get_prebas_species_codes_from_pCROB <- function(pCROB) {
 
 # COUNTRY-CODES_WORKER -----------------------------------------------------
 get_acc_country_codes_lookup <- function(aaa, country_codes, aaa_cols = c("PlgID", "Country_Code"), ...) {
-  aaa_country_codes <- aaa_all[, ..aaa_cols]
+  assert_data_frame(aaa)
+  aaa_country_codes <- aaa[, ..aaa_cols]
   aaa_country_codes <- aaa_country_codes[!duplicated(aaa_country_codes)]
   country_codes_lookup <- merge(country_codes, aaa_country_codes, ...)
   assert_true(nrow(aaa_country_codes) == nrow(country_codes_lookup))
@@ -2484,6 +2485,23 @@ n_by_d_class_dt <- function(prebas_out, d_class, max_d_class = 150, is_multiOut 
 
 
 # UTIL_WORKER -------------------------------------------------------------
+
+# Resolves the country from the basename of file which must have a 2 letter country
+# code at the beginning and uses a as separator ("_" is the default).
+# Returns a named list -> <Country in title case>=<path to management file>
+get_man_paths_item <- function(file, aaa, country_codes, sep = "_") {
+  
+  assert_file_exists(file)
+  assert_data_frame(aaa)
+  assert_data_frame(country_codes)
+  
+  code <- unlist(tstrsplit(basename(file), split = sep, keep = 1))
+  countries_lookup <- get_acc_country_codes_lookup(aaa, country_codes)
+  resolved_countries_list <- resolve_countries_from_lookup(countries_lookup, code)
+  country <- tools::toTitleCase(resolved_countries_list$resolved)
+  man_paths_list_item <- list(file)
+  setNames(man_paths_list_item, country)
+}
 
 add_country_code_str_to_save_dir <- function(save_dir, country_code_str) {
   if(is.na(country_code_str)) {
