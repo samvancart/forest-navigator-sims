@@ -96,7 +96,8 @@ load_zip_move(zipfile = zipfile,
               move_to_path = move_to_path,
               save_or_put_opts = save_or_put_opts,
               cores = cores,
-              type = type)
+              type = type,
+              .options = furrr_options(seed = TRUE))
 
 
 
