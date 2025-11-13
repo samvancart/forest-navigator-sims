@@ -1420,6 +1420,34 @@ create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
 # PRODUCE-OUTPUT_WORKER ----------------------------------------------------
 
 
+# Helper for forest_management_update_controller
+get_forest_type_management_tab <-  function(siteID_lookup, 
+                                            man_paths_list, 
+                                            country, 
+                                            man_file_man_col = "BAU-Mgt1", 
+                                            man_file_forest_type_col = "ForestTypeElevSite") {
+  
+  assert_data_frame(siteID_lookup, min.rows = 1, col.names = "named")
+  assert_list(man_paths_list, types = "character", any.missing = FALSE)
+  assert_string(country, min.chars = 1)
+  assert_choice(country, choices = names(man_paths_list))
+  assert_character(man_file_man_col, min.chars = 1)
+  assert_character(man_file_forest_type_col, min.chars = 1)
+  
+  man_path <- man_paths_list[[country]]
+  man_dt <- fread(man_path)
+  
+  assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
+  man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
+  man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
+  
+  assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
+  
+  forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
+  
+  forest_type_management_tab
+}
+
 # Select management file from man_paths_list by country and merge management regimes with forest types using siteID_lookup.
 # Call forest_management_update fun and return modified initPrebas.
 forest_management_update_controller <- function(initPrebas, siteID_lookup, 
@@ -1433,19 +1461,22 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
     return(initPrebas)
   }
   
-  man_path <- man_paths_list[[country]]
-  man_dt <- fread(man_path)
+  # man_path <- man_paths_list[[country]]
+  # man_dt <- fread(man_path)
+  # 
+  # assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
+  # man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
+  # man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
+  # 
+  # assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
+  # 
+  # forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
   
-  assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
-  man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
-  man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
-  
-  assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
-  
-  forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
-  
-  # initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
-  #                                            country = country, management = man_scen)
+  forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
+                                                               man_paths_list = man_paths_list, 
+                                                               country = country, 
+                                                               man_file_man_col = man_file_man_col, 
+                                                               man_file_forest_type_col = man_file_forest_type_col)
   
   initPrebas_man <- tryCatch({
     forest_management_update(
@@ -1879,9 +1910,12 @@ get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, man_scen,
 
 
 handle_acc_test_run <- function(plgid, output_base_path, initPrebas, modOut, multiOut,
-                                model, clim_scen, man_scen) {
+                                model, clim_scen, man_scen, siteID_lookup, man_paths_list, country,
+                                forest_type_management_tab) {
   
-  data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut)
+  data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut, 
+               siteID_lookup = siteID_lookup, man_paths_list = man_paths_list, 
+               country = country, forest_type_management_tab = forest_type_management_tab)
   
   # save_path not used in test run so it can be output_base_path
   output_object <- get_acc_out_obj(data, model, plgid, 
@@ -1969,28 +2003,43 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   
+
+  if(test_run) {
+    print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
+    # Get modOut
+    modOut <- get_modOut(regionPrebas, initPrebas)
+    
+    # Get multiOut
+    multiOut <- modOut$multiOut
+    
+    # TODO man_file_man_col and man_file_forest_type_col are missing from this call.
+    forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
+                                                                 man_paths_list = man_paths_list, 
+                                                                 country = country)
+    
+    output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
+                                         initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
+                                         model = model, clim_scen = clim_scen, man_scen = man_scen,
+                                         siteID_lookup = siteID_lookup, 
+                                         man_paths_list = man_paths_list,
+                                         country = country,
+                                         forest_type_management_tab = forest_type_management_tab)
+    
+    return(output_object)
+  }
+  
+  
   # Modify initPrebas according to management
   # TODO Add man_file_man_col to run_table and pass to forest_management_update_controller
   initPrebas_man <- forest_management_update_controller(initPrebas = initPrebas, siteID_lookup = siteID_lookup, 
-                                                                    man_paths_list = man_paths_list, 
-                                                                    country = country, man_scen = man_scen)
+                                                        man_paths_list = man_paths_list, 
+                                                        country = country, man_scen = man_scen)
   
   # Get modOut
   modOut <- get_modOut(regionPrebas, initPrebas_man)
   
   # Get multiOut
   multiOut <- modOut$multiOut
-  
-  
-  if(test_run) {
-    print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
-    
-    output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
-                                         initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
-                                         model = model, clim_scen = clim_scen, man_scen = man_scen)
-    
-    return(output_object)
-  }
   
   print(paste0("Creating output from multiOut..."))
   
@@ -2542,6 +2591,20 @@ resolve_countries_from_lookup <- function(lookup, countries) {
     codes = sort(unique(matched$Country_Code)),
     country_codes_str = paste(sort(unique(matched$Country_Code)), collapse = "_")
   )
+}
+
+# Provide output_obj_list without any un-listing directly after running acc_run_table_controller with test_run=TRUE
+get_forest_type_management_test_data <-  function(output_obj_list) {
+  output_obj_list_unlisted <- unlist(output_obj_list, recursive = FALSE)
+  res_list <- list()
+  for(i in 1:length(output_obj_list_unlisted)) {
+    item <- list(id = output_obj_list_unlisted[[i]]$plgid, 
+                 initPrebas = output_obj_list_unlisted[[i]]$data[[1]]$initPrebas,  
+                 forest_type_management_tab = output_obj_list_unlisted[[i]]$data[[1]]$forest_type_management_tab)
+    
+    res_list[[i]] <- item
+  }
+  res_list
 }
 
 # TODO Check the use of this function

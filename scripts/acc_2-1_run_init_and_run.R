@@ -87,7 +87,7 @@ output_obj_list <- do.call(get_in_parallel, list(data = acc_run_tables_list,
 
 
 print("Runs completed, unlisting...")
-output_obj_list <- unlist(unlist(output_obj_list, recursive = F), recursive = F)
+output_obj_list <- unlist(unlist(output_obj_list, recursive = F), recursive = F) # Test runs only need one level of un-listing so don't run this when test_run=TRUE
 
 
 # SAVE_TO_ALLAS -------------------------------------------------------------
