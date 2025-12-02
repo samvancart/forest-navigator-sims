@@ -2003,7 +2003,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   
-
+  
   if(test_run) {
     print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
     # Get modOut

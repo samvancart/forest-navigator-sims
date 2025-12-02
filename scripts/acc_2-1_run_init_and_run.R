@@ -61,16 +61,6 @@ acc_run_tables_list <- split(run_dt, by = c("plgid"))
 # RUN ---------------------------------------------------------------------
 
 
-# output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
-#                                                         FUN = acc_run_table_controller,
-#                                                         FUN_args = list(paths = produce_output_paths,
-#                                                                         FUN = produce_acc_output_obj,
-#                                                                         start_year = start_year,
-#                                                                         test_run = F),
-#                                                         cores = cores,
-#                                                         type = type)), recursive = F),
-#                           recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
-
 # No unlisting
 output_obj_list <- do.call(get_in_parallel, list(data = acc_run_tables_list,
                                                                FUN = acc_run_table_controller,
