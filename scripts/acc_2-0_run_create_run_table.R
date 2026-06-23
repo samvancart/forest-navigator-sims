@@ -27,6 +27,8 @@ plgid <- as.integer(unlist(tstrsplit(table_output_files, split = "_", keep = 2))
 clim_scen <- c("detrended", "gwl2", "gwl3", "gwl4")
 man_scen <- man_name
 model <- c("PREBAS")
+man_file_man_col = man_file_man_col
+man_file_forest_type_col = man_file_forest_type_col
 # country <- c("Finland")
 canopy_layer <- c(1)
 
@@ -35,7 +37,9 @@ acc_vectors_list <- list(plgid = plgid,
                          man_scen = man_scen, 
                          model = model, 
                          # country = country, 
-                         canopy_layer = canopy_layer)
+                         canopy_layer = canopy_layer,
+                         man_file_man_col = man_file_man_col,
+                         man_file_forest_type_col = man_file_forest_type_col)
 
 acc_base_table <- expand_vectors_to_dt(acc_vectors_list)
 

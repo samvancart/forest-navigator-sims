@@ -1439,7 +1439,7 @@ get_forest_type_management_tab <-  function(siteID_lookup,
   
   assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
   man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
-  man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
+  man_dt$for_man <- man_dt[[man_file_man_col]]
   
   assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
   
@@ -2012,10 +2012,11 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
     # Get multiOut
     multiOut <- modOut$multiOut
     
-    # TODO man_file_man_col and man_file_forest_type_col are missing from this call.
     forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
                                                                  man_paths_list = man_paths_list, 
-                                                                 country = country)
+                                                                 country = country,
+                                                                 man_file_man_col = man_file_man_col,
+                                                                 man_file_forest_type_col = man_file_forest_type_col)
     
     output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
                                          initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
@@ -2030,10 +2031,11 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   
   # Modify initPrebas according to management
-  # TODO Add man_file_man_col to run_table and pass to forest_management_update_controller
   initPrebas_man <- forest_management_update_controller(initPrebas = initPrebas, siteID_lookup = siteID_lookup, 
                                                         man_paths_list = man_paths_list, 
-                                                        country = country, man_scen = man_scen)
+                                                        country = country, man_scen = man_scen,
+                                                        man_file_man_col = man_file_man_col,
+                                                        man_file_forest_type_col = man_file_forest_type_col)
   
   # Get modOut
   modOut <- get_modOut(regionPrebas, initPrebas_man)

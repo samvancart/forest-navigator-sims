@@ -435,6 +435,13 @@ man_params <- list(noman = list(defaultThin = 0,
                               ingrowth = T))
 
 
+# MAN_FILE_VARS -----------------------------------------------------------
+
+
+man_file_man_col = "BAU-Mgt1"
+man_file_forest_type_col = "ForestTypeElevSite"
+
+
 # OUTPUT_VARS --------------------------------------------------------------
 
 
@@ -486,6 +493,8 @@ all_vars <- get_named_list(simulation_site,
                            grid_file_path,
                            soil_file_path,
                            man_name,
+                           man_file_man_col,
+                           man_file_forest_type_col,
                            runTable_split_parts)
 
 
