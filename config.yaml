@@ -147,7 +147,7 @@ PATH_eobs_folder_nc: data/netcdf/eobs_vars/hu/
 PATH_sites: data/climate/provided/prebas_sites_coords.csv
 PATH_swe_sf: data/nfi/sweden/shape_files
 PATH_tests: tests/
-PATH_acc_sims_prepare_init_settings: scripts/acc_sims_prepare_init_settings.R
+PATH_acc_sims_prepare_init_settings: scripts/acc_settings.R
 SRC_multi_species: scripts/multiSiteSpecies.R
 SRC_multi_layers: scripts/multiSiteLayers.R
 SRC_outputs_species: scripts/output_tables.R

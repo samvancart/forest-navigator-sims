@@ -7,74 +7,69 @@
 # Be aware of memory limitations when processing for simulation sites!
 
 
-
 # SOURCE_FILES -------------------------------------------------------------
-
 
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
-
-# ARRAY_JOB_PARAMS ----------------------------------------------------------
-
-array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
-max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
-
-print(paste0("Array job: ", array_jobID))
-print(paste0("Max array jobs: ", max_array_jobID))
+# DEFINE CLIMATE SCENARIOS ------------------------------------------------
 
 
+clim_names <- c("detrended", "gwl2", "gwl3", "gwl4")
 
-# GET_CLIM_PATHS ------------------------------------------------------------
 
-# TODO Check the use of this function
-all_clim_paths <- get_filtered_clim_paths_from_bucket(grid_file_path, allas_opts)
+# GET ALL KEYS ------------------------------------------------------------
 
-fread(grid_file_path)
+
+data_prefixes <- paste0("input/", simulation_site, "/1km/", clim_names, "/")
+
+# Get keys
+data_keys_dt <- rbindlist(lapply(data_prefixes, function(data_prefix) {
+  setnames(as.data.table(list_all_objects_in_bucket(only_keys = T, bucket = bucket, prefix = data_prefix, region = region)), "Key")
+}))
+
+
+
+# CREATE PLGID AND CLIM_SCEN COLS -----------------------------------------
+
+
+data_keys_dt[, PlgID := as.integer(unlist(tstrsplit(basename(Key), split = "[_.]", keep = 5)))]
+data_keys_dt[, clim_scen := tstrsplit(basename(Key), split = "[_.]", keep = 1)]
+
 
 # SPLIT_IDS ----------------------------------------------------------------
-
 
 
 # This can represent max number of array jobs
 num_split_parts <- 31
 
 # Define split by id (Default is array_jobID)
-split_by_id <- array_jobID
-
+split_by_id <- args$array_id
 
 
 # SPLIT_TABLE --------------------------------------------------------------
 
-# Get all clim_paths as dt with PlgID and clim_scen cols
-all_paths_run_dt <- get_acc_clim_paths_run_dt(all_clim_paths)
-run_dt_max_part_size <- floor(nrow(all_paths_run_dt)/num_split_parts)
+
+run_dt_max_part_size <- floor(nrow(data_keys_dt)/num_split_parts)
 
 # Split with constraint
-run_dt_splitID <- split_dt_equal_with_constraint(all_paths_run_dt, run_dt_max_part_size, c("PlgID","clim_scen"))
-
+run_dt_splitID <- split_dt_equal_with_constraint(data_keys_dt, run_dt_max_part_size, c("PlgID","clim_scen"))
 
 print(paste0("Split by id: ", split_by_id))
 cat("\n")
 
-
-# Filter by array jobID
+# Filter by split_by_id
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 
-plgid_vec <- as.integer(unique(run_dt$PlgID))
-clim_paths <- run_dt$path
+clim_paths <- run_dt$Key
 
 print("clim_paths")
 print(clim_paths)
 
 
-
-
 # RUN ---------------------------------------------------------------------
-
-
 
 
 # Get list of acc objects
@@ -91,14 +86,7 @@ clim_acc_init_obj_list <- do.call(get_in_parallel, list(data = clim_paths,
                                                     type = type))
 
 
-
-
-
-
 # SAVE --------------------------------------------------------------------
-
-
-
 
 
 # Save all acc objects
@@ -108,28 +96,7 @@ invisible(lapply(clim_acc_init_obj_list, function(obj) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print("All done.")
 
 
 

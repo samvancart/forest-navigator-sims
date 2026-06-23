@@ -302,7 +302,7 @@ create_acc_clustered_tree_data <- function(acc_input_obj) {
     
     # Validations
     required_names <- c(
-      "process_treedata_files_args", 
+      "process_treedata_files_args",
       "assign_and_merge_args", 
       "perform_clustering_by_group_args",
       "aaa_split_col",
@@ -609,7 +609,7 @@ get_dcast_matrices_list_from_dt <- function(dt,
   # Create list of matrices
   dcast_matrices <- lapply(var_cols, function(x) {
     formula <- dcast_formula
-    dcast_dt <- as.matrix(dcast(dt, formula, value.var = x))
+    dcast_dt <- as.matrix(dcast(dt, formula, value.var = x, fill = NA))
   })
   
   print(paste0("Adding suffix_str ", "'", suffix_str, "'", " to dt names."))
@@ -679,7 +679,7 @@ add_acc_co2 <- function(clim_dt, name, config) {
 
 
 
-#' Get Accumulated Initial Climate Object
+#' Get Acc Initial Climate Object
 #'
 #' This function processes a climate data path and a tree data file to create an initial climate data object.
 #'
@@ -735,6 +735,137 @@ get_acc_init_clim_object <- function(clim_path, aaa_file, clean_data_base_path, 
   print("Done.")
   
   return(list(name = name, plgid = plgid, data = tranMatrices, save_path = save_path))
+}
+
+
+# MULTI-INIT-VAR_WORKER ---------------------------------------------------
+
+
+#' Process a Subset of Data
+#'
+#' This function processes a subset of data based on the given index and number of layers.
+#' It extracts specific columns and ensures that the number of layers does not exceed the subset's length.
+#'
+#' @param subset A data frame containing the subset of data to process.
+#' @param i An integer representing the index of the subset to process.
+#' @param nLayers A numeric vector specifying the number of layers for each subset.
+#' @param col_names A list of character strings specifying the column names in the subset. 
+#' Default is a list with elements "speciesID", "Age", "Height", "Dbh", and "basal_area".
+#'
+#' @return A list containing the processed data for the specified subset.
+#' @import checkmate
+#' @examples
+#' subset <- data.frame(
+#'   speciesID = 1:10,
+#'   Age = 11:20,
+#'   Height = 21:30,
+#'   Dbh = 31:40,
+#'   basal_area = 41:50
+#' )
+#' nLayers <- c(5, 6, 7, 8, 9, 10)
+#' col_names <- list(
+#'   speciesID = "speciesID",
+#'   Age = "Age",
+#'   Height = "Height",
+#'   Dbh = "Dbh",
+#'   basal_area = "basal_area"
+#' )
+#' result <- process_subset(subset, 1, nLayers, col_names)
+#' print(result)
+process_subset <- function(subset, i, nLayers, col_names = list(
+  speciesID = "speciesID",
+  Age = "Age",
+  Height = "Height",
+  Dbh = "Dbh",
+  basal_area = "basal_area"
+)) {
+  
+  # Validate inputs
+  assert_data_frame(subset, min.rows = 1, col.names = "strict")
+  assert_integerish(i, lower = 1, upper = length(nLayers), any.missing = FALSE, len = 1)
+  assert_numeric(nLayers, lower = 1, len = length(nLayers), any.missing = FALSE)
+  assert_list(col_names, types = "character", len = 5, any.missing = FALSE)
+  assert_names(names(col_names), must.include = c("speciesID", "Age", "Height", "Dbh", "basal_area"))
+  assert_names(names(subset), must.include = unlist(col_names))
+  
+  # Ensure nLayers is within the valid range
+  nLayers_i <- min(nLayers[i], nrow(subset))
+  
+  # Extract the specified columns using the provided or default column names
+  result <- list(
+    speciesID = head(subset[[col_names$speciesID]], nLayers_i),
+    Age = head(subset[[col_names$Age]], nLayers_i),
+    Height = head(subset[[col_names$Height]], nLayers_i),
+    Dbh = head(subset[[col_names$Dbh]], nLayers_i),
+    basal_area = head(subset[[col_names$basal_area]], nLayers_i),
+    NA_values = rep(NA, nLayers_i)
+  )
+  
+  return(result)
+}
+
+
+#' Create multiInitVar for Layers
+#'
+#' This function creates a multiInitVar array for layers based on the provided data file path and group/species identifiers.
+#'
+#' @param dt_path A string representing the path to the R data file.
+#' @param group_id_name A string representing the name of the group ID column in the data.
+#' @param species_id_name A string representing the name of the species ID column in the data.
+#' @param ... Additional arguments passed to the process_subset function.
+#'
+#' @return A 3-dimensional array containing the multiInitVar data.
+#' @import checkmate
+#' @examples
+#' # Example usage
+#' multiInitVar <- create_multiInitVar_for_layers("path/to/data.RData", "groupID", "speciesID")
+create_multiInitVar_for_layers <- function(dt_path, group_id_name, species_id_name, ...) {
+  
+  # Validate inputs
+  assert_character(dt_path, any.missing = FALSE, len = 1)
+  assert_file_exists(dt_path)
+  assert_character(group_id_name, any.missing = FALSE, len = 1)
+  assert_character(species_id_name, any.missing = FALSE, len = 1)
+  
+  # Load the data
+  dt <- loadRDataFile(dt_path)
+  
+  # Validate the loaded data
+  assert_data_frame(dt, min.rows = 1, col.names = "strict")
+  assert_names(names(dt), must.include = c(group_id_name, species_id_name))
+  
+  nSites <- length(unique(dt[[group_id_name]]))
+  nLayers <- dt[, .N, by = c(group_id_name)]$N
+  nSpecies <- dt[, .N, by = c(group_id_name, species_id_name)][, .N, by = c(group_id_name)]$N
+  maxNlayers <- max(nLayers)
+  
+  # Initialize the multiInitVar array
+  multiInitVar <- array(0, dim=c(nSites, 7, maxNlayers))
+  multiInitVar[,6:7,] <- multiInitVar[,6:7,NA]
+  
+  print(paste0("Creating multiInitVar for ", nSites, " sites with max ", maxNlayers, " layers..."))
+  
+  system.time({
+    # Split the data.table by groupID
+    split_data <- split(dt, by = group_id_name)
+    
+    # Apply the process_subset function to each subset
+    results <- lapply(seq_along(split_data), function(i) process_subset(split_data[[i]], i, nLayers, ...))
+    
+    # Fill matrix with the values
+    for (i in seq_along(results)) {
+      multiInitVar[i, 1, 1:nLayers[i]] <- results[[i]]$speciesID # vector of species ID taken from data
+      multiInitVar[i, 2, 1:nLayers[i]] <- results[[i]]$Age # age by tree from NFI
+      multiInitVar[i, 3, 1:nLayers[i]] <- results[[i]]$Height # height from NFI data
+      multiInitVar[i, 4, 1:nLayers[i]] <- results[[i]]$Dbh # dbh from NFI data
+      multiInitVar[i, 5, 1:nLayers[i]] <- results[[i]]$basal_area # you need to calculate the basal area: pi*(dbh/200)^2*"multiplier Ntrees in data"
+      multiInitVar[i, 6, 1:nLayers[i]] <- results[[i]]$NA_values
+    }
+  })
+  
+  print("Done.")
+  
+  return(multiInitVar)
 }
 
 
@@ -1289,15 +1420,19 @@ create_name <- function(model, plgid, clim_scen, man_scen, extra_words = NULL) {
 # PRODUCE-OUTPUT_WORKER ----------------------------------------------------
 
 
-# Select management file from man_paths_list by country and merge management regimes with forest types using siteID_lookup.
-# Call forest_management_update fun and return modified initPrebas.
-forest_management_update_controller <- function(initPrebas, siteID_lookup, 
-                                                man_paths_list, country, man_scen, 
-                                                man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
+# Helper for forest_management_update_controller
+get_forest_type_management_tab <-  function(siteID_lookup, 
+                                            man_paths_list, 
+                                            country, 
+                                            man_file_man_col = "BAU-Mgt1", 
+                                            man_file_forest_type_col = "ForestTypeElevSite") {
   
-  if(!country %in% names(man_paths_list)) {
-    return(initPrebas)
-  }
+  assert_data_frame(siteID_lookup, min.rows = 1, col.names = "named")
+  assert_list(man_paths_list, types = "character", any.missing = FALSE)
+  assert_string(country, min.chars = 1)
+  assert_choice(country, choices = names(man_paths_list))
+  assert_character(man_file_man_col, min.chars = 1)
+  assert_character(man_file_forest_type_col, min.chars = 1)
   
   man_path <- man_paths_list[[country]]
   man_dt <- fread(man_path)
@@ -1310,8 +1445,56 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
   
   forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
   
-  initPrebas_man <- forest_management_update(initPrebas = initPrebas, forest_type_management_tab = forest_type_management_tab,
-                                             country = country, management = man_scen)
+  forest_type_management_tab
+}
+
+# Select management file from man_paths_list by country and merge management regimes with forest types using siteID_lookup.
+# Call forest_management_update fun and return modified initPrebas.
+forest_management_update_controller <- function(initPrebas, siteID_lookup, 
+                                                man_paths_list, country, man_scen, 
+                                                man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
+  
+  if(!country %in% names(man_paths_list)) {
+    if(!country %in% c("Finland", "Norway")) {
+      warning(paste0("No management file found for ", country, "! Returning initPrebas."))
+    }
+    return(initPrebas)
+  }
+  
+  # man_path <- man_paths_list[[country]]
+  # man_dt <- fread(man_path)
+  # 
+  # assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
+  # man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
+  # man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
+  # 
+  # assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
+  # 
+  # forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
+  
+  forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
+                                                               man_paths_list = man_paths_list, 
+                                                               country = country, 
+                                                               man_file_man_col = man_file_man_col, 
+                                                               man_file_forest_type_col = man_file_forest_type_col)
+  
+  initPrebas_man <- tryCatch({
+    forest_management_update(
+      initPrebas = initPrebas,
+      forest_type_management_tab = forest_type_management_tab,
+      country = country,
+      management = man_scen
+    )
+  }, warning = function(w) {
+    message("Warning during forest_management_update: ", conditionMessage(w))
+    NULL  # or handle differently
+  }, error = function(e) {
+    message("Error during forest_management_update: ", conditionMessage(e))
+    NULL  # or handle differently
+  }, finally = {
+    message(paste0("Attempted forest_management_update execution for ", country,"."))
+  })
+  
   
   return(initPrebas_man)
   
@@ -1727,9 +1910,12 @@ get_acc_out_obj <- function(out_dt, model, plgid, clim_scen, man_scen,
 
 
 handle_acc_test_run <- function(plgid, output_base_path, initPrebas, modOut, multiOut,
-                                model, clim_scen, man_scen) {
+                                model, clim_scen, man_scen, siteID_lookup, man_paths_list, country,
+                                forest_type_management_tab) {
   
-  data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut)
+  data <- list(initPrebas = initPrebas, modOut = modOut, multiOut = multiOut, 
+               siteID_lookup = siteID_lookup, man_paths_list = man_paths_list, 
+               country = country, forest_type_management_tab = forest_type_management_tab)
   
   # save_path not used in test run so it can be output_base_path
   output_object <- get_acc_out_obj(data, model, plgid, 
@@ -1817,28 +2003,43 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   
   siteID_lookup <- get_siteID_lookup(plgid, selection_path, clean_data_base_path, aaa_file)
   
+  
+  if(test_run) {
+    print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
+    # Get modOut
+    modOut <- get_modOut(regionPrebas, initPrebas)
+    
+    # Get multiOut
+    multiOut <- modOut$multiOut
+    
+    # TODO man_file_man_col and man_file_forest_type_col are missing from this call.
+    forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
+                                                                 man_paths_list = man_paths_list, 
+                                                                 country = country)
+    
+    output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
+                                         initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
+                                         model = model, clim_scen = clim_scen, man_scen = man_scen,
+                                         siteID_lookup = siteID_lookup, 
+                                         man_paths_list = man_paths_list,
+                                         country = country,
+                                         forest_type_management_tab = forest_type_management_tab)
+    
+    return(output_object)
+  }
+  
+  
   # Modify initPrebas according to management
   # TODO Add man_file_man_col to run_table and pass to forest_management_update_controller
   initPrebas_man <- forest_management_update_controller(initPrebas = initPrebas, siteID_lookup = siteID_lookup, 
-                                                                    man_paths_list = man_paths_list, 
-                                                                    country = country, man_scen = man_scen)
+                                                        man_paths_list = man_paths_list, 
+                                                        country = country, man_scen = man_scen)
   
   # Get modOut
   modOut <- get_modOut(regionPrebas, initPrebas_man)
   
   # Get multiOut
   multiOut <- modOut$multiOut
-  
-  
-  if(test_run) {
-    print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
-    
-    output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
-                                         initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
-                                         model = model, clim_scen = clim_scen, man_scen = man_scen)
-    
-    return(output_object)
-  }
   
   print(paste0("Creating output from multiOut..."))
   
@@ -2103,7 +2304,8 @@ get_prebas_species_codes_from_pCROB <- function(pCROB) {
 
 # COUNTRY-CODES_WORKER -----------------------------------------------------
 get_acc_country_codes_lookup <- function(aaa, country_codes, aaa_cols = c("PlgID", "Country_Code"), ...) {
-  aaa_country_codes <- aaa_all[, ..aaa_cols]
+  assert_data_frame(aaa)
+  aaa_country_codes <- aaa[, ..aaa_cols]
   aaa_country_codes <- aaa_country_codes[!duplicated(aaa_country_codes)]
   country_codes_lookup <- merge(country_codes, aaa_country_codes, ...)
   assert_true(nrow(aaa_country_codes) == nrow(country_codes_lookup))
@@ -2333,6 +2535,23 @@ n_by_d_class_dt <- function(prebas_out, d_class, max_d_class = 150, is_multiOut 
 
 # UTIL_WORKER -------------------------------------------------------------
 
+# Resolves the country from the basename of file which must have a 2 letter country
+# code at the beginning and uses a as separator ("_" is the default).
+# Returns a named list -> <Country in title case>=<path to management file>
+get_man_paths_item <- function(file, aaa, country_codes, sep = "_") {
+  
+  assert_file_exists(file)
+  assert_data_frame(aaa)
+  assert_data_frame(country_codes)
+  
+  code <- unlist(tstrsplit(basename(file), split = sep, keep = 1))
+  countries_lookup <- get_acc_country_codes_lookup(aaa, country_codes)
+  resolved_countries_list <- resolve_countries_from_lookup(countries_lookup, code)
+  country <- tools::toTitleCase(resolved_countries_list$resolved)
+  man_paths_list_item <- list(file)
+  setNames(man_paths_list_item, country)
+}
+
 add_country_code_str_to_save_dir <- function(save_dir, country_code_str) {
   if(is.na(country_code_str)) {
     return(save_dir)
@@ -2372,6 +2591,20 @@ resolve_countries_from_lookup <- function(lookup, countries) {
     codes = sort(unique(matched$Country_Code)),
     country_codes_str = paste(sort(unique(matched$Country_Code)), collapse = "_")
   )
+}
+
+# Provide output_obj_list without any un-listing directly after running acc_run_table_controller with test_run=TRUE
+get_forest_type_management_test_data <-  function(output_obj_list) {
+  output_obj_list_unlisted <- unlist(output_obj_list, recursive = FALSE)
+  res_list <- list()
+  for(i in 1:length(output_obj_list_unlisted)) {
+    item <- list(id = output_obj_list_unlisted[[i]]$plgid, 
+                 initPrebas = output_obj_list_unlisted[[i]]$data[[1]]$initPrebas,  
+                 forest_type_management_tab = output_obj_list_unlisted[[i]]$data[[1]]$forest_type_management_tab)
+    
+    res_list[[i]] <- item
+  }
+  res_list
 }
 
 # TODO Check the use of this function

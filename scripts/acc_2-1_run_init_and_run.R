@@ -1,12 +1,12 @@
 # This script is for initialising and running PREBAS using the regionPrebas function.
 # A run_table is required for running this script as well as a named list of the required paths.
+# The run_table should be created in the acc_2-0_run_create_run_table.R script. The paths and other
+# parameters are set in acc_settings.R.
 # The output is processed according to the ForestNav output template and saved.
 # Manually determine number (num_split_parts) of data.tables to split into for array job processing.
 
 
-
 # SOURCE_FILES -------------------------------------------------------------
-
 
 
 source('scripts/settings.R')
@@ -16,22 +16,14 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 # PARSE_ARGS --------------------------------------------------------------
 
-option_list <- list(
-  make_option(c("-c", "--countries"), type = "character", default = NA,
-              help = "Country names or abbreviations (e.g., 'FI' or 'Finland' or multiple e.g., 'se,FI' or 'Sweden, finland')")
-)
-
-parser <- OptionParser(option_list = option_list)
-args <- parse_args(parser)
-
 
 countries_arg <- args$countries
 countries <- if (is.na(countries_arg)) NA else strsplit(countries_arg, ",")[[1]]
 countries <- trimws(countries)  # Remove spaces around items
 
 
-
 # GET_RUN-TABLE -------------------------------------------------------------
+
 
 print(paste0("Getting run_table from ", run_table_full_path))
 acc_run_table_all <- loadRDataFile(run_table_full_path)
@@ -39,20 +31,11 @@ acc_run_table_all <- loadRDataFile(run_table_full_path)
 
 # FILTER_BY_COUNTRY -------------------------------------------------------
 
+
 acc_run_table <- filter_and_validate_by_country(dt = acc_run_table_all, lookup = country_codes, countries = countries)
 
 print("Countries to run:")
 print(unique(acc_run_table$country))
-
-# ARRAY-JOB_PARAMS ----------------------------------------------------------
-
-
-
-array_jobID <- get_parameter("SLURM_ARRAY_TASK_ID", 1, "integer")
-max_array_jobID <- get_parameter("SLURM_ARRAY_TASK_COUNT", 1, "integer")
-
-print(paste0("Array job: ", array_jobID))
-print(paste0("Max array jobs: ", max_array_jobID))
 
 
 # SPLIT_TABLE --------------------------------------------------------------
@@ -61,16 +44,13 @@ print(paste0("Max array jobs: ", max_array_jobID))
 # This can represent max number of array jobs. Determined in runTable_vars in settings
 num_split_parts <- runTable_split_parts
 
+# Define split by id (Default is args$array_id)
+split_by_id <- args$array_id
 
-# Define split by id (Default is array_jobID)
-split_by_id <- array_jobID
-
-
-run_dt_max_part_size <- floor(nrow(acc_run_table)/num_split_parts)
+run_dt_max_part_size <- ceiling(nrow(acc_run_table)/num_split_parts)
 
 # Split with constraint
 run_dt_splitID <- split_dt_equal_with_constraint(acc_run_table, run_dt_max_part_size, c("plgid","clim_scen"))
-
 
 # Filter by array jobID
 run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
@@ -78,21 +58,26 @@ run_dt <- split(run_dt_splitID, by = "splitID")[[split_by_id]]
 acc_run_tables_list <- split(run_dt, by = c("plgid"))
 
 
-
 # RUN ---------------------------------------------------------------------
 
 
+# No unlisting
+output_obj_list <- do.call(get_in_parallel, list(data = acc_run_tables_list,
+                                                               FUN = acc_run_table_controller,
+                                                               FUN_args = list(paths = produce_output_paths,
+                                                                               FUN = produce_acc_output_obj,
+                                                                               start_year = start_year,
+                                                                               test_run = F),
+                                                               cores = cores,
+                                                               type = type,
+                                                 .options = furrr_options(seed = TRUE))) # Set seed for parallelisation with future
 
-output_obj_list <- unlist(unlist(do.call(get_in_parallel, list(data = acc_run_tables_list,
-                                                        FUN = acc_run_table_controller,
-                                                        FUN_args = list(paths = produce_output_paths,
-                                                                        FUN = produce_acc_output_obj,
-                                                                        start_year = start_year,
-                                                                        test_run = F),
-                                                        cores = cores,
-                                                        type = type)), recursive = F),
-                          recursive = FALSE) # Unlist twice with recursive=F to unlist 2 levels
 
+# UNLIST ------------------------------------------------------------------
+
+
+print("Runs completed, unlisting...")
+output_obj_list <- unlist(unlist(output_obj_list, recursive = F), recursive = F) # Test runs only need one level of un-listing so don't run this when test_run=TRUE
 
 
 # SAVE_TO_ALLAS -------------------------------------------------------------
@@ -111,9 +96,7 @@ invisible(lapply(output_obj_list, function(item) {
 }))
 
 
-
-
-
+print("All done.")
 
 # SAVE_TO_FILE_SYSTEM --------------------------------------------------------
 
@@ -129,13 +112,33 @@ invisible(lapply(output_obj_list, function(item) {
 
 #### TEST ##########
 
+
+# 
 # acc_run_test <- acc_run_tables_list[[1]][1,]
 # 
+# acc_run_test[, country_code_str := "FI"]
 # 
+# acc_run_test <- run_dt[26,]
 # acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-# 
+# output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
 # 
 # acc_output_obj[[1]]$data
+# 
+# # TEST IN LOOP
+# a_ids <- unique(run_dt[1:54,]$plgid)
+# run_dt_test <- run_dt[!duplicated(plgid) & country == "Sweden" & !plgid %in% a_ids]
+# 
+# 
+# acc_run_test <- run_dt_test[plgid==8275310]
+# 
+# 
+# acc_run_tables_list_test <- split(run_dt_test, by = c("plgid"))
+# 
+# for(i in seq(length(acc_run_tables_list_test))) {
+#   acc_run_test <- acc_run_tables_list_test[[i]]
+#   acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# }
+
 
 
 

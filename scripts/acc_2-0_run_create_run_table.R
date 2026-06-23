@@ -6,14 +6,15 @@
 # as is the man_scen to use.
 
 
-
 # SOURCE_FILES -------------------------------------------------------------
+
 
 source('scripts/settings.R')
 source(config$PATH_acc_sims_prepare_init_settings)
 
 
 # BASE-RUN-TABLE ---------------------------------------------------------------
+
 
 print(paste0("Creating run table for man_scen: ", man_name))
 
@@ -46,9 +47,7 @@ acc_base_table_country <- merge(acc_base_table,
                                 by.x = "plgid", by.y = "PlgID")
 
 
-
 # MANAGEMENT-TABLE ---------------------------------------------------------
-
 
 
 # Management params from acc settings
@@ -72,12 +71,10 @@ acc_static_vars_table <- data.table(varOutID = list(varOutID), vHarv = list(vHar
 acc_static_vars_expanded_table <- rbindlist(replicate(nrow(acc_base_man_table), acc_static_vars_table, simplify = FALSE))
 
 
-
-
 # RUN-TABLE ----------------------------------------------------------------
 
-acc_run_table <- cbind(acc_base_man_table, acc_static_vars_expanded_table)
 
+acc_run_table <- cbind(acc_base_man_table, acc_static_vars_expanded_table)
 
 
 # SAVE --------------------------------------------------------------------

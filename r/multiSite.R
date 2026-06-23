@@ -157,30 +157,6 @@ get_pCROBAS <- function(speciesIDs, pCROBAS_multipliers, pCROB) {
 
 
 
-#' Process a subset of data for a given site
-#'
-#' This function processes a subset of data for a given site, extracting relevant
-#' information and preparing it for inclusion in the multiInitVar array.
-#'
-#' @param subset A data.table containing the subset of data for a specific site.
-#' @param i An integer representing the site index.
-#' @return A list containing vectors of speciesID, Age, Height, Dbh, basal_area, and NA values.
-#' @examples
-#' # Assuming dt_nSites is a data.table and nLayers is a vector
-#' subset <- dt_nSites[groupID == 1]
-#' result <- process_subset(subset, 1)
-#' @export
-process_subset <- function(subset, i) {
-  nLayers_i <- nLayers[i]
-  list(
-    speciesID = subset$speciesID[1:nLayers_i],
-    Age = subset$Age[1:nLayers_i],
-    Height = subset$Height[1:nLayers_i],
-    Dbh = subset$Dbh[1:nLayers_i],
-    basal_area = subset$basal_area[1:nLayers_i],
-    NA_values = rep(NA, nLayers_i)
-  )
-}
 
 
 
