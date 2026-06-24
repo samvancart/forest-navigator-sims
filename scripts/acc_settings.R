@@ -411,7 +411,7 @@ dclass_save_dir <- "dbh_classes"
 # eg. SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv for Sweden.
 
 
-man_base_path <- "data/acc/docs/management"
+man_base_path <- "data/acc/docs/management/bau"
 man_files <- list.files(man_base_path, pattern = ".csv$", full.names = T)
 
 man_paths_list <- unlist(lapply(man_files, function(file) get_man_paths_item(file, aaa_all, country_codes)), recursive = F)
