@@ -2012,11 +2012,15 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
     # Get multiOut
     multiOut <- modOut$multiOut
     
-    forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
+    if(!country %in% c("Finland", "Norway")) {
+      forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
                                                                  man_paths_list = man_paths_list, 
                                                                  country = country,
                                                                  man_file_man_col = man_file_man_col,
                                                                  man_file_forest_type_col = man_file_forest_type_col)
+    } else {
+      forest_type_management_tab <- NULL
+    }
     
     output_object <- handle_acc_test_run(plgid = plgid, output_base_path = output_base_path, 
                                          initPrebas = initPrebas, modOut = modOut, multiOut = multiOut,
