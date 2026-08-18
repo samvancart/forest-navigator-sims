@@ -404,41 +404,55 @@ output_save_dir <- "output_files"
 dclass_save_dir <- "dbh_classes"
 
 
+# MAN_VARS ----------------------------------------------------------------
+
+
+# Use am1...am4 as well as man_file_man_col = "AM-Mgt1"..."AM-Mgt4" for
+# creating run table. Then combine the tables and use "am" when running.
+# When "am" is set, man_name will be correct in section MAN_PATHS.
+
+man_names <- c("noman", "bau", "am1", "am2", "am3", "am4", "am")
+man_id <- 7
+man_name <- man_names[man_id]
+
+# Params for initMultisite
+noman_init_man = list(defaultThin = 0, 
+             ClCut = 0, 
+             mortMod = 3, 
+             ingrowth = T)
+
+bau_init_man = list(defaultThin = 1,
+           ClCut = 1,
+           mortMod = 3,
+           ingrowth = T)
+
+man_params <- list(noman = noman_init_man,
+                   bau = bau_init_man,
+                   am1 = bau_init_man,
+                   am2 = bau_init_man,
+                   am3 = bau_init_man,
+                   am4 = bau_init_man)
+
+
 # MAN PATHS ---------------------------------------------------------------
+
 
 # The management files are downloaded from Accelerator. Each file goes into
 # man_base_path and has this format: <2 letter country code>_rest_of_name.csv 
 # eg. SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv for Sweden.
 
 
-man_base_path <- "data/acc/docs/management/bau"
-man_files <- list.files(man_base_path, pattern = ".csv$", full.names = T)
+man_base_path <- "data/acc/docs/management"
+man_base_path_scen <- file.path(man_base_path, man_name)
+man_files <- list.files(man_base_path_scen, pattern = ".csv$", full.names = T)
 
 man_paths_list <- unlist(lapply(man_files, function(file) get_man_paths_item(file, aaa_all, country_codes)), recursive = F)
-
-
-# MAN_VARS ----------------------------------------------------------------
-
-
-man_names <- c("noman", "bau")
-man_id <- 2
-man_name <- man_names[man_id]
-
-man_params <- list(noman = list(defaultThin = 0, 
-                                ClCut = 0, 
-                                mortMod = 3, 
-                                ingrowth = T),
-                   
-                   bau = list(defaultThin = 1,
-                              ClCut = 1,
-                              mortMod = 3,
-                              ingrowth = T))
 
 
 # MAN_FILE_VARS -----------------------------------------------------------
 
 
-man_file_man_col = "BAU-Mgt1"
+man_file_man_col = "AM-Mgt4"
 man_file_forest_type_col = "ForestTypeElevSite"
 
 
