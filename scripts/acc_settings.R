@@ -114,7 +114,7 @@ aaa <- aaa_all[cell_300arcsec == cells_10[cells_10_id]]
 
 # Cores and parallelisation type
 cores <- max(1, availableCores() - 1)
-type <- "FORK"
+type <- "PSOCK"
 general_get_in_parallel_args <- list(cores = cores, type = type)
 
 

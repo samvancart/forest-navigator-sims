@@ -113,8 +113,8 @@ print("All done.")
 #### TEST ##########
 
 
-# 
-# acc_run_test <- acc_run_tables_list[[1]][1,]
+
+# acc_run_test <- acc_run_tables_list[[150]][1,]
 # 
 # acc_run_test[, country_code_str := "FI"]
 # 
@@ -123,7 +123,7 @@ print("All done.")
 # output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
 # 
 # acc_output_obj[[1]]$data
-# 
+
 # # TEST IN LOOP
 # a_ids <- unique(run_dt[1:54,]$plgid)
 # run_dt_test <- run_dt[!duplicated(plgid) & country == "Sweden" & !plgid %in% a_ids]
@@ -145,6 +145,12 @@ print("All done.")
 
 #### TEST_PARALLEL ##########
 
+# If running the below 2 lines as acc_run_test_dts 
+# then wrap in list like so: list(acc_run_test_dts)
+# acc_run_test_dts <- acc_run_tables_list[[150]][1,]
+# acc_run_test_dts[, country_code_str := "FI"]
+# 
+# 
 # acc_run_test_dts <- acc_run_tables_list[c(1,20)]
 # 
 # output_obj_list <- unlist(do.call(get_in_parallel, list(data = acc_run_test_dts,
