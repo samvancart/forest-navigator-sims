@@ -1966,6 +1966,7 @@ acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_
 produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    canopy_layer, man_init_args,
                                    varOutID, vHarv, country_code_str,
+                                   man_run_prebas_args,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
                                    conversions_path, output_base_path,
@@ -1983,6 +1984,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   assert_character(country_code_str, len = 1)
   assert_numeric(canopy_layer, len = 1)
   assert_list(man_init_args, min.len = 0)
+  assert_list(man_run_prebas_args, min.len = 0, null.ok = TRUE)
   assert_numeric(vHarv)
   assert_numeric(varOutID)
   
@@ -2346,7 +2348,6 @@ create_table_from_vars <- function(id_vars, value_vars_list, result_name = "resu
   assert_list(id_vars)
   assert_true(all(vapply(id_vars, is.vector, logical(1))))
   assert_list(value_vars_list)
-  assert_true(all(vapply(value_vars_list, length, integer(1)) == 1))
   assert_character(result_name, len = 1)
   
   # Create a data.table with id_vars
