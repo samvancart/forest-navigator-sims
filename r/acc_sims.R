@@ -1601,6 +1601,8 @@ get_modOut <- function(FUN, initPrebas, ...) {
   assertList(initPrebas)
   
   FUN_args <- c(list(initPrebas), ...)
+  print("get_modOut FUN_args:")
+  print(FUN_args)
   return(do.call(FUN, FUN_args))
 }
 
@@ -2013,7 +2015,7 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
   if(test_run) {
     print(paste0("test_run = TRUE, returning initPrebas, modOut and multiOut."))
     # Get modOut
-    modOut <- get_modOut(regionPrebas, initPrebas)
+    modOut <- get_modOut(regionPrebas, initPrebas, man_run_prebas_args)
     
     # Get multiOut
     multiOut <- modOut$multiOut
@@ -2047,8 +2049,9 @@ produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                                         man_file_man_col = man_file_man_col,
                                                         man_file_forest_type_col = man_file_forest_type_col)
   
+  
   # Get modOut
-  modOut <- get_modOut(regionPrebas, initPrebas_man)
+  modOut <- get_modOut(regionPrebas, initPrebas_man, man_run_prebas_args)
   
   # Get multiOut
   multiOut <- modOut$multiOut
