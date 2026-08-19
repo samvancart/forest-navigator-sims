@@ -18,6 +18,27 @@ source(config$PATH_acc_sims_prepare_init_settings)
 
 print(paste0("Creating run table for man_scen: ", man_name))
 
+# Combine am tables into one
+if(man_name %in% c("am")) {
+  run_table_am_path_base_name <- sub("-[^-]*$", "", run_table_name)
+  am1_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am1.rds"))
+  am2_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am2.rds"))
+  am3_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am3.rds"))
+  am4_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am4.rds"))
+
+  am1_dt <- readRDS(am1_path)
+  am2_dt <- readRDS(am2_path)
+  am3_dt <- readRDS(am3_path)
+  am4_dt <- readRDS(am4_path)
+  
+  am_dt <- rbindlist(list(am1_dt, am2_dt, am3_dt, am4_dt))
+  
+  am_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am.rds"))
+  print(paste0("Saving combined am table..."))
+  saveRDS(am_dt, am_path)
+  print("Done.")
+  stop("No error, just stopping here!")
+}
 
 country_codes_lookup <- get_acc_country_codes_lookup(aaa_all, country_codes)
 
@@ -68,29 +89,39 @@ acc_man_table <- rbindlist(lapply(clim_scen, function(cs) {
 acc_base_man_table <- merge.data.table(acc_base_table_country, acc_man_table, by = c("clim_scen", "man_scen"))
 
 
+# MAN-RUN-PREBAS-TABLE ----------------------------------------------------
+
+
+acc_man_run_vectors_list <- list(man_run_prebas_params[[man_name]])
+
+
+acc_man_run_table <- rbindlist(lapply(clim_scen, function(cs) {
+  create_table_from_vars(id_vars = list(clim_scen = cs, man_scen = man_scen), 
+                         value_vars = acc_man_run_vectors_list, 
+                         result_name = "man_run_prebas_args")
+}))
+
+
+acc_base_man_run_table <- merge.data.table(acc_base_man_table, acc_man_run_table, by = c("clim_scen", "man_scen"))
+
+
 # STATIC-VARS-TABLE --------------------------------------------------------------
 
 
 acc_static_vars_table <- data.table(varOutID = list(varOutID), vHarv = list(vHarv))
-acc_static_vars_expanded_table <- rbindlist(replicate(nrow(acc_base_man_table), acc_static_vars_table, simplify = FALSE))
+acc_static_vars_expanded_table <- rbindlist(replicate(nrow(acc_base_man_run_table), acc_static_vars_table, simplify = FALSE))
 
 
 # RUN-TABLE ----------------------------------------------------------------
 
 
-acc_run_table <- cbind(acc_base_man_table, acc_static_vars_expanded_table)
+acc_run_table <- cbind(acc_base_man_run_table, acc_static_vars_expanded_table)
 
 
 # SAVE --------------------------------------------------------------------
 
 
 saveRDS(acc_run_table, run_table_full_path)
-
-
-
-
-
-
 
 
 
