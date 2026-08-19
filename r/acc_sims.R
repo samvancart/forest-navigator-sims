@@ -1454,29 +1454,33 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
                                                 man_paths_list, country, man_scen, 
                                                 man_file_man_col = "BAU-Mgt1", man_file_forest_type_col = "ForestTypeElevSite") {
   
-  if(!country %in% names(man_paths_list)) {
-    if(!country %in% c("Finland", "Norway")) {
-      warning(paste0("No management file found for ", country, "! Returning initPrebas."))
+  if(country %in% c("Finland", "Norway")) {
+    
+    # Special cases: never use man files
+    if(man_scen %in% c("am1","am2","am3","am4")) {
+      forest_type_management_tab <- NULL
+    } else {
+      return(initPrebas)
     }
+    
+  } else if(country %in% names(man_paths_list)) {
+    
+    # Normal countries with man files
+    forest_type_management_tab <- get_forest_type_management_tab(
+      siteID_lookup = siteID_lookup,
+      man_paths_list = man_paths_list,
+      country = country,
+      man_file_man_col = man_file_man_col,
+      man_file_forest_type_col = man_file_forest_type_col
+    )
+    
+  } else {
+    
+    # Normal countries without man files
+    warning(paste0("No management file found for ", country, "! Returning initPrebas."))
     return(initPrebas)
   }
   
-  # man_path <- man_paths_list[[country]]
-  # man_dt <- fread(man_path)
-  # 
-  # assert_true(all(c(man_file_forest_type_col, man_file_man_col) %in% names(man_dt)))
-  # man_dt$forest_type_full <- man_dt[[man_file_forest_type_col]]
-  # man_dt$for_man <- man_dt[[man_file_man_col]] # TODO Add man_file_man_col to run table?
-  # 
-  # assert_true(all(siteID_lookup$forest_type_full %in% man_dt$forest_type_full))
-  # 
-  # forest_type_management_tab <- merge(siteID_lookup, man_dt[, .(forest_type_full, for_man)], by = "forest_type_full")
-  
-  forest_type_management_tab <- get_forest_type_management_tab(siteID_lookup = siteID_lookup, 
-                                                               man_paths_list = man_paths_list, 
-                                                               country = country, 
-                                                               man_file_man_col = man_file_man_col, 
-                                                               man_file_forest_type_col = man_file_forest_type_col)
   
   initPrebas_man <- tryCatch({
     forest_management_update(
