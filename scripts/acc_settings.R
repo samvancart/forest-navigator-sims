@@ -412,7 +412,7 @@ dclass_save_dir <- "dbh_classes"
 # When "am" is set, man_name will be correct in section MAN_PATHS.
 
 man_names <- c("noman", "bau", "am1", "am2", "am3", "am4", "am")
-man_id <- 7
+man_id <- 1
 man_name <- man_names[man_id]
 
 # Params for initMultisite
@@ -432,6 +432,17 @@ man_params <- list(noman = noman_init_man,
                    am2 = bau_init_man,
                    am3 = bau_init_man,
                    am4 = bau_init_man)
+
+# Params for regionPrebas/multiPrebas
+am_run_man_1 <- list(fertThin = 3)
+am_run_man_2 <- list(oldLayer = 1)
+
+man_run_prebas_params <- list(noman = list(),
+                              bau = list(),
+                              am1 = am_run_man_1,
+                              am2 = am_run_man_1,
+                              am3 = am_run_man_2,
+                              am4 = am_run_man_2)
 
 
 # MAN PATHS ---------------------------------------------------------------
