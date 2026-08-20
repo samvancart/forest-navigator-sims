@@ -407,13 +407,21 @@ dclass_save_dir <- "dbh_classes"
 # MAN_VARS ----------------------------------------------------------------
 
 
-# Use am1...am4 as well as man_file_man_col = "AM-Mgt1"..."AM-Mgt4" for
-# creating run table. Then combine the tables and use "am" when running.
-# When "am" is set, man_name will be correct in section MAN_PATHS.
+# Create run tables by setting man_id to the corresponding management regime.
+
+# AM: Create run tables for all am1...am4. Then set man_id = 7 and run
+# acc_2-0_run_create_run_table once more to save a combined table containing
+# all the am scenarios. The script will produce an error but this is only to
+# stop the script after combining.
+
 
 man_names <- c("noman", "bau", "am1", "am2", "am3", "am4", "am")
-man_id <- 1
+man_id <- 7
 man_name <- man_names[man_id]
+
+man_file_man_cols <- c(NA, "BAU-Mgt1", "AM-Mgt1", "AM-Mgt2", "AM-Mgt3", "AM-Mgt4", NA)
+man_file_man_col = man_file_man_cols[man_id]
+man_file_forest_type_col = "ForestTypeElevSite"
 
 # Params for initMultisite
 noman_init_man = list(defaultThin = 0, 
@@ -458,13 +466,6 @@ man_base_path_scen <- file.path(man_base_path, man_name)
 man_files <- list.files(man_base_path_scen, pattern = ".csv$", full.names = T)
 
 man_paths_list <- unlist(lapply(man_files, function(file) get_man_paths_item(file, aaa_all, country_codes)), recursive = F)
-
-
-# MAN_FILE_VARS -----------------------------------------------------------
-
-
-man_file_man_col = "AM-Mgt4"
-man_file_forest_type_col = "ForestTypeElevSite"
 
 
 # OUTPUT_VARS --------------------------------------------------------------
