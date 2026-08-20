@@ -110,18 +110,50 @@ print("All done.")
 # test_list <- readRDS(test_file)
 
 
+# CREATE-TEST-TABLE -------------------------------------------------------
+
+# Create a test table containing all man scens for desired countries.
+
+# run_table_am_path_base_name <- sub("-[^-]*$", "", run_table_name)
+# noman_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-noman.rds"))
+# bau_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-bau.rds"))
+# am_path <- file.path(run_table_base_path, paste0(run_table_am_path_base_name, "-am.rds"))
+# 
+# 
+# noman_dt <- readRDS(noman_path)
+# bau_dt <- readRDS(bau_path)
+# am_dt <- readRDS(am_path)
+# 
+# # Filter dt
+# test_countries <- c("Finland", "Sweden", "Norway", "Denmark")
+# f_noman_dt <- noman_dt[country %in% test_countries]
+# d_noman_dt <- f_noman_dt[!duplicated(f_noman_dt, by = "country")]
+# ids <- d_noman_dt$plgid
+# 
+# d_am_dt <- am_dt[plgid %in% ids & clim_scen %in% "detrended"]
+# d_bau_dt <- bau_dt[plgid %in% ids & clim_scen %in% "detrended"]
+# 
+# c_dt <- rbindlist(list(d_noman_dt, d_am_dt, d_bau_dt))
+# 
+# acc_run_test <- filter_and_validate_by_country(dt = c_dt, lookup = country_codes, countries = NA)
+# acc_run_test[, man_file_man_col := as.character(man_file_man_col)]
+# 
+# acc_output_obj <- acc_run_table_controller(acc_run_test[20], produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# 
+# output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
+
 
 #### TEST ##########
 
-
+#acc_run_test <- acc_run_tables_list[[1]]
 
 # acc_run_test <- acc_run_tables_list[[150]][1,]
 # 
 # acc_run_test[, country_code_str := "FI"]
 # 
 # acc_run_test <- run_dt[26,]
-# acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
-# output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
+#acc_output_obj <- acc_run_table_controller(acc_run_test, produce_output_paths, produce_acc_output_obj, start_year = start_year)
+#output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
 # 
 # acc_output_obj[[1]]$data
 
