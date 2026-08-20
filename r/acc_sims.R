@@ -1464,7 +1464,6 @@ forest_management_update_controller <- function(initPrebas, siteID_lookup,
     }
     
   } else if(country %in% names(man_paths_list)) {
-    
     # Normal countries with man files
     forest_type_management_tab <- get_forest_type_management_tab(
       siteID_lookup = siteID_lookup,
@@ -1602,7 +1601,7 @@ get_modOut <- function(FUN, initPrebas, ...) {
   
   FUN_args <- c(list(initPrebas), ...)
   print("get_modOut FUN_args:")
-  print(FUN_args)
+  print(FUN_args[-1])
   return(do.call(FUN, FUN_args))
 }
 
@@ -1968,6 +1967,7 @@ acc_run_table_controller <- function(run_table, paths, FUN = produce_acc_output_
 produce_acc_output_obj <- function(plgid, model, country, clim_scen, man_scen,
                                    canopy_layer, man_init_args,
                                    varOutID, vHarv, country_code_str,
+                                   man_file_man_col, man_file_forest_type_col,
                                    man_run_prebas_args,
                                    clean_data_base_path,
                                    selection_path, aaa_file,
