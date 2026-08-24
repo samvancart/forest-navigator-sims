@@ -10,6 +10,7 @@
 
 
 library(devtools)
+library(remotes)
 
 vPREBAS <- "master"
 # vPREBAS <- "newVersion"
@@ -41,7 +42,7 @@ prebas_temp_path <- "/scratch/project_2000994/PREBASruns/finRuns/Rsrc/samuel/for
 
 
 tryCatch({
-  install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
+  remotes::install_github("ForModLabUHel/Rprebasso", ref=vPREBAS)
 }, error = function(e) {
   message("",e)
 })
