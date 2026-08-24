@@ -460,13 +460,18 @@ man_run_prebas_params <- list(noman = list(),
 # man_base_path and has this format: <2 letter country code>_rest_of_name.csv 
 # eg. SE_SpeciesSharePerForestTypeClusterElevSiteMean_2025-07-18_BAUMgt_20082025.csv for Sweden.
 
+man_path_names <- c("", "bau", "am", "am", "am", "am", "")
+man_path_name <- man_path_names[man_id]
 
 man_base_path <- "data/acc/docs/management"
-man_base_path_scen <- file.path(man_base_path, man_name)
+man_base_path_scen <- file.path(man_base_path, man_path_name)
+
 man_files <- list.files(man_base_path_scen, pattern = ".csv$", full.names = T)
 
 man_paths_list <- unlist(lapply(man_files, function(file) get_man_paths_item(file, aaa_all, country_codes)), recursive = F)
-
+if(is.null(man_paths_list)) {
+  man_paths_list <- list()
+}
 
 # OUTPUT_VARS --------------------------------------------------------------
 
@@ -478,8 +483,7 @@ produce_output_paths <- list(clean_data_base_path = clean_data_base_path,
                              output_base_path = output_base_path,
                              species_lookup_path = species_codes_lookup_path,
                              output_save_dir = output_save_dir,
-                             dclass_save_dir = dclass_save_dir,
-                             man_paths_list = man_paths_list) # Management paths as named list
+                             dclass_save_dir = dclass_save_dir)
 
 # Output IDs
 varOutID <- c(7, 11:14, 17, 18, 19, 22, 24, 25, 30, 31:33, 42, 43, 44, 47, 50)
