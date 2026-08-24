@@ -138,7 +138,15 @@ print("All done.")
 # acc_run_test <- filter_and_validate_by_country(dt = c_dt, lookup = country_codes, countries = NA)
 # acc_run_test[, man_file_man_col := as.character(man_file_man_col)]
 # 
-# acc_output_obj <- acc_run_table_controller(acc_run_test[20], produce_output_paths, produce_acc_output_obj, start_year = start_year)
+# # Remove unused rows
+# acc_run_test_f <- acc_run_test[
+#   !( !man_scen %in% c("noman", "bau") & country == "Denmark" )
+# ]
+# 
+# 
+# acc_output_obj <- acc_run_table_controller(acc_run_test_f, 
+#                                            produce_output_paths, produce_acc_output_obj, 
+#                                            start_year = start_year, test_run = F)
 # 
 # output_obj_list <- unlist(unlist(list(acc_output_obj), recursive = F), recursive = F)
 
@@ -196,70 +204,4 @@ print("All done.")
 # 
 # 
 # output_obj_list[[1]]$data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
