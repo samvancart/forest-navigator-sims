@@ -52,6 +52,7 @@ man_file_man_col = man_file_man_col
 man_file_forest_type_col = man_file_forest_type_col
 # country <- c("Finland")
 canopy_layer <- c(1)
+man_paths_list = man_paths_list
 
 acc_vectors_list <- list(plgid = plgid, 
                          clim_scen = clim_scen, 
@@ -60,7 +61,8 @@ acc_vectors_list <- list(plgid = plgid,
                          # country = country, 
                          canopy_layer = canopy_layer,
                          man_file_man_col = man_file_man_col,
-                         man_file_forest_type_col = man_file_forest_type_col)
+                         man_file_forest_type_col = man_file_forest_type_col,
+                         man_paths_list = list(man_paths_list))
 
 acc_base_table <- expand_vectors_to_dt(acc_vectors_list)
 
